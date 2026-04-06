@@ -1,0 +1,47 @@
+export const resources = [
+  {
+    id: 'videoaulas',
+    icon: '🎬',
+    name: 'Videoaulas Interativas',
+    desc: 'Acesse aulas gravadas pelos melhores professores do Brasil',
+    features: [
+      { text: 'Mais de 10.000 videoaulas disponíveis' },
+      { text: 'Organizadas por disciplina e série' },
+      { text: 'Legendas e transcrições automáticas' },
+      { text: 'Velocidade ajustável (0.5x a 2x)' },
+      { text: 'Anotações sincronizadas com o vídeo' },
+    ],
+    cta: 'Acessar videoaulas',
+    ctaStyle: 'primary',
+  },
+  {
+    id: 'simulados',
+    icon: '📝',
+    name: 'Simulados e Questões',
+    desc: 'Pratique com o maior banco de questões do Brasil',
+    features: [
+      { text: 'Mais de 500 mil questões comentadas' },
+      { text: 'Simulados no estilo ENEM e vestibulares' },
+      { text: 'Gabarito e ranking em tempo real' },
+      { text: 'Filtros por assunto, dificuldade e ano' },
+      { text: 'Histórico completo de respostas' },
+    ],
+    cta: 'Começar a praticar',
+    ctaStyle: 'primary',
+  },
+  {
+    id: 'trilhas',
+    icon: '🤖',
+    name: 'Trilhas com IA',
+    desc: 'Plano de estudos personalizado gerado por inteligência artificial',
+    features: [
+      { text: 'Análise do seu desempenho em tempo real' },
+      { text: 'Cronograma de revisão automático' },
+      { text: 'Metas semanais e mensais personalizadas' },
+      { text: 'Relatórios detalhados de evolução' },
+      { text: 'Integração com conteúdo da sua escola' },
+    ],
+    cta: 'Criar minha trilha',
+    ctaStyle: 'primary',
+  },
+]

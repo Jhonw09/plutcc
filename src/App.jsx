@@ -5,7 +5,7 @@ import VideoSection from './components/VideoSection'
 import Subjects from './components/Subjects'
 import Stats from './components/Stats'
 import Testimonials from './components/Testimonials'
-import Plans from './components/Plans'
+import Resources from './components/Resources'
 import CtaBanner from './components/CtaBanner'
 import Footer from './components/Footer'
 import './App.css'
@@ -21,7 +21,7 @@ export default function App() {
         <Subjects />
         <Stats />
         <Testimonials />
-        <Plans />
+        <Resources />
         <CtaBanner />
       </main>
       <Footer />
