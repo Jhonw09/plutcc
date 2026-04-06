@@ -34,7 +34,9 @@
   font-size: 17px;
   color: var(--text-secondary);
   line-height: 1.65;
-  max-width: 560px;
+  max-width: 580px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 /* ── Buttons ── */

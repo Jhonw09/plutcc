@@ -9,8 +9,14 @@ const stats = [
 ]
 
 const logos = [
-  'Objetivo', 'Anglo', 'Poliedro', 'COC',
-  'SEB', 'Pitágoras', 'Marista', 'Positivo',
+  { name: 'Objetivo', color: '#3B82F6' },
+  { name: 'Anglo',    color: '#EF4444' },
+  { name: 'Poliedro', color: '#22C55E' },
+  { name: 'COC',      color: '#F59E0B' },
+  { name: 'SEB',      color: '#3B82F6' },
+  { name: 'Pitágoras', color: '#EF4444' },
+  { name: 'Marista',  color: '#22C55E' },
+  { name: 'Positivo', color: '#F59E0B' },
 ]
 
 function useCounter(target, active) {
@@ -68,10 +74,19 @@ export default function Stats() {
         <p className={styles.logosLabel}>Confiado pelas maiores redes de ensino do Brasil</p>
         <div className={styles.track}>
           <div className={styles.logos}>
-            {[...logos, ...logos].map((name, i) => (
+            {[...logos, ...logos].map((l, i) => (
               <div key={i} className={styles.logo}>
-                <div className={styles.logoIcon}>{name[0]}</div>
-                <span className={styles.logoName}>{name}</span>
+                <div
+                  className={styles.logoIcon}
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${l.color} 18%, transparent)`,
+                    color: l.color,
+                    borderColor: `color-mix(in srgb, ${l.color} 30%, transparent)`,
+                  }}
+                >
+                  {l.name[0]}
+                </div>
+                <span className={styles.logoName}>{l.name}</span>
               </div>
             ))}
           </div>

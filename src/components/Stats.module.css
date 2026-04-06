@@ -73,24 +73,26 @@
   align-items: center;
   gap: 9px;
   flex-shrink: 0;
-  opacity: .35;
-  transition: opacity .2s;
+  opacity: .55;
+  transition: opacity .2s, transform .2s;
 }
-.logo:hover { opacity: .7; }
+.logo:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}
 
 .logoIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
-  background: var(--surface-3);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
   flex-shrink: 0;
+  border: 1px solid transparent;
+  /* backgroundColor, color, borderColor set per-item via inline style */
 }
 
 .logoName {
