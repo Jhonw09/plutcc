@@ -1,0 +1,6 @@
+export { features }           from './features'
+export { subjects }           from './subjects'
+export { testimonials }       from './testimonials'
+export { plans }              from './plans'
+export { stats, logos }       from './stats'
+export { videoTabs }          from './videoTabs'
