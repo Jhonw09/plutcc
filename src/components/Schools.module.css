@@ -1,0 +1,148 @@
+.section {
+  padding: 80px 0;
+  background: var(--white);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.tag {
+  display: inline-block;
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.sub {
+  font-size: 17px;
+  color: var(--text-light);
+}
+
+.logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 60px;
+}
+
+.logoCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-mid);
+  background: var(--gray);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+
+.logoCard:hover {
+  border-color: var(--blue);
+  box-shadow: 0 4px 12px rgba(0,87,184,0.1);
+}
+
+.logoInitial {
+  width: 32px;
+  height: 32px;
+  background: var(--blue);
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.logoName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ctaBox {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+  border-radius: 20px;
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.ctaContent h3 {
+  font-size: 26px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.ctaContent p {
+  font-size: 16px;
+  color: rgba(255,255,255,0.85);
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+.ctaActions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.btnCta {
+  background: var(--orange);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.btnCta:hover { background: #e05e00; }
+
+.btnCtaOutline {
+  border: 2px solid rgba(255,255,255,0.5);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btnCtaOutline:hover { border-color: white; background: rgba(255,255,255,0.1); }
+
+@media (max-width: 768px) {
+  .ctaBox { flex-direction: column; text-align: center; padding: 32px 24px; }
+  .ctaActions { justify-content: center; }
+  .title { font-size: 26px; }
+}

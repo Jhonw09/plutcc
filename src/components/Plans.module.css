@@ -1,0 +1,217 @@
+.section {
+  padding: 96px 0;
+  background: var(--white);
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.header .section-sub { margin: 0 auto 28px; }
+
+/* Toggle */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.toggleOn  { color: var(--gray-900); }
+.toggleOff { color: var(--gray-400); }
+
+.toggleSwitch {
+  width: 48px; height: 26px;
+  background: var(--blue);
+  border-radius: 13px;
+  position: relative;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  width: 20px; height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.discount {
+  display: inline-block;
+  background: #d1fae5;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.card {
+  border-radius: 20px;
+  border: 2px solid var(--gray-200);
+  background: var(--white);
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow .2s, transform .2s;
+}
+.card:hover {
+  box-shadow: 0 16px 48px rgba(26,86,219,.12);
+  transform: translateY(-4px);
+}
+.card.featured {
+  border-color: var(--blue);
+  box-shadow: 0 16px 48px rgba(26,86,219,.18);
+  transform: scale(1.03);
+}
+.card.featured:hover { transform: scale(1.03) translateY(-4px); }
+
+.badge {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: var(--orange);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: .3px;
+}
+
+.planTop {
+  padding: 32px 28px 24px;
+  border-bottom: 1px solid var(--gray-200);
+}
+.featured .planTop { background: var(--blue); }
+
+.planName {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 12px;
+}
+.featured .planName { color: white; }
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.priceFree {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--gray-900);
+}
+.priceCustom {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+.priceCurrency {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  align-self: flex-start;
+  margin-top: 6px;
+}
+.priceValue {
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--gray-900);
+  line-height: 1;
+}
+.pricePer {
+  font-size: 14px;
+  color: var(--gray-500);
+}
+.featured .priceFree,
+.featured .priceCustom,
+.featured .priceCurrency,
+.featured .priceValue { color: white; }
+.featured .pricePer { color: rgba(255,255,255,.7); }
+
+.annualNote {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-bottom: 8px;
+}
+.featured .annualNote { color: rgba(255,255,255,.6); }
+
+.planDesc {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin-top: 6px;
+}
+.featured .planDesc { color: rgba(255,255,255,.75); }
+
+/* Features */
+.featureList {
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.featureOk, .featureNo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.featureOk { color: var(--gray-700); }
+.featureNo { color: var(--gray-400); }
+
+.featureIcon {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.featureOk .featureIcon { background: #d1fae5; color: var(--green); }
+.featureNo .featureIcon { background: var(--gray-100); color: var(--gray-400); }
+
+/* CTA */
+.cta {
+  display: block;
+  margin: 0 28px 28px;
+  padding: 14px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  transition: all .18s;
+}
+.ctaPrimary { background: var(--orange); color: white; }
+.ctaPrimary:hover { background: #e05e00; }
+.ctaOrange  { background: var(--orange); color: white; }
+.ctaOrange:hover { background: #e05e00; }
+.ctaOutline { border: 2px solid var(--blue); color: var(--blue); }
+.ctaOutline:hover { background: var(--blue-light); }
+
+.note {
+  text-align: center;
+  margin-top: 36px;
+  font-size: 14px;
+  color: var(--gray-400);
+}
+
+@media (max-width: 960px) {
+  .grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+  .card.featured { transform: none; }
+}
