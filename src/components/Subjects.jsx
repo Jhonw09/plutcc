@@ -2,18 +2,18 @@ import { useState } from 'react'
 import styles from './Subjects.module.css'
 
 const subjects = [
-  { icon:'📐', name:'Matemática',   count:'1.240 aulas', color:'#dbeafe', text:'#1e40af' },
-  { icon:'📖', name:'Português',    count:'980 aulas',   color:'#fef3c7', text:'#92400e' },
-  { icon:'⚗️', name:'Química',      count:'760 aulas',   color:'#d1fae5', text:'#065f46' },
-  { icon:'🧬', name:'Biologia',     count:'890 aulas',   color:'#ede9fe', text:'#5b21b6' },
-  { icon:'⚡', name:'Física',       count:'820 aulas',   color:'#dbeafe', text:'#1e40af' },
-  { icon:'🌍', name:'Geografia',    count:'640 aulas',   color:'#fef3c7', text:'#92400e' },
-  { icon:'📜', name:'História',     count:'710 aulas',   color:'#fee2e2', text:'#991b1b' },
-  { icon:'🌐', name:'Inglês',       count:'530 aulas',   color:'#d1fae5', text:'#065f46' },
-  { icon:'🎨', name:'Artes',        count:'320 aulas',   color:'#ede9fe', text:'#5b21b6' },
-  { icon:'💻', name:'Informática',  count:'410 aulas',   color:'#dbeafe', text:'#1e40af' },
-  { icon:'🧠', name:'Filosofia',    count:'360 aulas',   color:'#fef3c7', text:'#92400e' },
-  { icon:'⚖️', name:'Sociologia',   count:'290 aulas',   color:'#fee2e2', text:'#991b1b' },
+  { icon:'📐', name:'Matemática',   count:'1.240 aulas', color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'📖', name:'Português',    count:'980 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'⚗️', name:'Química',      count:'760 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'🧬', name:'Biologia',     count:'890 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'⚡', name:'Física',       count:'820 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'🌍', name:'Geografia',    count:'640 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'📜', name:'História',     count:'710 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'🌐', name:'Inglês',       count:'530 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'🎨', name:'Artes',        count:'320 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'💻', name:'Informática',  count:'410 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'🧠', name:'Filosofia',    count:'360 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
+  { icon:'⚖️', name:'Sociologia',   count:'290 aulas',   color:'rgba(255,255,255,0.04)', text:'var(--text-secondary)' },
 ]
 
 export default function Subjects() {

@@ -17,8 +17,8 @@ export default function Footer() {
           <div className={styles.brand}>
             <a href="/" className={styles.logo}>
               <svg width="110" height="30" viewBox="0 0 110 30" fill="none">
-                <text x="0" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#4d9fff">plu</text>
-                <text x="43" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#ff6900">rall</text>
+                <text x="0" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#FFFFFF">plu</text>
+                <text x="43" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#6C5CE7">rall</text>
               </svg>
             </a>
             <p className={styles.tagline}>

@@ -1,4 +1,4 @@
-/* App.css — global layout helpers */
+/* App.css — global layout & shared components */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -10,72 +10,85 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: .5px;
+  letter-spacing: .6px;
   text-transform: uppercase;
   padding: 5px 14px;
   border-radius: 20px;
   margin-bottom: 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
 }
-
-.section-tag.blue  { background: var(--blue-light); color: var(--blue); }
-.section-tag.orange{ background: var(--orange-light); color: var(--orange); }
 
 .section-title {
   font-size: clamp(26px, 4vw, 40px);
   font-weight: 800;
   line-height: 1.15;
-  color: var(--gray-900);
+  color: var(--text);
   margin-bottom: 14px;
 }
 
 .section-sub {
   font-size: 17px;
-  color: var(--gray-500);
+  color: var(--text-secondary);
   line-height: 1.65;
   max-width: 560px;
 }
 
+/* ── Buttons ── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--blue);
-  color: var(--white);
+  background: var(--accent);
+  color: #fff;
   font-size: 15px;
   font-weight: 700;
   padding: 13px 26px;
   border-radius: 8px;
-  transition: background .18s, transform .12s;
+  transition: background .18s, transform .12s, box-shadow .18s;
 }
-.btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--accent-glow);
+}
 
-.btn-orange {
+.btn-ghost {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--orange);
-  color: var(--white);
+  background: var(--surface-3);
+  color: var(--text);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 13px 26px;
   border-radius: 8px;
-  transition: background .18s, transform .12s;
+  border: 1px solid var(--border);
+  transition: background .18s, border-color .18s, transform .12s;
 }
-.btn-orange:hover { background: #e05e00; transform: translateY(-1px); }
+.btn-ghost:hover {
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
 
 .btn-outline {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: transparent;
-  color: var(--blue);
+  color: var(--accent);
   font-size: 15px;
   font-weight: 700;
   padding: 12px 24px;
   border-radius: 8px;
-  border: 2px solid var(--blue);
-  transition: background .18s;
+  border: 1.5px solid var(--accent-border);
+  transition: background .18s, border-color .18s;
 }
-.btn-outline:hover { background: var(--blue-light); }
+.btn-outline:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}

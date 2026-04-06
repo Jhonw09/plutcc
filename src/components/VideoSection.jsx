@@ -8,28 +8,28 @@ const tabContent = {
     title: 'Videoaulas com os melhores professores do Brasil',
     desc: 'Assista quando quiser, quantas vezes precisar. Nossas videoaulas são gravadas por professores especialistas e organizadas por série, disciplina e assunto.',
     items: ['Mais de 10.000 videoaulas disponíveis', 'Legendas e transcrições automáticas', 'Velocidade ajustável (0.5x a 2x)', 'Anotações sincronizadas com o vídeo'],
-    color: '#dbeafe',
+    color: 'var(--surface-3)',
     icon: '🎬',
   },
   Exercícios: {
     title: 'Banco com mais de 500 mil questões comentadas',
     desc: 'Pratique com questões de todos os níveis, incluindo provas do ENEM e principais vestibulares do Brasil. Cada questão tem resolução detalhada.',
     items: ['Questões do ENEM, FUVEST, UNICAMP e mais', 'Resolução comentada em vídeo e texto', 'Filtros por assunto, dificuldade e ano', 'Histórico completo de respostas'],
-    color: '#fef3c7',
+    color: 'var(--surface-3)',
     icon: '📝',
   },
   Simulados: {
     title: 'Simulados completos no estilo ENEM',
     desc: 'Prepare-se para o dia da prova com simulados cronometrados que reproduzem fielmente o formato do ENEM e dos principais vestibulares.',
     items: ['Simulados cronometrados', 'Gabarito e ranking em tempo real', 'Análise de desempenho por área', 'Simulados personalizados por IA'],
-    color: '#d1fae5',
+    color: 'var(--surface-3)',
     icon: '📋',
   },
   Relatórios: {
     title: 'Acompanhe sua evolução em tempo real',
     desc: 'Visualize seu progresso com gráficos detalhados. Identifique seus pontos fortes e as áreas que precisam de mais atenção.',
     items: ['Gráficos de evolução por disciplina', 'Comparativo com outros alunos', 'Metas semanais e mensais', 'Relatório para pais e professores'],
-    color: '#ede9fe',
+    color: 'var(--surface-3)',
     icon: '📊',
   },
 }
@@ -42,7 +42,7 @@ export default function VideoSection() {
     <section className={styles.section}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <span className="section-tag orange">Como funciona</span>
+          <span className="section-tag">Como funciona</span>
           <h2 className="section-title">Uma plataforma completa<br />para cada etapa do estudo</h2>
         </div>
 
@@ -77,16 +77,16 @@ export default function VideoSection() {
           </div>
 
           <div className={styles.contentRight}>
-            <div className={styles.mockup} style={{ borderColor: c.color }}>
+            <div className={styles.mockup} style={{ borderColor: 'var(--border)' }}>
               <div className={styles.mockupBar}>
                 <div className={styles.mockupDots}>
-                  <span style={{background:'#ff5f57'}} />
-                  <span style={{background:'#febc2e'}} />
-                  <span style={{background:'#28c840'}} />
+                  <span style={{background:'#3d3d3d'}} />
+                  <span style={{background:'#555555'}} />
+                  <span style={{background:'#6C5CE7'}} />
                 </div>
                 <div className={styles.mockupUrl}>plurall.net/{active.toLowerCase()}</div>
               </div>
-              <div className={styles.mockupBody} style={{ background: c.color + '40' }}>
+              <div className={styles.mockupBody}>
                 <div className={styles.mockupCenter}>
                   <span className={styles.mockupBigIcon}>{c.icon}</span>
                   <div className={styles.mockupLines}>

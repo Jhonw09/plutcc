@@ -1,6 +1,5 @@
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-import Logos from './components/Logos'
 import Features from './components/Features'
 import VideoSection from './components/VideoSection'
 import Subjects from './components/Subjects'
@@ -17,7 +16,6 @@ export default function App() {
       <Navbar />
       <main>
         <Hero />
-        <Logos />
         <Features />
         <VideoSection />
         <Subjects />

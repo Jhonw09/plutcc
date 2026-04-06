@@ -55,7 +55,7 @@ const plans = [
       { ok: true, text: 'SLA garantido' },
     ],
     cta: 'Falar com vendas',
-    ctaStyle: 'orange',
+    ctaStyle: 'accent',
   },
 ]
 
@@ -129,7 +129,7 @@ export default function Plans() {
                   href="#"
                   className={`${styles.cta} ${
                     p.ctaStyle === 'primary' ? styles.ctaPrimary :
-                    p.ctaStyle === 'orange'  ? styles.ctaOrange  :
+                    p.ctaStyle === 'accent'  ? styles.ctaPrimary  :
                     styles.ctaOutline
                   }`}
                 >

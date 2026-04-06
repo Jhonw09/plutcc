@@ -25,8 +25,8 @@ export default function Navbar() {
         {/* Logo */}
         <a href="/" className={styles.logo}>
           <svg width="120" height="32" viewBox="0 0 120 32" fill="none">
-            <text x="0" y="26" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="28" fill="#1a56db">plu</text>
-            <text x="46" y="26" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="28" fill="#ff6900">rall</text>
+            <text x="0" y="26" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="28" fill="#FFFFFF">plu</text>
+            <text x="46" y="26" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="28" fill="#6C5CE7">rall</text>
           </svg>
         </a>
 

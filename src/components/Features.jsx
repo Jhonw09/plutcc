@@ -5,37 +5,37 @@ const features = [
     icon: '🎬',
     title: 'Videoaulas com os melhores professores',
     desc: 'Mais de 10.000 videoaulas gravadas pelos melhores professores do Brasil, organizadas por disciplina, série e assunto.',
-    color: '#dbeafe',
+    color: 'var(--surface-3)',
   },
   {
     icon: '📝',
     title: 'Exercícios e banco de questões',
     desc: 'Mais de 500 mil questões comentadas, incluindo provas do ENEM, FUVEST, UNICAMP e principais vestibulares.',
-    color: '#fef3c7',
+    color: 'var(--surface-3)',
   },
   {
     icon: '🤖',
     title: 'Trilhas personalizadas com IA',
     desc: 'Nossa inteligência artificial analisa seu desempenho e cria um plano de estudos personalizado para você evoluir mais rápido.',
-    color: '#ede9fe',
+    color: 'var(--surface-3)',
   },
   {
     icon: '📊',
     title: 'Relatórios de desempenho',
     desc: 'Acompanhe sua evolução em tempo real com gráficos detalhados. Saiba exatamente onde você precisa melhorar.',
-    color: '#d1fae5',
+    color: 'var(--surface-3)',
   },
   {
     icon: '🏫',
     title: 'Integrado com sua escola',
     desc: 'Receba tarefas, provas e conteúdos enviados pelo seu professor diretamente na plataforma.',
-    color: '#fee2e2',
+    color: 'var(--surface-3)',
   },
   {
     icon: '📱',
     title: 'Estude em qualquer lugar',
     desc: 'Acesse pelo celular, tablet ou computador. Baixe conteúdos e estude mesmo sem internet.',
-    color: '#dbeafe',
+    color: 'var(--surface-3)',
   },
 ]
 

@@ -7,7 +7,8 @@ const testimonials = [
     role: 'Aprovada em Medicina — USP',
     text: 'O Plurall foi fundamental na minha aprovação. As videoaulas são incríveis e os simulados me prepararam muito bem. Estudei pelo app no ônibus, em casa, em todo lugar.',
     avatar: 'A',
-    color: '#1a56db',
+    avatarBg: 'rgba(108, 92, 231, 0.15)',
+    avatarColor: '#A78BFA',
     school: 'Colégio Objetivo',
   },
   {
@@ -15,7 +16,8 @@ const testimonials = [
     role: 'Aprovado no ITA',
     text: 'A plataforma é muito completa. O banco de questões é enorme e as trilhas personalizadas me ajudaram a focar exatamente no que eu precisava estudar para o ITA.',
     avatar: 'C',
-    color: '#ff6900',
+    avatarBg: 'rgba(59, 130, 246, 0.15)',
+    avatarColor: '#93C5FD',
     school: 'Colégio Anglo',
   },
   {
@@ -23,7 +25,8 @@ const testimonials = [
     role: 'Aprovada em Direito — UNICAMP',
     text: 'O que mais gostei foi poder estudar no meu ritmo. Os relatórios de desempenho me mostraram onde eu estava errando e consegui melhorar muito rápido.',
     avatar: 'J',
-    color: '#057a55',
+    avatarBg: 'rgba(34, 197, 94, 0.15)',
+    avatarColor: '#86EFAC',
     school: 'Colégio Poliedro',
   },
   {
@@ -31,7 +34,8 @@ const testimonials = [
     role: 'Aprovado em Engenharia — FUVEST',
     text: 'Recomendo para todos! A integração com a escola é perfeita. Meu professor enviava as tarefas pelo Plurall e eu conseguia acompanhar tudo em um só lugar.',
     avatar: 'P',
-    color: '#7c3aed',
+    avatarBg: 'rgba(250, 204, 21, 0.15)',
+    avatarColor: '#FDE047',
     school: 'Colégio COC',
   },
 ]
@@ -57,7 +61,12 @@ export default function Testimonials() {
                 className={`${styles.sideItem} ${active === i ? styles.sideActive : ''}`}
                 onClick={() => setActive(i)}
               >
-                <div className={styles.sideAvatar} style={{ background: t.color }}>{t.avatar}</div>
+                <div
+                  className={styles.sideAvatar}
+                  style={{ background: t.avatarBg, color: t.avatarColor }}
+                >
+                  {t.avatar}
+                </div>
                 <div className={styles.sideInfo}>
                   <strong>{t.name}</strong>
                   <span>{t.role}</span>
@@ -73,7 +82,13 @@ export default function Testimonials() {
               "{testimonials[active].text}"
             </blockquote>
             <div className={styles.author}>
-              <div className={styles.authorAvatar} style={{ background: testimonials[active].color }}>
+              <div
+                className={styles.authorAvatar}
+                style={{
+                  background: testimonials[active].avatarBg,
+                  color: testimonials[active].avatarColor,
+                }}
+              >
                 {testimonials[active].avatar}
               </div>
               <div>

@@ -1,6 +1,6 @@
 .section {
   padding: 96px 0;
-  background: var(--gray-50);
+  background: var(--background);
 }
 .container {
   max-width: 1200px;
@@ -22,18 +22,22 @@
 .tab {
   font-size: 14px;
   font-weight: 600;
-  color: var(--gray-500);
+  color: var(--text-secondary);
   padding: 9px 22px;
   border-radius: 8px;
-  border: 1.5px solid var(--gray-200);
-  background: var(--white);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
   transition: all .18s;
 }
-.tab:hover { border-color: var(--blue); color: var(--blue); }
+.tab:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
 .tabActive {
-  background: var(--blue);
-  color: var(--white) !important;
-  border-color: var(--blue) !important;
+  background: var(--surface-3);
+  color: var(--accent) !important;
+  border-color: var(--accent-border) !important;
+  box-shadow: none;
 }
 
 .content {
@@ -46,21 +50,26 @@
 .contentLeft { display: flex; flex-direction: column; gap: 16px; }
 
 .contentIcon {
-  width: 60px; height: 60px;
+  width: 60px;
+  height: 60px;
   border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 28px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
 }
 
 .contentTitle {
   font-size: 26px;
   font-weight: 800;
-  color: var(--gray-900);
+  color: var(--text);
   line-height: 1.25;
 }
 .contentDesc {
   font-size: 16px;
-  color: var(--gray-500);
+  color: var(--text-secondary);
   line-height: 1.65;
 }
 
@@ -74,14 +83,18 @@
   align-items: flex-start;
   gap: 10px;
   font-size: 15px;
-  color: var(--gray-700);
+  color: var(--text-secondary);
 }
 .check {
-  width: 20px; height: 20px;
-  background: var(--blue);
-  color: white;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  color: var(--accent);
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
@@ -91,59 +104,68 @@
 /* Mockup */
 .mockup {
   border-radius: 16px;
-  border: 2px solid;
+  border: 1px solid var(--border);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 .mockupBar {
-  background: var(--gray-100);
+  background: var(--surface-3);
   padding: 10px 14px;
   display: flex;
   align-items: center;
   gap: 12px;
+  border-bottom: 1px solid var(--border);
 }
 .mockupDots { display: flex; gap: 6px; }
 .mockupDots span {
-  width: 12px; height: 12px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   display: block;
+  background: var(--surface-2);
 }
 .mockupUrl {
   flex: 1;
-  background: var(--white);
+  background: var(--surface-2);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 12px;
-  color: var(--gray-500);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 .mockupBody {
   padding: 24px;
   min-height: 320px;
+  background: var(--surface-2);
 }
 .mockupCenter { display: flex; flex-direction: column; gap: 16px; }
 .mockupBigIcon { font-size: 48px; }
 .mockupLines { display: flex; flex-direction: column; gap: 8px; }
 .mockupLine {
   height: 10px;
-  background: rgba(0,0,0,.1);
+  background: var(--border);
   border-radius: 5px;
 }
 .mockupCards { display: flex; flex-direction: column; gap: 10px; }
 .mockupCard {
-  background: var(--white);
+  background: var(--surface);
   border-radius: 10px;
   padding: 12px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border: 1px solid var(--border);
 }
 .mockupCardIcon {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 18px;
   flex-shrink: 0;
+  background: var(--surface-3);
 }
 .mockupCardLines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 
