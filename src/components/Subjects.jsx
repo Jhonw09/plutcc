@@ -1,3 +1,4 @@
+import { useCTA } from '../hooks/useCTA'
 import styles from './Subjects.module.css'
 
 const subjects = [
@@ -16,6 +17,7 @@ const subjects = [
 ]
 
 export default function Subjects() {
+  const handleCTA = useCTA()
   return (
     <section className={styles.section} id="conteudos">
       <div className={styles.container}>
@@ -28,7 +30,7 @@ export default function Subjects() {
 
         <div className={styles.grid}>
           {subjects.map((s, i) => (
-            <a key={i} href="#" className={styles.card}>
+            <a key={i} href="/cadastro" className={styles.card} onClick={handleCTA}>
               <div className={styles.cardIcon}>{s.icon}</div>
               <div className={styles.cardInfo}>
                 <span className={styles.cardName}>{s.name}</span>
@@ -42,7 +44,7 @@ export default function Subjects() {
         </div>
 
         <div className={styles.footer}>
-          <a href="#" className="btn-outline">Ver todas as disciplinas</a>
+          <a href="/cadastro" className="btn-outline" onClick={handleCTA}>Ver todas as disciplinas</a>
         </div>
       </div>
     </section>

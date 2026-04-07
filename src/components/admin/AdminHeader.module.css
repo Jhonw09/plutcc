@@ -1,0 +1,5 @@
+/* Accent line along the top of the admin header,
+   mirroring the sidebar's top border for visual cohesion. */
+.header {
+  border-top: 3px solid var(--accent);
+}

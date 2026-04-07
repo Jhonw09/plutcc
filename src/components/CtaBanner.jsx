@@ -1,6 +1,8 @@
+import { useCTA } from '../hooks/useCTA'
 import styles from './CtaBanner.module.css'
 
 export default function CtaBanner() {
+  const handleCTA = useCTA()
   return (
     <section className={styles.section} id="escolas">
       <div className={styles.container}>
@@ -27,8 +29,8 @@ export default function CtaBanner() {
               ))}
             </div>
             <div className={styles.actions}>
-              <a href="#" className={styles.btnPrimary}>Quero para minha escola</a>
-              <a href="#" className={styles.btnGhost}>Agendar demonstração</a>
+              <a href="/cadastro" className={styles.btnPrimary} onClick={handleCTA}>Quero para minha escola</a>
+              <a href="/cadastro" className={styles.btnGhost}   onClick={handleCTA}>Agendar demonstração</a>
             </div>
           </div>
 

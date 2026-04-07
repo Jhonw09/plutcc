@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useCTA } from '../hooks/useCTA'
 import styles from './VideoSection.module.css'
 
 const tabs = ['Videoaulas', 'Exercícios', 'Simulados', 'Relatórios']
@@ -35,6 +36,7 @@ const tabContent = {
 }
 
 export default function VideoSection() {
+  const handleCTA = useCTA()
   const [active, setActive] = useState('Videoaulas')
   const c = tabContent[active]
 
@@ -73,7 +75,7 @@ export default function VideoSection() {
                 </li>
               ))}
             </ul>
-            <a href="#" className="btn-primary" style={{ marginTop: 8 }}>Experimentar grátis</a>
+            <a href="/cadastro" className="btn-primary" style={{ marginTop: 8 }} onClick={handleCTA}>Experimentar grátis</a>
           </div>
 
           <div className={styles.contentRight}>

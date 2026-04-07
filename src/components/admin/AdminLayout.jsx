@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import TeacherSidebar  from '../teacher/TeacherSidebar'
-import DashboardHeader from '../dashboard/DashboardHeader'
+import AdminSidebar from './AdminSidebar'
+import AdminHeader  from './AdminHeader'
 import styles from '../dashboard/DashboardLayout.module.css'
 
 const SESSION_KEY = 'sc_dashboard_entered'
 
-export default function AdminLayout({ children, user }) {
+export default function AdminLayout({ children }) {
   const [activePage, setActivePage] = useState('home')
 
   const isFirstEntry = !sessionStorage.getItem(SESSION_KEY)
@@ -13,9 +13,9 @@ export default function AdminLayout({ children, user }) {
 
   return (
     <div className={`${styles.shell} ${isFirstEntry ? styles.shellEnter : ''} adminTheme`}>
-      <TeacherSidebar active={activePage} onNavigate={setActivePage} />
+      <AdminSidebar active={activePage} onNavigate={setActivePage} />
       <div className={styles.main}>
-        <DashboardHeader user={user} />
+        <AdminHeader />
         <div className={styles.content}>
           {children}
         </div>

@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useCTA } from '../hooks/useCTA'
 import styles from './Hero.module.css'
 
 export default function Hero() {
+  const handleCTA    = useCTA()
   const [videoOpen, setVideoOpen] = useState(false)
 
   return (
@@ -29,7 +31,7 @@ export default function Hero() {
           </p>
 
           <div className={styles.ctas}>
-            <a href="#" className={styles.ctaPrimary}>
+            <a href="/cadastro" className={styles.ctaPrimary} onClick={handleCTA}>
               {/* "Criar conta" is more concrete than "Começar agora" */}
               Criar conta grátis
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

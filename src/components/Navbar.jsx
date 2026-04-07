@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useCTA } from '../hooks/useCTA'
 import styles from './Navbar.module.css'
 
 const navItems = [
@@ -9,6 +10,7 @@ const navItems = [
 ]
 
 export default function Navbar({ onOpenAuth }) {
+  const handleCTA  = useCTA()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -39,7 +41,7 @@ export default function Navbar({ onOpenAuth }) {
         {/* Actions */}
         <div className={styles.actions}>
           <button onClick={() => onOpenAuth('login')} className={styles.loginBtn}>Entrar</button>
-          <button onClick={() => onOpenAuth('signup')} className={styles.registerBtn}>Cadastre-se grátis</button>
+          <button onClick={handleCTA} className={styles.registerBtn}>Cadastre-se grátis</button>
         </div>
 
         {/* Hamburger */}
@@ -58,7 +60,7 @@ export default function Navbar({ onOpenAuth }) {
           ))}
           <div className={styles.mobileDivider} />
           <button onClick={() => onOpenAuth('login')} className={styles.mobileLink}>Entrar</button>
-          <button onClick={() => onOpenAuth('signup')} className={`${styles.mobileLink} ${styles.mobileCta}`}>Cadastre-se grátis</button>
+          <button onClick={handleCTA} className={`${styles.mobileLink} ${styles.mobileCta}`}>Cadastre-se grátis</button>
         </div>
       )}
     </header>

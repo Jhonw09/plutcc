@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import Navbar    from '../components/Navbar'
 import Hero      from '../components/Hero'
 import Features  from '../components/Features'
@@ -20,12 +20,13 @@ const ROLE_ROUTES = {
   admin:   '/admin',
 }
 
-export default function LandingPage() {
+export default function LandingPage({ initialAuth = null }) {
   const { login, user } = useAuth()
+  const navigate = useNavigate()
 
   // All hooks must be declared before any conditional return (Rules of Hooks)
-  const [authOpen,     setAuthOpen]     = useState(false)
-  const [authMode,     setAuthMode]     = useState('login')
+  const [authOpen,     setAuthOpen]     = useState(() => initialAuth !== null)
+  const [authMode,     setAuthMode]     = useState(() => initialAuth ?? 'login')
   const [phase,        setPhase]        = useState('idle')
   const [overlayLabel, setOverlayLabel] = useState('Entrando...')
 
@@ -37,20 +38,23 @@ export default function LandingPage() {
     setAuthOpen(true)
   }
 
-  function handleAuthSuccess(mode, role = 'student') {
+  function closeAuth() {
+    setAuthOpen(false)
+    // Clean up the URL if the modal was opened via /cadastro
+    if (window.location.pathname === '/cadastro') {
+      navigate('/', { replace: true })
+    }
+  }
+
+  function handleAuthSuccess(mode, role = 'student', name = '') {
     setOverlayLabel(mode === 'login' ? 'Entrando...' : 'Criando seu painel...')
     setPhase('leaving')
-
-    // login() updates AuthContext — after the overlay delay, the user state
-    // will be set and the <Navigate> above will handle routing automatically.
-    // No navigate() call needed here — that was causing the double-navigation flicker.
     setTimeout(() => {
       login({
-        name:   role === 'teacher' ? 'Maria' : role === 'admin' ? 'Admin' : 'João',
-        avatar: role === 'teacher' ? 'M'     : role === 'admin' ? 'A'     : 'J',
+        name:   name || (role === 'teacher' ? 'Professor' : role === 'admin' ? 'Admin' : 'Aluno'),
+        avatar: (name || 'U').charAt(0).toUpperCase(),
         role,
       })
-      // phase will be cleaned up but the component unmounts via Navigate anyway
     }, 400)
   }
 
@@ -79,8 +83,8 @@ export default function LandingPage() {
       {authOpen && (
         <AuthForm
           initialMode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={(mode, role) => handleAuthSuccess(mode, role)}
+          onClose={closeAuth}
+          onSuccess={(mode, role, name) => handleAuthSuccess(mode, role, name)}
         />
       )}
     </>

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import styles from './Schools.module.css'
 
 const schools = [
@@ -7,6 +8,7 @@ const schools = [
 ]
 
 export default function Schools() {
+  const navigate = useNavigate()
   return (
     <section className={styles.section} id="schools">
       <div className={styles.container}>
@@ -32,8 +34,8 @@ export default function Schools() {
               <p>Leve a melhor plataforma de estudos para seus alunos. Fale com nossa equipe e saiba como implementar.</p>
             </div>
             <div className={styles.ctaActions}>
-              <a href="#" className={styles.btnCta}>Quero para minha escola</a>
-              <a href="#" className={styles.btnCtaOutline}>Saiba mais</a>
+              <a href="/cadastro" className={styles.btnCta}        onClick={e => { e.preventDefault(); navigate('/cadastro') }}>Quero para minha escola</a>
+              <a href="/cadastro" className={styles.btnCtaOutline} onClick={e => { e.preventDefault(); navigate('/cadastro') }}>Saiba mais</a>
             </div>
           </div>
         </div>

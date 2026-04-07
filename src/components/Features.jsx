@@ -1,3 +1,4 @@
+import { useCTA } from '../hooks/useCTA'
 import styles from './Features.module.css'
 
 const features = [
@@ -46,6 +47,7 @@ const features = [
 ]
 
 export default function Features() {
+  const handleCTA = useCTA()
   return (
     <section className={styles.section} id="alunos">
       <div className={styles.container}>
@@ -64,7 +66,7 @@ export default function Features() {
               </div>
               <h3 className={styles.cardTitle}>{f.title}</h3>
               <p className={styles.cardDesc}>{f.desc}</p>
-              <a href="#" className={styles.cardLink}>
+              <a href="/cadastro" className={styles.cardLink} onClick={handleCTA}>
                 Saiba mais
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </a>

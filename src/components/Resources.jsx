@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom'
 import { resources } from '../data'
 import styles from './Resources.module.css'
 
 export default function Resources() {
+  const navigate = useNavigate()
   return (
     <section className={styles.section} id="recursos">
       <div className={styles.container}>
@@ -34,10 +36,11 @@ export default function Resources() {
               </ul>
 
               <a
-                href="#"
+                href="/cadastro"
                 className={`${styles.cta} ${
                   r.ctaStyle === 'primary' ? styles.ctaPrimary : styles.ctaOutline
                 }`}
+                onClick={e => { e.preventDefault(); navigate('/cadastro') }}
               >
                 {r.cta}
               </a>

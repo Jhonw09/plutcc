@@ -13,7 +13,8 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<LandingPage key="landing" />} />
+      <Route path="/cadastro" element={<LandingPage key="cadastro" initialAuth="signup" />} />
 
       <Route path="/dashboard" element={
         <ProtectedRoute role="student">

@@ -4,6 +4,17 @@ import { InputField } from './ui/InputField'
 import { ToggleForm } from './ui/ToggleForm'
 import styles from './AuthForm.module.css'
 
+// ── Frontend-only role resolution ─────────────────────────────────────────
+// Replace this entire function with a backend response when auth is real.
+// The backend should return { role } in the login/signup response.
+const ACCESS_CODES = {
+  ADMIN123:   'admin',
+  TEACHER123: 'teacher',
+}
+function resolveRole(accessCode) {
+  return ACCESS_CODES[accessCode?.trim().toUpperCase()] ?? 'student'
+}
+
 // ── Validation helpers ──────────────────────────────────────────────────────
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -17,18 +28,15 @@ function validateLogin({ email, password }) {
   return errors
 }
 
-function validateSignup({ name, email, password, confirm }, role, teacherCode) {
+function validateSignup({ name, email, password, confirm }) {
   const errors = {}
-  if (!name)                      errors.name    = 'Informe seu nome.'
-  if (!email)                     errors.email   = 'Informe seu e-mail.'
-  else if (!EMAIL_RE.test(email)) errors.email   = 'E-mail inválido.'
+  if (!name)                      errors.name     = 'Informe seu nome.'
+  if (!email)                     errors.email    = 'Informe seu e-mail.'
+  else if (!EMAIL_RE.test(email)) errors.email    = 'E-mail inválido.'
   if (!password)                  errors.password = 'Informe uma senha.'
   else if (password.length < 6)   errors.password = 'Mínimo de 6 caracteres.'
   if (!confirm)                   errors.confirm  = 'Confirme sua senha.'
   else if (confirm !== password)  errors.confirm  = 'As senhas não coincidem.'
-  // Teacher-specific validation
-  if (role === 'teacher' && !teacherCode.trim())
-    errors.teacherCode = 'Informe o código de acesso.'
   return errors
 }
 
@@ -36,8 +44,7 @@ function validateSignup({ name, email, password, confirm }, role, teacherCode) {
 
 export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) {
   const [mode, setMode]       = useState(initialMode)
-  const [role, setRole]       = useState('student')  // 'student' | 'teacher'
-  const [fields, setFields]   = useState({ name: '', email: '', password: '', confirm: '', teacherCode: '' })
+  const [fields, setFields]   = useState({ name: '', email: '', password: '', confirm: '', accessCode: '' })
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
 
@@ -50,41 +57,34 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
 
   function toggleMode() {
     setMode(m => m === 'login' ? 'signup' : 'login')
-    setRole('student')
     setErrors({})
-    setFields({ name: '', email: '', password: '', confirm: '', teacherCode: '' })
+    setFields({ name: '', email: '', password: '', confirm: '', accessCode: '' })
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     const errs = mode === 'login'
       ? validateLogin(fields)
-      : validateSignup(fields, role, fields.teacherCode)
+      : validateSignup(fields)
 
     if (Object.keys(errs).length) { setErrors(errs); return }
+
+    // Resolve role from access code — swap resolveRole() for backend response later
+    const role = resolveRole(fields.accessCode)
 
     setLoading(true)
     try {
       // ── Backend integration point ──────────────────────────────────────
-      // Replace with: await api.post('/auth/login', payload)
-      //               await api.post('/auth/signup', payload)
+      // Replace with: const { role } = await api.post('/auth/login', payload)
+      //               const { role } = await api.post('/auth/signup', payload)
       if (mode === 'login') {
-        const payload = { email: fields.email, password: fields.password, role }
-        console.log('LOGIN →', payload)
+        console.log('LOGIN →', { email: fields.email, password: fields.password, role })
       } else {
-        const payload = {
-          name:        fields.name,
-          email:       fields.email,
-          password:    fields.password,
-          role,
-          // Only sent when role === 'teacher'; backend should ignore for students
-          ...(role === 'teacher' && { teacherCode: fields.teacherCode }),
-        }
-        console.log('SIGNUP →', payload)
+        console.log('SIGNUP →', { name: fields.name, email: fields.email, password: fields.password, role })
       }
       // Simulated delay — replace with real await api.post(...) later
       await new Promise(r => setTimeout(r, 900))
-      if (onSuccess) onSuccess(mode, role)
+      if (onSuccess) onSuccess(mode, role, fields.name)
     } catch (err) {
       setErrors({ form: 'Algo deu errado. Tente novamente.' })
     } finally {
@@ -114,22 +114,7 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
         <p className={styles.sub}>{isLogin ? 'Entre para continuar estudando.' : 'É grátis e leva menos de 1 minuto.'}</p>
 
         {/* Role selector — both login and signup */}
-        <div className={styles.roleSelector} role="group" aria-label="Tipo de conta">
-          <button
-            type="button"
-            className={`${styles.roleBtn} ${role === 'student' ? styles.roleBtnActive : ''}`}
-            onClick={() => { setRole('student'); setErrors(e => ({ ...e, teacherCode: undefined })) }}
-          >
-            🎓 Aluno
-          </button>
-          <button
-            type="button"
-            className={`${styles.roleBtn} ${role === 'teacher' ? styles.roleBtnActive : ''}`}
-            onClick={() => setRole('teacher')}
-          >
-            🏫 Professor
-          </button>
-        </div>
+        {/* REMOVED: role is now derived from the access code field below */}
 
         {/* Global form error (e.g. network failure) */}
         {errors.form && <p className={styles.formError} role="alert">{errors.form}</p>}
@@ -167,20 +152,13 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
             />
           )}
 
-          {/* Teacher-only field — animated entrance via CSS */}
-          {!isLogin && role === 'teacher' && (
-            <div className={styles.teacherBlock}>
-              <InputField
-                id="teacherCode" name="teacherCode" label="Código de acesso do professor"
-                type="text" placeholder="Digite o código de acesso"
-                value={fields.teacherCode} onChange={handleChange}
-                error={errors.teacherCode} autoComplete="off"
-              />
-              <p className={styles.teacherHint}>
-                ⚠️ O cadastro como professor pode exigir validação pela instituição.
-              </p>
-            </div>
-          )}
+          {/* Optional access code — determines role (frontend-only until backend is ready) */}
+          <InputField
+            id="accessCode" name="accessCode" label="Código de acesso (opcional)"
+            type="text" placeholder="Deixe em branco para entrar como aluno"
+            value={fields.accessCode} onChange={handleChange}
+            error={errors.accessCode} autoComplete="off"
+          />
 
           <Button variant="primary" type="submit" disabled={loading} className={styles.submitBtn}>
             {loading

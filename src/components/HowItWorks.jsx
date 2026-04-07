@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import styles from './HowItWorks.module.css'
 
 const steps = [
@@ -28,6 +29,7 @@ const steps = [
 ]
 
 export default function HowItWorks() {
+  const navigate = useNavigate()
   return (
     <section className={styles.section} id="how">
       <div className={styles.container}>
@@ -50,7 +52,7 @@ export default function HowItWorks() {
         </div>
 
         <div className={styles.cta}>
-          <a href="#" className={styles.btnCta}>Começar agora — é grátis</a>
+          <a href="/cadastro" className={styles.btnCta} onClick={e => { e.preventDefault(); navigate('/cadastro') }}>Começar agora — é grátis</a>
         </div>
       </div>
     </section>
