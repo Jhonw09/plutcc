@@ -5,7 +5,7 @@ const testimonials = [
   {
     name: 'Ana Beatriz Santos',
     role: 'Aprovada em Medicina — USP',
-    text: 'O Plurall foi fundamental na minha aprovação. As videoaulas são incríveis e os simulados me prepararam muito bem. Estudei pelo app no ônibus, em casa, em todo lugar.',
+    text: 'O StudyConnect foi fundamental na minha aprovação. As videoaulas são incríveis e os simulados me prepararam muito bem. Estudei pelo app no ônibus, em casa, em todo lugar.',
     avatar: 'A',
     avatarBg: 'rgba(108, 92, 231, 0.15)',
     avatarColor: '#A78BFA',
@@ -32,7 +32,7 @@ const testimonials = [
   {
     name: 'Pedro Henrique Lima',
     role: 'Aprovado em Engenharia — FUVEST',
-    text: 'Recomendo para todos! A integração com a escola é perfeita. Meu professor enviava as tarefas pelo Plurall e eu conseguia acompanhar tudo em um só lugar.',
+    text: 'Recomendo para todos! A integração com a escola é perfeita. Meu professor enviava as tarefas pelo StudyConnect e eu conseguia acompanhar tudo em um só lugar.',
     avatar: 'P',
     avatarBg: 'rgba(250, 204, 21, 0.15)',
     avatarColor: '#FDE047',
@@ -48,7 +48,7 @@ export default function Testimonials() {
       <div className={styles.container}>
         <div className={styles.header}>
           <span className="section-tag blue">Depoimentos</span>
-          <h2 className="section-title">Quem usa o Plurall, aprova</h2>
+          <h2 className="section-title">Quem usa o StudyConnect, aprova</h2>
           <p className="section-sub">Veja o que nossos alunos dizem sobre a plataforma que transformou seus estudos.</p>
         </div>
 

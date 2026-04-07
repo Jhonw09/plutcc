@@ -84,7 +84,7 @@ export default function VideoSection() {
                   <span style={{background:'#555555'}} />
                   <span style={{background:'#6C5CE7'}} />
                 </div>
-                <div className={styles.mockupUrl}>plurall.net/{active.toLowerCase()}</div>
+                <div className={styles.mockupUrl}>studyconnect.net/{active.toLowerCase()}</div>
               </div>
               <div className={styles.mockupBody}>
                 <div className={styles.mockupCenter}>

@@ -8,7 +8,7 @@ export default function CtaBanner() {
           <div className={styles.left}>
             <span className={styles.tag}>Para escolas</span>
             <h2 className={styles.title}>
-              Leve o Plurall para<br />sua escola
+              Leve o StudyConnect para<br />sua escola
             </h2>
             <p className={styles.desc}>
               Mais de 20 mil escolas já usam o StudyConnect para conectar alunos e professores. Implemente em dias, não em meses.

@@ -12,7 +12,7 @@ export default function Schools() {
       <div className={styles.container}>
         <div className={styles.header}>
           <span className={styles.tag}>Parceiros</span>
-          <h2 className={styles.title}>Mais de 20 mil escolas confiam no Plurall</h2>
+          <h2 className={styles.title}>Mais de 20 mil escolas confiam no StudyConnect</h2>
           <p className={styles.sub}>Grandes redes de ensino e escolas independentes de todo o Brasil.</p>
         </div>
 
@@ -28,7 +28,7 @@ export default function Schools() {
         <div className={styles.cta}>
           <div className={styles.ctaBox}>
             <div className={styles.ctaContent}>
-              <h3>Sua escola ainda não usa o Plurall?</h3>
+              <h3>Sua escola ainda não usa o StudyConnect?</h3>
               <p>Leve a melhor plataforma de estudos para seus alunos. Fale com nossa equipe e saiba como implementar.</p>
             </div>
             <div className={styles.ctaActions}>
