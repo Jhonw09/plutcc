@@ -8,7 +8,7 @@ const navItems = [
   { label: 'Blog', href: '#blog' },
 ]
 
-export default function Navbar() {
+export default function Navbar({ onOpenAuth }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -38,8 +38,8 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className={styles.actions}>
-          <a href="#" className={styles.loginBtn}>Entrar</a>
-          <a href="#" className={styles.registerBtn}>Cadastre-se grátis</a>
+          <button onClick={() => onOpenAuth('login')} className={styles.loginBtn}>Entrar</button>
+          <button onClick={() => onOpenAuth('signup')} className={styles.registerBtn}>Cadastre-se grátis</button>
         </div>
 
         {/* Hamburger */}
@@ -57,8 +57,8 @@ export default function Navbar() {
             <a key={n.label} href={n.href} className={styles.mobileLink} onClick={() => setOpen(false)}>{n.label}</a>
           ))}
           <div className={styles.mobileDivider} />
-          <a href="#" className={styles.mobileLink}>Entrar</a>
-          <a href="#" className={`${styles.mobileLink} ${styles.mobileCta}`}>Cadastre-se grátis</a>
+          <button onClick={() => onOpenAuth('login')} className={styles.mobileLink}>Entrar</button>
+          <button onClick={() => onOpenAuth('signup')} className={`${styles.mobileLink} ${styles.mobileCta}`}>Cadastre-se grátis</button>
         </div>
       )}
     </header>

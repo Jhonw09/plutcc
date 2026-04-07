@@ -16,9 +16,9 @@ export default function Footer() {
           {/* Brand */}
           <div className={styles.brand}>
             <a href="/" className={styles.logo}>
-              <svg width="110" height="30" viewBox="0 0 110 30" fill="none">
-                <text x="0" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#FFFFFF">plu</text>
-                <text x="43" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#6C5CE7">rall</text>
+              <svg width="210" height="30" viewBox="0 0 210 30" fill="none">
+                <text x="0" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#FFFFFF">Study</text>
+                <text x="80" y="24" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="26" fill="#6C5CE7">Connect</text>
               </svg>
             </a>
             <p className={styles.tagline}>

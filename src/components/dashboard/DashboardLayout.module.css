@@ -1,0 +1,34 @@
+/* Full-viewport shell: sidebar left, everything else right */
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--background);
+  /* Fade in when dashboard mounts after the transition overlay */
+  animation: dashboardEnter 400ms ease forwards;
+}
+
+@keyframes dashboardEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Right side: header stacked above scrollable content */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* prevents flex blowout */
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+/* Collapse sidebar on small screens */
+@media (max-width: 768px) {
+  .shell { flex-direction: column; }
+  .content { padding: 20px 16px; }
+}

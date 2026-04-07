@@ -1,0 +1,55 @@
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.item:last-child { border-bottom: none; }
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1.5px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.name  { font-size: 13px; font-weight: 700; color: var(--text); }
+.class { font-size: 11px; color: var(--text-muted); }
+
+.status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.statusActive  { background: var(--success-bg); color: var(--success); }
+.statusBehind  { background: rgba(251,191,36,.12); color: #fbbf24; }
+.statusAtRisk  { background: var(--danger-bg);  color: var(--danger);  }
+
+.track {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.fill { height: 100%; border-radius: 2px; transition: width .4s ease; }
+
+.pct { font-size: 12px; font-weight: 700; flex-shrink: 0; }

@@ -1,0 +1,136 @@
+/* ── Alert banner ────────────────────────────────────────────────────────── */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  animation: slideIn 240ms ease forwards;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.alertIcon { font-size: 18px; flex-shrink: 0; }
+
+.alertText {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.alertText strong { color: var(--danger); }
+
+.alertBtn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--danger);
+  background: none;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.alertBtn:hover { background: var(--danger-bg); }
+
+/* ── Welcome ─────────────────────────────────────────────────────────────── */
+.welcome {
+  margin-bottom: 24px;
+}
+
+.welcomeTitle {
+  font-size: clamp(20px, 2.5vw, 26px);
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.welcomeSub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.welcomeSub strong { color: var(--text); }
+
+/* ── Stats grid ──────────────────────────────────────────────────────────── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* ── Generic section card ────────────────────────────────────────────────── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+/* When inside sectionHeader, title has no bottom margin */
+.sectionHeader .sectionTitle { margin-bottom: 0; }
+
+.sectionLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color .15s;
+  margin-bottom: 16px;
+}
+.sectionLink:hover { color: var(--accent-hover); }
+
+/* ── Quick actions grid ──────────────────────────────────────────────────── */
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+/* ── Two-column row ──────────────────────────────────────────────────────── */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .statsGrid   { grid-template-columns: repeat(2, 1fr); }
+  .actionsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .row         { grid-template-columns: 1fr; }
+  .statsGrid   { grid-template-columns: repeat(2, 1fr); }
+  .actionsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .statsGrid   { grid-template-columns: 1fr; }
+  .actionsGrid { grid-template-columns: 1fr; }
+}

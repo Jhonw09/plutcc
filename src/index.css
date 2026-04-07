@@ -46,3 +46,26 @@ a      { text-decoration: none; color: inherit; }
 button { cursor: pointer; border: none; background: none; font-family: var(--font); }
 ul     { list-style: none; }
 img    { display: block; max-width: 100%; }
+
+/* ── Chrome autofill override ───────────────────────────────────────────────
+   Chrome forces a white background on autofilled inputs via an internal rule
+   that cannot be overridden with background-color (any value you set loses).
+   The only reliable fix is a large inset box-shadow that visually covers it,
+   plus -webkit-text-fill-color which Chrome does respect over its own color.
+── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  /* Paint over Chrome's white background with our surface color */
+  -webkit-box-shadow: 0 0 0 9999px var(--surface-2) inset !important;
+          box-shadow: 0 0 0 9999px var(--surface-2) inset !important;
+  /* Chrome ignores `color` on autofill — must use this property */
+  -webkit-text-fill-color: var(--text) !important;
+  /* Keep the caret visible and on-brand */
+  caret-color: var(--accent);
+  /* Preserve the existing border so the input doesn't look different */
+  border-color: var(--border) !important;
+  /* Instant transition — prevents the white flash on page load autofill */
+  transition: background-color 0s 99999s;
+}

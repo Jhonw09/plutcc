@@ -1,0 +1,92 @@
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 12px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+}
+
+.logo {
+  padding: 4px 12px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+/* Section label above nav group */
+.navLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 12px;
+  margin-bottom: 6px;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.navItem:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* Active state: accent background + white text */
+.navItemActive {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  font-weight: 700;
+}
+
+/* Left accent bar on active item */
+.activeBar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+
+.navIcon { font-size: 17px; flex-shrink: 0; }
+.navText  { flex: 1; }
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}

@@ -77,47 +77,37 @@ export default function VideoSection() {
           </div>
 
           <div className={styles.contentRight}>
-            {active === 'Videoaulas' ? (
-              <div className={styles.videoWrap}>
-                <video
-                  src="/MicrosoftTeams-video.mp4"
-                  controls
-                  className={styles.video}
-                />
-              </div>
-            ) : (
-              <div className={styles.mockup} style={{ borderColor: 'var(--border)' }}>
-                <div className={styles.mockupBar}>
-                  <div className={styles.mockupDots}>
-                    <span style={{background:'#3d3d3d'}} />
-                    <span style={{background:'#555555'}} />
-                    <span style={{background:'#6C5CE7'}} />
-                  </div>
-                  <div className={styles.mockupUrl}>studyconnect.net/{active.toLowerCase()}</div>
+            <div className={styles.mockup} style={{ borderColor: 'var(--border)' }}>
+              <div className={styles.mockupBar}>
+                <div className={styles.mockupDots}>
+                  <span style={{background:'#3d3d3d'}} />
+                  <span style={{background:'#555555'}} />
+                  <span style={{background:'#6C5CE7'}} />
                 </div>
-                <div className={styles.mockupBody}>
-                  <div className={styles.mockupCenter}>
-                    <span className={styles.mockupBigIcon}>{c.icon}</span>
-                    <div className={styles.mockupLines}>
-                      <div className={styles.mockupLine} style={{width:'80%'}} />
-                      <div className={styles.mockupLine} style={{width:'60%'}} />
-                      <div className={styles.mockupLine} style={{width:'70%'}} />
-                    </div>
-                    <div className={styles.mockupCards}>
-                      {[1,2,3].map(n => (
-                        <div key={n} className={styles.mockupCard}>
-                          <div className={styles.mockupCardIcon} style={{background: c.color}}>{c.icon}</div>
-                          <div className={styles.mockupCardLines}>
-                            <div className={styles.mockupLine} style={{width:'90%', height:8}} />
-                            <div className={styles.mockupLine} style={{width:'60%', height:6}} />
-                          </div>
+                <div className={styles.mockupUrl}>studyconnect.net/{active.toLowerCase()}</div>
+              </div>
+              <div className={styles.mockupBody}>
+                <div className={styles.mockupCenter}>
+                  <span className={styles.mockupBigIcon}>{c.icon}</span>
+                  <div className={styles.mockupLines}>
+                    <div className={styles.mockupLine} style={{width:'80%'}} />
+                    <div className={styles.mockupLine} style={{width:'60%'}} />
+                    <div className={styles.mockupLine} style={{width:'70%'}} />
+                  </div>
+                  <div className={styles.mockupCards}>
+                    {[1,2,3].map(n => (
+                      <div key={n} className={styles.mockupCard}>
+                        <div className={styles.mockupCardIcon} style={{background: c.color}}>{c.icon}</div>
+                        <div className={styles.mockupCardLines}>
+                          <div className={styles.mockupLine} style={{width:'90%', height:8}} />
+                          <div className={styles.mockupLine} style={{width:'60%', height:6}} />
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
