@@ -1,4 +1,4 @@
-export const API_BASE = 'http://localhost:8080/api/v1'
+export const API_BASE = 'https://studyconnect-8bfr.onrender.com/api/v1'
 
 export const ENDPOINTS = {
   login:      `${API_BASE}/auth/login`,
