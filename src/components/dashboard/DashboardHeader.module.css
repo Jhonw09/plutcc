@@ -94,23 +94,6 @@
   border: 1.5px solid var(--surface);
 }
 
-/* Avatar circle */
-.avatar {
-  width: 38px;
-  height: 38px;
-  background: var(--accent-soft);
-  border: 1.5px solid var(--accent-border);
-  border-radius: 50%;
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
 @media (max-width: 768px) {
   .header { padding: 16px 20px; }
   .searchInput { width: 120px; }

@@ -3,8 +3,12 @@
   display: flex;
   min-height: 100vh;
   background: var(--background);
-  /* Fade in when dashboard mounts after the transition overlay */
-  animation: dashboardEnter 400ms ease forwards;
+  /* Default: fully visible — animation class is added conditionally via JS */
+}
+
+/* Applied only on first entry (controlled via sessionStorage in DashboardLayout) */
+.shellEnter {
+  animation: dashboardEnter 350ms ease forwards;
 }
 
 @keyframes dashboardEnter {

@@ -69,3 +69,32 @@ input:-webkit-autofill:active {
   /* Instant transition — prevents the white flash on page load autofill */
   transition: background-color 0s 99999s;
 }
+
+/* ── Admin / Teacher theme variant ─────────────────────────────────────────
+   Applied via class="adminTheme" on the layout root.
+   Overrides only the tokens that need to shift — everything else (accent,
+   typography, spacing, semantic colors) inherits from :root unchanged.
+   Goal: "full black" premium feel without breaking the design system.
+── */
+.adminTheme {
+  /* Deeper blacks — each step is ~6-8% darker than the base theme */
+  --background: #000000;
+  --surface:    #0A0A0A;   /* cards sit on near-pure black */
+  --surface-2:  #111111;
+  --surface-3:  #181818;
+
+  /* Crisper borders — slightly more visible on pure black */
+  --border:       rgba(255, 255, 255, 0.10);
+  --border-hover: rgba(108, 92, 231, 0.50);
+
+  /* Accent shifted cooler/brighter — feels more "tech" on pure black */
+  --accent:        #7C6FF0;
+  --accent-hover:  #6C5CE7;
+  --accent-soft:   rgba(124, 111, 240, 0.12);
+  --accent-glow:   rgba(124, 111, 240, 0.28);
+  --accent-border: rgba(124, 111, 240, 0.30);
+
+  /* Slightly warmer muted text — pure black needs a touch more contrast */
+  --text-secondary: #B0B0BA;
+  --text-muted:     #606068;
+}
