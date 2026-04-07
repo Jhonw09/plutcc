@@ -193,4 +193,36 @@
   cursor: pointer;
   transition: background .15s;
 }
-.saveBtn:hover { background: var(--accent-hover); }
+.saveBtn:hover  { background: var(--accent-hover); }
+.saveBtn:disabled,
+.cancelBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Delete confirmation ── */
+.deleteWarning {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.deleteBtn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--danger);
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+.deleteBtn:hover     { background: #dc2626; }
+.deleteBtn:disabled  { opacity: .5; cursor: not-allowed; }
+
+/* ── Field hint (password optional note) ── */
+.fieldHint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: -2px;
+}

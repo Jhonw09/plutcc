@@ -115,6 +115,10 @@
   .brand { grid-column: 1 / -1; }
 }
 @media (max-width: 640px) {
-  .top { grid-template-columns: 1fr 1fr; }
+  .top    { grid-template-columns: 1fr 1fr; }
+  .footer { padding: 48px 0 0; }
   .bottom { flex-direction: column; text-align: center; }
+}
+@media (max-width: 400px) {
+  .top { grid-template-columns: 1fr; }
 }

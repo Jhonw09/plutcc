@@ -349,6 +349,17 @@
   .floatCard { right: -60px; }
 }
 
+@media (max-width: 600px) {
+  .hero      { padding: 60px 0 70px; }
+  .container { gap: 40px; padding: 0 16px; }
+  .title     { letter-spacing: -.5px; }
+  .desc      { font-size: 15px; margin-bottom: 32px; }
+  .ctas      { flex-direction: column; align-items: stretch; }
+  .ctaPrimary { justify-content: center; }
+  .floatCard  { display: none; }
+  .phone      { width: 260px; }
+}
+
 /* ── Video Modal ── */
 .modalOverlay {
   position: fixed;

@@ -2,23 +2,29 @@ import { useState } from 'react'
 import DashboardSidebar from './DashboardSidebar'
 import DashboardHeader  from './DashboardHeader'
 import styles from './DashboardLayout.module.css'
+import sidebarStyles from './DashboardSidebar.module.css'
 
 const SESSION_KEY = 'sc_dashboard_entered'
 
 export default function DashboardLayout({ children, user }) {
-  const [activePage, setActivePage] = useState('home')
+  const [activePage,   setActivePage]   = useState('home')
+  const [sidebarOpen,  setSidebarOpen]  = useState(false)
 
-  // Play the entry animation only the first time per browser session.
-  // sessionStorage is cleared when the tab closes, so the animation
-  // plays again on a fresh session but never on F5 or back-navigation.
   const isFirstEntry = !sessionStorage.getItem(SESSION_KEY)
   if (isFirstEntry) sessionStorage.setItem(SESSION_KEY, '1')
 
-  const shellClass = `${styles.shell} ${isFirstEntry ? styles.shellEnter : ''}`
+  function closeSidebar() { setSidebarOpen(false) }
 
   return (
-    <div className={shellClass}>
-      <DashboardSidebar active={activePage} onNavigate={setActivePage} />
+    <div className={`${styles.shell} ${isFirstEntry ? styles.shellEnter : ''}`}>
+
+      {/* Dim overlay — only rendered (and visible) on mobile when sidebar is open */}
+      {sidebarOpen && <div className={styles.sidebarOverlay} onClick={closeSidebar} />}
+
+      {/* Sidebar receives open class on mobile */}
+      <div className={sidebarOpen ? sidebarStyles.sidebarOpen : ''}>
+        <DashboardSidebar active={activePage} onNavigate={(id) => { setActivePage(id); closeSidebar() }} />
+      </div>
 
       <div className={styles.main}>
         <DashboardHeader user={user} />
@@ -26,6 +32,16 @@ export default function DashboardLayout({ children, user }) {
           {children}
         </div>
       </div>
+
+      {/* Floating hamburger — only visible on mobile via CSS */}
+      <button
+        className={styles.sidebarToggle}
+        onClick={() => setSidebarOpen(o => !o)}
+        aria-label={sidebarOpen ? 'Fechar menu' : 'Abrir menu'}
+      >
+        {sidebarOpen ? '✕' : '☰'}
+      </button>
+
     </div>
   )
 }

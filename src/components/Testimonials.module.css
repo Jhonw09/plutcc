@@ -130,5 +130,8 @@
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { display: none; }
-  .dots { display: flex; }
+  .dots    { display: flex; }
+  .section { padding: 56px 0; }
+  .card    { padding: 28px 24px; }
+  .quote   { font-size: 16px; }
 }

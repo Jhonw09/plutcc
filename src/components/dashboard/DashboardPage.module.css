@@ -275,3 +275,9 @@
   .row { grid-template-columns: 1fr; }
   .bannerDeco { display: none; }
 }
+
+@media (max-width: 600px) {
+  .banner       { padding: 24px 20px; }
+  .barChart     { height: 90px; }
+  .activityText { font-size: 12px; }
+}

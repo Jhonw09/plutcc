@@ -33,7 +33,7 @@ function validateSignup({ name, email, password, confirm }) {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) {
-  const { login } = useAuth()
+  const { login, signup } = useAuth()
 
   const [mode, setMode]       = useState(initialMode)
   const [fields, setFields]   = useState({ name: '', email: '', password: '', confirm: '' })
@@ -67,10 +67,9 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
         // It throws a localised error string on failure.
         await login({ email: fields.email, senha: fields.password })
       } else {
-        // ── Signup integration point ────────────────────────────────────
-        // Replace with: await api.post('/auth/signup', { ... })
-        // then call login() or store the returned token/user directly.
-        throw new Error('Cadastro ainda não implementado no backend.')
+        // signup() creates the account then calls login() internally,
+        // so the user is authenticated in a single step.
+        await signup({ nome: fields.name, email: fields.email, senha: fields.password })
       }
       if (onSuccess) onSuccess(mode)
     } catch (err) {

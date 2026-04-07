@@ -109,8 +109,15 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
+  .section { padding: 64px 0; }
   .grid { grid-template-columns: repeat(2, 1fr); }
   .stat { border-right: none; border-bottom: 1px solid var(--border); }
   .stat:nth-child(3),
+  .stat:last-child { border-bottom: none; }
+}
+@media (max-width: 480px) {
+  .section { padding: 48px 0; }
+  .grid { grid-template-columns: 1fr; }
+  .stat { border-bottom: 1px solid var(--border); }
   .stat:last-child { border-bottom: none; }
 }
