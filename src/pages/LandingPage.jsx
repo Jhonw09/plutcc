@@ -21,7 +21,7 @@ const ROLE_ROUTES = {
 }
 
 export default function LandingPage({ initialAuth = null }) {
-  const { login, user } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   // All hooks must be declared before any conditional return (Rules of Hooks)
@@ -46,16 +46,12 @@ export default function LandingPage({ initialAuth = null }) {
     }
   }
 
-  function handleAuthSuccess(mode, role = 'student', name = '') {
+  function handleAuthSuccess(mode) {
     setOverlayLabel(mode === 'login' ? 'Entrando...' : 'Criando seu painel...')
     setPhase('leaving')
-    setTimeout(() => {
-      login({
-        name:   name || (role === 'teacher' ? 'Professor' : role === 'admin' ? 'Admin' : 'Aluno'),
-        avatar: (name || 'U').charAt(0).toUpperCase(),
-        role,
-      })
-    }, 400)
+    // The user is already in context at this point (login() resolved).
+    // The Navigate redirect at the top of this component fires as soon
+    // as React re-renders with the new user, so no manual navigate() needed.
   }
 
   return (
@@ -84,7 +80,7 @@ export default function LandingPage({ initialAuth = null }) {
         <AuthForm
           initialMode={authMode}
           onClose={closeAuth}
-          onSuccess={(mode, role, name) => handleAuthSuccess(mode, role, name)}
+          onSuccess={(mode) => handleAuthSuccess(mode)}
         />
       )}
     </>
