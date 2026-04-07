@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import styles from './Hero.module.css'
 
 export default function Hero() {
+  const [videoOpen, setVideoOpen] = useState(false)
+
   return (
     <section className={styles.hero}>
       <div className={styles.container}>
@@ -33,14 +36,14 @@ export default function Hero() {
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </a>
-            <a href="#" className={styles.ctaSecondary}>
+            <button className={styles.ctaSecondary} onClick={() => setVideoOpen(true)}>
               <span className={styles.playBtn}>
                 <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
                   <path d="M1 1l8 5-8 5V1z" fill="currentColor"/>
                 </svg>
               </span>
               Ver como funciona
-            </a>
+            </button>
           </div>
 
         </div>
@@ -158,6 +161,20 @@ export default function Hero() {
         </div>
 
       </div>
+
+      {videoOpen && (
+        <div className={styles.modalOverlay} onClick={() => setVideoOpen(false)}>
+          <div className={styles.modalBox} onClick={e => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setVideoOpen(false)}>✕</button>
+            <video
+              src="/MicrosoftTeams-video.mp4"
+              controls
+              autoPlay
+              className={styles.modalVideo}
+            />
+          </div>
+        </div>
+      )}
     </section>
   )
 }
