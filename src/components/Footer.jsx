@@ -60,7 +60,7 @@ export default function Footer() {
         </div>
 
         <div className={styles.bottom}>
-          <p>© {new Date().getFullYear()} Plurall Educação. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} StudyConnect Educação. Todos os direitos reservados.</p>
           <div className={styles.bottomLinks}>
             <a href="#">Termos de Uso</a>
             <a href="#">Privacidade</a>

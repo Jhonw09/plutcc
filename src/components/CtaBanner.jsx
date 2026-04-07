@@ -11,7 +11,7 @@ export default function CtaBanner() {
               Leve o Plurall para<br />sua escola
             </h2>
             <p className={styles.desc}>
-              Mais de 20 mil escolas já usam o Plurall para conectar alunos e professores. Implemente em dias, não em meses.
+              Mais de 20 mil escolas já usam o StudyConnect para conectar alunos e professores. Implemente em dias, não em meses.
             </p>
             <div className={styles.items}>
               {[
