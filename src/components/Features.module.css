@@ -30,7 +30,8 @@
   gap: 12px;
 }
 .card:hover {
-  box-shadow: 0 12px 40px var(--accent-glow);
+  /* neutral shadow instead of accent-glow — purple glow reads as neon/electric */
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   transform: translateY(-4px);
   border-color: var(--accent-border);
 }

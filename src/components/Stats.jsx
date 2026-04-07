@@ -71,7 +71,8 @@ export default function Stats() {
         <div className={styles.divider} />
 
         {/* Logos row */}
-        <p className={styles.logosLabel}>Confiado pelas maiores redes de ensino do Brasil</p>
+        {/* Plain language — "confiam" is warmer than "confiado pelas maiores redes" */}
+        <p className={styles.logosLabel}>Escolas e redes de ensino que já usam a plataforma</p>
         <div className={styles.track}>
           <div className={styles.logos}>
             {[...logos, ...logos].map((l, i) => (

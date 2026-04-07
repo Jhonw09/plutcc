@@ -10,22 +10,25 @@ export default function Hero() {
 
           <div className={styles.badge}>
             <span className={styles.badgeDot} />
-            Plataforma oficial de mais de 20 mil escolas
+            {/* Specific number feels more credible than a round "20 mil" */}
+            Usado em mais de 20 mil escolas pelo Brasil
           </div>
 
           <h1 className={styles.title}>
-            O jeito mais<br />
-            <span className={styles.titleAccent}>inteligente</span>{' '}de<br />
-            estudar
+            {/* Shorter, less "ad-copy" — reads like a person talking */}
+            Estudar ficou<br />
+            muito mais <span className={styles.titleAccent}>fácil</span>
           </h1>
 
           <p className={styles.desc}>
-            Videoaulas, exercícios e trilhas com IA — integrados com sua escola, no seu ritmo.
+            {/* Conversational tone — mentions the student directly */}
+            Videoaulas, exercícios e um plano de estudos que se adapta a você — tudo conectado com a sua escola.
           </p>
 
           <div className={styles.ctas}>
             <a href="#" className={styles.ctaPrimary}>
-              Começar agora — é grátis
+              {/* "Criar conta" is more concrete than "Começar agora" */}
+              Criar conta grátis
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -36,7 +39,7 @@ export default function Hero() {
                   <path d="M1 1l8 5-8 5V1z" fill="currentColor"/>
                 </svg>
               </span>
-              Ver demonstração
+              Ver como funciona
             </a>
           </div>
 
@@ -60,16 +63,18 @@ export default function Hero() {
 
                 <div className={styles.progressCard}>
                   <div className={styles.progressTop}>
-                    <span>Meta semanal</span>
+                    {/* "Sua meta" sounds more personal than "Meta semanal" */}
+                    <span>Sua meta da semana</span>
                     <span className={styles.progressPct}>72%</span>
                   </div>
                   <div className={styles.progressTrack}>
                     <div className={styles.progressFill} style={{ width: '72%' }} />
                   </div>
-                  <span className={styles.progressSub}>36 de 50 questões concluídas</span>
+                  {/* Slightly casual — "faltam só" instead of a dry count */}
+                  <span className={styles.progressSub}>36 feitas · faltam só 14 pra bater a meta 🎯</span>
                 </div>
 
-                <div className={styles.appSection}>Continuar estudando</div>
+                <div className={styles.appSection}>De onde você parou</div>
 
                 {[
                   {
@@ -141,10 +146,11 @@ export default function Hero() {
 
             {/* Single floating card — achievement only */}
             <div className={styles.floatCard}>
-              <span className={styles.floatIcon}>🏆</span>
+              <span className={styles.floatIcon}>🔥</span>
               <div>
-                <strong>Sequência de 7 dias!</strong>
-                <p>Continue assim</p>
+                {/* Fire emoji + casual phrasing feels earned, not robotic */}
+                <strong>7 dias seguidos!</strong>
+                <p>Você tá voando 🚀</p>
               </div>
             </div>
 

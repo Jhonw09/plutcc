@@ -3,38 +3,44 @@ import styles from './Features.module.css'
 const features = [
   {
     icon: '🎬',
-    title: 'Videoaulas com os melhores professores',
-    desc: 'Mais de 10.000 videoaulas gravadas pelos melhores professores do Brasil, organizadas por disciplina, série e assunto.',
+    // Specific number (10 mil) + "do Brasil" grounds it; avoids "melhores professores" superlative
+    title: 'Videoaulas que realmente explicam',
+    desc: 'São mais de 10 mil aulas gravadas por professores experientes, organizadas por disciplina e assunto — sem enrolação.',
     color: 'var(--surface-3)',
   },
   {
     icon: '📝',
-    title: 'Exercícios e banco de questões',
-    desc: 'Mais de 500 mil questões comentadas, incluindo provas do ENEM, FUVEST, UNICAMP e principais vestibulares.',
+    // "Treine" is active voice; listing ENEM/FUVEST adds real credibility
+    title: 'Exercícios pra treinar de verdade',
+    desc: 'Mais de 500 mil questões comentadas, com provas do ENEM, FUVEST, UNICAMP e outros vestibulares. Dá pra filtrar por assunto e dificuldade.',
     color: 'var(--surface-3)',
   },
   {
     icon: '🤖',
-    title: 'Trilhas personalizadas com IA',
-    desc: 'Nossa inteligência artificial analisa seu desempenho e cria um plano de estudos personalizado para você evoluir mais rápido.',
+    // Avoids "nossa inteligência artificial" corporate speak
+    title: 'Um plano de estudos só seu',
+    desc: 'A plataforma acompanha seu desempenho e sugere o que estudar a seguir. Nada de lista genérica — é baseado no que você já sabe.',
     color: 'var(--surface-3)',
   },
   {
     icon: '📊',
-    title: 'Relatórios de desempenho',
-    desc: 'Acompanhe sua evolução em tempo real com gráficos detalhados. Saiba exatamente onde você precisa melhorar.',
+    // "Veja onde travar" is direct and honest
+    title: 'Veja onde você tá travando',
+    desc: 'Gráficos simples mostram sua evolução por disciplina. Dá pra saber exatamente o que revisar antes da prova.',
     color: 'var(--surface-3)',
   },
   {
     icon: '🏫',
-    title: 'Integrado com sua escola',
-    desc: 'Receba tarefas, provas e conteúdos enviados pelo seu professor diretamente na plataforma.',
+    // "Seu professor manda" is concrete and relatable
+    title: 'Conectado com a sua escola',
+    desc: 'Seu professor pode mandar tarefas e conteúdos direto pela plataforma. Tudo num lugar só, sem ficar trocando de app.',
     color: 'var(--surface-3)',
   },
   {
     icon: '📱',
-    title: 'Estude em qualquer lugar',
-    desc: 'Acesse pelo celular, tablet ou computador. Baixe conteúdos e estude mesmo sem internet.',
+    // "Baixe e estude no ônibus" is a real scenario, not a feature list
+    title: 'Estude até sem internet',
+    desc: 'Funciona no celular, tablet e computador. Baixe as aulas e estude no ônibus, na fila, onde quiser.',
     color: 'var(--surface-3)',
   },
 ]
@@ -45,8 +51,9 @@ export default function Features() {
       <div className={styles.container}>
         <div className={styles.header}>
           <span className="section-tag blue">Recursos</span>
-          <h2 className="section-title">Tudo que você precisa<br />para estudar melhor</h2>
-          <p className="section-sub">Uma plataforma completa que une tecnologia e educação para transformar o aprendizado de milhões de alunos.</p>
+          {/* Shorter, less formal — "o que você precisa" is warmer than "tudo que" */}
+          <h2 className="section-title">O que você precisa<br />pra estudar melhor</h2>
+          <p className="section-sub">Uma plataforma que junta videoaulas, exercícios e organização — pra você focar no que importa.</p>
         </div>
 
         <div className={styles.grid}>

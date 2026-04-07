@@ -5,7 +5,6 @@ const navItems = [
   { label: 'Para Alunos', href: '#alunos' },
   { label: 'Para Escolas', href: '#escolas' },
   { label: 'Conteúdos', href: '#conteudos' },
-  { label: 'Planos', href: '#planos' },
   { label: 'Blog', href: '#blog' },
 ]
 
