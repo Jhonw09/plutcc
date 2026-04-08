@@ -1,9 +1,8 @@
 import { createContext, useContext, useState } from 'react'
 import { ENDPOINTS } from '../api/config'
+import { STORAGE_KEYS } from '../constants/storageKeys'
 
 const AuthContext = createContext(null)
-
-const STORAGE_KEY = 'sc_user'
 
 // Backend roles → frontend roles
 const ROLE_MAP = {
@@ -14,13 +13,13 @@ const ROLE_MAP = {
 
 function readStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEYS.user)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     // Evict sessions persisted before the backend started returning id.
     // Without id, PUT and DELETE would silently call /usuarios/undefined.
     if (!parsed?.id) {
-      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(STORAGE_KEYS.user)
       return null
     }
     return parsed
@@ -38,7 +37,7 @@ function validateId(id) {
 }
 
 function persist(userData) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(userData))
+  localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(userData))
 }
 
 export function AuthProvider({ children }) {
@@ -144,14 +143,14 @@ export function AuthProvider({ children }) {
 
     if (!res.ok) throw new Error('Não foi possível excluir a conta. Tente novamente.')
 
-    localStorage.removeItem(STORAGE_KEY)
-    sessionStorage.removeItem('sc_dashboard_entered')
+    localStorage.removeItem(STORAGE_KEYS.user)
+    sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
     setUser(null)
   }
 
   function logout() {
-    localStorage.removeItem(STORAGE_KEY)
-    sessionStorage.removeItem('sc_dashboard_entered')
+    localStorage.removeItem(STORAGE_KEYS.user)
+    sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
     setUser(null)
   }
 

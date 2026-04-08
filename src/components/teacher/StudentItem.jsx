@@ -1,3 +1,4 @@
+import { Avatar } from '../ui/Avatar'
 import styles from './StudentItem.module.css'
 
 const STATUS = {
@@ -12,7 +13,7 @@ export default function StudentItem({ name, avatar, class: cls, pct, status }) {
 
   return (
     <div className={styles.item}>
-      <div className={styles.avatar}>{avatar}</div>
+      <Avatar initial={avatar} bg="var(--accent-soft)" color="var(--accent)" size={38} />
 
       <div className={styles.info}>
         <div className={styles.nameRow}>

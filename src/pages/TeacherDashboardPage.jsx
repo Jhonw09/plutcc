@@ -3,6 +3,7 @@ import StatCard      from '../components/teacher/StatCard'
 import ActionCard    from '../components/teacher/ActionCard'
 import StudentItem   from '../components/teacher/StudentItem'
 import ActivityItem  from '../components/teacher/ActivityItem'
+import { useAuth }   from '../context/AuthContext'
 import {
   teacherStats,
   quickActions,
@@ -12,9 +13,10 @@ import {
 } from '../data/teacherDashboard'
 import styles from './TeacherDashboardPage.module.css'
 
-export default function TeacherDashboardPage({ user }) {
+export default function TeacherDashboardPage() {
+  const { user } = useAuth()
   return (
-    <TeacherLayout user={user}>
+    <TeacherLayout>
 
       {/* ── Alert banner — only shown when at-risk students exist ── */}
       {atRiskStudents.length > 0 && (

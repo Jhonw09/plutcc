@@ -1,63 +1,6 @@
 import { useState } from 'react'
+import { plans } from '../data/plans'
 import styles from './Plans.module.css'
-
-const plans = [
-  {
-    id: 'free',
-    name: 'Gratuito',
-    monthlyPrice: 0,
-    desc: 'Para começar a estudar',
-    features: [
-      { ok: true,  text: 'Acesso a videoaulas básicas' },
-      { ok: true,  text: '50 questões por mês' },
-      { ok: true,  text: 'Relatório básico de desempenho' },
-      { ok: true,  text: 'App mobile' },
-      { ok: false, text: 'Simulados completos' },
-      { ok: false, text: 'Trilhas personalizadas com IA' },
-      { ok: false, text: 'Conteúdo offline' },
-      { ok: false, text: 'Suporte prioritário' },
-    ],
-    cta: 'Começar grátis',
-    ctaStyle: 'outline',
-  },
-  {
-    id: 'student',
-    name: 'Estudante',
-    monthlyPrice: 29.90,
-    desc: 'Para quem quer ir mais longe',
-    badge: 'Mais popular',
-    features: [
-      { ok: true, text: 'Todas as videoaulas' },
-      { ok: true, text: 'Questões ilimitadas' },
-      { ok: true, text: 'Simulados ENEM e vestibulares' },
-      { ok: true, text: 'Trilhas personalizadas com IA' },
-      { ok: true, text: 'Relatórios detalhados' },
-      { ok: true, text: 'Conteúdo offline' },
-      { ok: true, text: 'App mobile premium' },
-      { ok: true, text: 'Suporte prioritário' },
-    ],
-    cta: 'Assinar agora',
-    ctaStyle: 'primary',
-  },
-  {
-    id: 'school',
-    name: 'Escola',
-    monthlyPrice: null,
-    desc: 'Para instituições de ensino',
-    features: [
-      { ok: true, text: 'Tudo do plano Estudante' },
-      { ok: true, text: 'Painel do professor' },
-      { ok: true, text: 'Envio de tarefas e provas' },
-      { ok: true, text: 'Relatórios por turma' },
-      { ok: true, text: 'Integração com sistema escolar' },
-      { ok: true, text: 'Treinamento para professores' },
-      { ok: true, text: 'Gerente de conta dedicado' },
-      { ok: true, text: 'SLA garantido' },
-    ],
-    cta: 'Falar com vendas',
-    ctaStyle: 'accent',
-  },
-]
 
 export default function Plans() {
   const [annual, setAnnual] = useState(false)
