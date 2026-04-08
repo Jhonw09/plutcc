@@ -31,27 +31,18 @@ export default function DashboardPage() {
 
       {/* ── NO CLASSES ── */}
       {!hasClasses && (
-        <>
-          <div className={styles.welcome}>
-            <h2 className={styles.welcomeTitle}>Olá, {user?.name ?? 'aluno'}! 👋</h2>
-            <p className={styles.welcomeSub}>
-              Bem-vindo ao StudyConnect. Entre em uma turma para começar.
-            </p>
-          </div>
-
-          <div className={styles.heroEmpty}>
-            <span className={styles.heroEmptyIcon}>🏫</span>
-            <h3 className={styles.heroEmptyTitle}>
-              Você ainda não está matriculado em nenhuma turma
-            </h3>
-            <p className={styles.heroEmptyDesc}>
-              Insira o código que seu professor compartilhou ou explore turmas públicas na Comunidade.
-            </p>
-            <button className={styles.heroEmptyBtn} onClick={() => setModalOpen(true)}>
-              + Entrar em uma turma
-            </button>
-          </div>
-        </>
+        <div className={styles.heroEmpty}>
+          <span className={styles.heroEmptyIcon}>🏫</span>
+          <h3 className={styles.heroEmptyTitle}>
+            Você ainda não está em nenhuma turma
+          </h3>
+          <p className={styles.heroEmptyDesc}>
+            Insira o código que seu professor compartilhou para entrar em uma turma.
+          </p>
+          <button className={styles.heroEmptyBtn} onClick={() => setModalOpen(true)}>
+            + Entrar em uma turma
+          </button>
+        </div>
       )}
 
       {/* ── HAS CLASSES ── */}

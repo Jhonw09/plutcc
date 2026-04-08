@@ -9,7 +9,8 @@ import { Button }       from '../components/ui/Button'
 import { InputField }   from '../components/ui/InputField'
 import { useAuth }      from '../context/AuthContext'
 import { ROLE_ROUTES }  from '../constants/routes'
-import { tagStyle, typeBadgeStyle } from '../utils/subjectColors'
+import { typeBadgeStyle } from '../utils/subjectColors'
+import { Tag } from '../components/ui/Tag'
 import styles      from './ClassPage.module.css'
 import modalStyles from '../components/teacher/CreateClassModal.module.css'
 
@@ -343,10 +344,9 @@ function ActivityCard({ activity, isTeacher, onDelete, disciplina, nivel }) {
           {activity.description && (
             <span className={styles.activityDesc}>{activity.description}</span>
           )}
-          {/* Subject + level tags — colored badges */}
           <div className={styles.activityTags}>
-            <span className={styles.activityTag} style={tagStyle(disciplina)}>{disciplina}</span>
-            <span className={styles.activityTag} style={tagStyle(nivel)}>{nivel}</span>
+            <Tag value={disciplina} />
+            <Tag value={nivel} />
           </div>
         </div>
         <div className={styles.activityRight}>
@@ -515,17 +515,23 @@ function MateriaisTab() {
 
 // ── MembrosTab ────────────────────────────────────────────────────────────
 
-function MembrosTab({ classe }) {
+function MembrosTab({ classe, user, isTeacher }) {
   const students = [] // TODO: GET /api/v1/turmas/:id/alunos
+
+  // If the viewer is the teacher, use the live auth name.
+  // Otherwise fall back to whatever the class data says (future: backend will
+  // return the real teacher name as part of GET /api/v1/turmas/:id).
+  const teacherName    = isTeacher ? (user?.name ?? classe.professor) : classe.professor
+  const teacherInitial = teacherName?.[0]?.toUpperCase() ?? 'P'
 
   return (
     <div className={styles.membersWrap}>
       <div className={styles.membersGroup}>
         <span className={styles.membersGroupLabel}>Professor</span>
         <div className={styles.memberRow}>
-          <Avatar initial="P" bg="var(--accent-soft)" color="var(--accent)" size={38} />
+          <Avatar initial={teacherInitial} bg="var(--accent-soft)" color="var(--accent)" size={38} />
           <div className={styles.memberInfo}>
-            <span className={styles.memberName}>{classe.professor}</span>
+            <span className={styles.memberName}>{teacherName}</span>
             <span className={styles.memberRole}>Professor</span>
           </div>
           <span className={styles.memberBadge}>Professor</span>
@@ -592,12 +598,8 @@ export default function ClassPage() {
             <div className={styles.classMeta}>
               <h1 className={styles.className}>{classe.nome}</h1>
               <div className={styles.classPills}>
-                <span className={styles.pill} style={tagStyle(classe.disciplina)}>
-                  {classe.disciplina}
-                </span>
-                <span className={styles.pill} style={tagStyle(classe.nivel)}>
-                  {classe.nivel}
-                </span>
+                <Tag value={classe.disciplina} size="md" />
+                <Tag value={classe.nivel} size="md" />
               </div>
               {classe.descricao && (
                 <p className={styles.classDesc}>{classe.descricao}</p>
@@ -653,7 +655,7 @@ export default function ClassPage() {
             />
           )}
           {activeTab === 'membros' && (
-            <MembrosTab classe={classe} isTeacher={isTeacher} />
+            <MembrosTab classe={classe} user={user} isTeacher={isTeacher} />
           )}
         </div>
 

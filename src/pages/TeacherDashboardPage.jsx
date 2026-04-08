@@ -1,92 +1,143 @@
-import { useState } from 'react'
-import TeacherLayout        from '../components/teacher/TeacherLayout'
-import ActionCard           from '../components/teacher/ActionCard'
-import ClassCard            from '../components/teacher/ClassCard'
-import CreateClassModal     from '../components/teacher/CreateClassModal'
-import CreateActivityModal  from '../components/teacher/CreateActivityModal'
-import { useAuth }          from '../context/AuthContext'
-import { quickActions }     from '../data/teacherDashboard'
+import { useState, useMemo } from 'react'
+import TeacherLayout       from '../components/teacher/TeacherLayout'
+import ClassCard           from '../components/teacher/ClassCard'
+import CreateClassModal    from '../components/teacher/CreateClassModal'
+import { ConfirmModal }    from '../components/ui/ConfirmModal'
+import { Toast }           from '../components/ui/Toast'
+import { useToast }        from '../hooks/useToast'
+import { useAuth }         from '../context/AuthContext'
 import styles from './TeacherDashboardPage.module.css'
+
+// ── Filter options ────────────────────────────────────────────────────────────
+const SUBJECT_FILTERS = [
+  'Todas', 'Matemática', 'Português', 'Química', 'Biologia',
+  'Física', 'Geografia', 'História', 'Inglês',
+  'Artes', 'Informática', 'Filosofia', 'Sociologia',
+]
+
+const SORT_OPTIONS = [
+  { value: 'recent',   label: 'Mais recentes' },
+  { value: 'name',     label: 'Nome (A–Z)'    },
+  { value: 'students', label: 'Mais alunos'   },
+]
+
+// ── Derived stats from local class list ───────────────────────────────────────
+function buildStats(classes) {
+  const totalStudents = classes.reduce((s, c) => s + (c.alunoIds?.length ?? 0), 0)
+  const publicCount   = classes.filter(c => c.tipo === 'PUBLICA').length
+  return [
+    { id: 'classes',  icon: '🏫', label: 'Turmas ativas',   value: classes.length,  delta: null },
+    { id: 'students', icon: '👥', label: 'Total de alunos', value: totalStudents,   delta: null },
+    { id: 'public',   icon: '🌐', label: 'Turmas públicas', value: publicCount,     delta: null },
+    { id: 'private',  icon: '🔒', label: 'Turmas privadas', value: classes.length - publicCount, delta: null },
+  ]
+}
 
 export default function TeacherDashboardPage() {
   const { user } = useAuth()
+  const { toasts, toast, dismiss } = useToast()
 
-  const [classes,          setClasses]          = useState([])
-  const [classModalOpen,   setClassModalOpen]   = useState(false)
-  const [activityModalOpen, setActivityModalOpen] = useState(false)
+  // ── Class state ──────────────────────────────────────────────────────────────
+  const [classes, setClasses] = useState([])
 
-  function handleCreate(newClass) {
-    setClasses(prev => [newClass, ...prev])
-  }
+  // ── Modal state ──────────────────────────────────────────────────────────────
+  const [classModalOpen,    setClassModalOpen]    = useState(false)
+  const [editTarget,        setEditTarget]        = useState(null)   // class object | null
+  const [deleteTarget,      setDeleteTarget]      = useState(null)   // { id, nome } | null
 
-  const hasClasses  = classes.length > 0
-  // Total students across all created classes (from alunoIds arrays)
-  const totalStudents = classes.reduce((sum, c) => sum + (c.alunoIds?.length ?? 0), 0)
-  const hasStudents = totalStudents > 0
+  // ── Search & filter state ────────────────────────────────────────────────────
+  const [search,     setSearch]     = useState('')
+  const [filterSubj, setFilterSubj] = useState('Todas')
+  const [sortBy,     setSortBy]     = useState('recent')
 
-  // Wire each action card to its own handler — no card opens the wrong modal
-  const actions = quickActions.map(a => {
-    if (a.id === 'create')  return { ...a, onClick: () => setActivityModalOpen(true) }
-    if (a.id === 'classes') return { ...a, onClick: () => setClassModalOpen(true) }
-    return a   // 'students' and 'reports' are placeholders for now
-  })
+  // ── Derived: filtered + sorted classes ───────────────────────────────────────
+  const visibleClasses = useMemo(() => {
+    let list = [...classes]
 
-  // ── Placeholder copy — three distinct states ──────────────────────────────
-  function PlaceholderSection() {
-    let icon, text
-
-    if (!hasClasses) {
-      icon = '🏫'
-      text = 'Você ainda não criou nenhuma turma. Crie uma turma para começar.'
-    } else if (!hasStudents) {
-      icon = '👤'
-      text = 'Nenhum aluno entrou nas suas turmas ainda. Assim que um aluno entrar, ele aparecerá aqui.'
-    } else {
-      // hasClasses && hasStudents — waiting for backend
-      icon = '📊'
-      text = 'A lista de alunos e as atividades recentes aparecerão aqui assim que o backend for conectado.'
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      list = list.filter(c =>
+        c.nome.toLowerCase().includes(q) ||
+        c.disciplina.toLowerCase().includes(q) ||
+        c.codigo.toLowerCase().includes(q)
+      )
     }
 
-    return (
-      <section className={styles.section}>
-        <div className={styles.dataPlaceholder}>
-          <span className={styles.dataPlaceholderIcon}>{icon}</span>
-          <p className={styles.dataPlaceholderText}>{text}</p>
-        </div>
-      </section>
-    )
+    if (filterSubj !== 'Todas') {
+      list = list.filter(c => c.disciplina === filterSubj)
+    }
+
+    if (sortBy === 'name')     list.sort((a, b) => a.nome.localeCompare(b.nome))
+    if (sortBy === 'students') list.sort((a, b) => (b.alunoIds?.length ?? 0) - (a.alunoIds?.length ?? 0))
+    if (sortBy === 'recent')   list.sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
+
+    return list
+  }, [classes, search, filterSubj, sortBy])
+
+  const stats    = useMemo(() => buildStats(classes), [classes])
+  const hasClasses = classes.length > 0
+  const isFiltered = search.trim() || filterSubj !== 'Todas'
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+  function handleCreate(newClass) {
+    setClasses(prev => [newClass, ...prev])
+    toast(`Turma "${newClass.nome}" criada com sucesso!`, 'success')
+  }
+
+  function handleEdit(updated) {
+    setClasses(prev => prev.map(c => c.id === updated.id ? updated : c))
+    toast(`Turma "${updated.nome}" atualizada.`, 'success')
+    setEditTarget(null)
+  }
+
+  function handleDeleteConfirm() {
+    const nome = deleteTarget.nome
+    setClasses(prev => prev.filter(c => c.id !== deleteTarget.id))
+    toast(`Turma "${nome}" excluída.`, 'error')
+    setDeleteTarget(null)
+  }
+
+  function openEdit(classObj) {
+    setEditTarget(classObj)
+    setClassModalOpen(true)
+  }
+
+  function openDelete(id, nome) {
+    setDeleteTarget({ id, nome })
+  }
+
+  function closeClassModal() {
+    setClassModalOpen(false)
+    setEditTarget(null)
   }
 
   return (
     <TeacherLayout>
 
+      {/* ── Modals ── */}
       {classModalOpen && (
         <CreateClassModal
-          onClose={() => setClassModalOpen(false)}
+          onClose={closeClassModal}
           onCreate={handleCreate}
+          onEdit={handleEdit}
+          initialData={editTarget}
         />
       )}
 
-      {activityModalOpen && (
-        <CreateActivityModal
-          onClose={() => setActivityModalOpen(false)}
-          classes={classes}
+      {deleteTarget && (
+        <ConfirmModal
+          title="Excluir turma"
+          message={`Tem certeza que deseja excluir "${deleteTarget.nome}"? Esta ação não pode ser desfeita.`}
+          confirmLabel="Excluir turma"
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
 
-      {/* ── Welcome — always visible ── */}
-      <div className={styles.welcome}>
-        <h2 className={styles.welcomeTitle}>
-          Olá, Professor {user?.name ?? ''} 👋
-        </h2>
-        <p className={styles.welcomeSub}>
-          {hasClasses
-            ? <>Você tem <strong>{classes.length} turma{classes.length !== 1 ? 's' : ''}</strong> ativas.</>
-            : 'Crie sua primeira turma para começar a gerenciar seus alunos.'}
-        </p>
-      </div>
+      {/* ── Toasts ── */}
+      <Toast toasts={toasts} onDismiss={dismiss} />
 
-      {/* ── NO CLASSES ── */}
+      {/* ── EMPTY STATE ── */}
       {!hasClasses && (
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}>🏫</span>
@@ -105,35 +156,96 @@ export default function TeacherDashboardPage() {
       {/* ── HAS CLASSES ── */}
       {hasClasses && (
         <>
-          {/* Quick actions — each wired to its own handler */}
-          <section className={styles.section}>
-            <h3 className={styles.sectionTitle}>Ações rápidas</h3>
-            <div className={styles.actionsGrid}>
-              {actions.map(a => <ActionCard key={a.id} {...a} />)}
-            </div>
-          </section>
+          {/* Stats row */}
+          <div className={styles.statsGrid}>
+            {stats.map(s => (
+              <div key={s.id} className={styles.statCard}>
+                <span className={styles.statIcon}>{s.icon}</span>
+                <span className={styles.statValue}>{s.value}</span>
+                <span className={styles.statLabel}>{s.label}</span>
+              </div>
+            ))}
+          </div>
 
-          {/* My classes — driven entirely by real local state */}
+          {/* Classes section */}
           <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionTitle}>Minhas turmas</h3>
-              <button className={styles.sectionLink} onClick={() => setClassModalOpen(true)}>
-                + Nova turma
-              </button>
-            </div>
-            <div className={styles.classesList}>
-              {classes.map(c => <ClassCard key={c.id} {...c} />)}
-            </div>
-          </section>
+            <div className={styles.classesHeader}>
+              <div className={styles.classesHeaderTop}>
+                <h3 className={styles.sectionTitle}>Minhas turmas</h3>
+                <button className={styles.newClassBtn} onClick={() => setClassModalOpen(true)}>
+                  + Nova turma
+                </button>
+              </div>
 
-          {/*
-            TODO: replace PlaceholderSection with the real statsGrid +
-            students list + activity feed once the backend is integrated.
-            Endpoints: GET /api/v1/teacher/stats
-                       GET /api/v1/turmas/:id/alunos
-                       GET /api/v1/turmas/:id/atividades
-          */}
-          <PlaceholderSection />
+              {/* Search + filters */}
+              <div className={styles.controls}>
+                <div className={styles.searchWrap}>
+                  <span className={styles.searchIcon}>🔍</span>
+                  <input
+                    className={styles.searchInput}
+                    placeholder="Buscar por nome, disciplina ou código…"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                  {search && (
+                    <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Limpar busca">
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <select
+                  className={styles.filterSelect}
+                  value={filterSubj}
+                  onChange={e => setFilterSubj(e.target.value)}
+                  aria-label="Filtrar por disciplina"
+                >
+                  {SUBJECT_FILTERS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+
+                <select
+                  className={styles.filterSelect}
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value)}
+                  aria-label="Ordenar turmas"
+                >
+                  {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Results count when filtering */}
+            {isFiltered && (
+              <p className={styles.resultsCount}>
+                {visibleClasses.length === 0
+                  ? 'Nenhuma turma encontrada.'
+                  : `${visibleClasses.length} turma${visibleClasses.length !== 1 ? 's' : ''} encontrada${visibleClasses.length !== 1 ? 's' : ''}.`}
+              </p>
+            )}
+
+            {visibleClasses.length > 0 ? (
+              <div className={styles.classesList}>
+                {visibleClasses.map(c => (
+                  <ClassCard
+                    key={c.id}
+                    {...c}
+                    onEdit={openEdit}
+                    onDelete={openDelete}
+                  />
+                ))}
+              </div>
+            ) : isFiltered ? (
+              <div className={styles.emptyFilter}>
+                <span className={styles.emptyFilterIcon}>🔍</span>
+                <p className={styles.emptyFilterText}>
+                  Nenhuma turma corresponde à sua busca.{' '}
+                  <button className={styles.clearFiltersBtn} onClick={() => { setSearch(''); setFilterSubj('Todas') }}>
+                    Limpar filtros
+                  </button>
+                </p>
+              </div>
+            ) : null}
+          </section>
         </>
       )}
 

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import { tagStyle } from '../../utils/subjectColors'
+import { typeBadgeStyle } from '../../utils/subjectColors'
+import { Tag } from '../ui/Tag'
 import styles from './JoinedClassCard.module.css'
 
 const SUBJECT_EMOJI = {
@@ -32,7 +33,7 @@ export default function JoinedClassCard({ id, nome, disciplina, descricao, tipo,
             <span className={styles.teacher}>{professor}</span>
           </div>
           {/* Type badge — top-right, visually separated from subject/level */}
-          <span className={styles.typeBadge} style={tagStyle(tipo)}>
+          <span className={styles.typeBadge} style={typeBadgeStyle(tipo)}>
             {isPublic ? '🌐 Pública' : '🔒 Privada'}
           </span>
         </div>
@@ -41,9 +42,8 @@ export default function JoinedClassCard({ id, nome, disciplina, descricao, tipo,
 
         <div className={styles.bottom}>
           <code className={styles.code}>{codigo}</code>
-          {/* Subject + level tags — grouped together in bottom row */}
-          <span className={styles.subjectTag} style={tagStyle(disciplina)}>{disciplina}</span>
-          <span className={styles.subjectTag} style={tagStyle(nivel)}>{nivel}</span>
+          <Tag value={disciplina} />
+          <Tag value={nivel} />
           <button className={styles.enterBtn} onClick={e => { e.stopPropagation(); handleOpen() }}>Acessar →</button>
         </div>
       </div>

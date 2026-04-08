@@ -1,6 +1,7 @@
-/* Full-viewport shell: sidebar left, everything else right */
+/* Full-viewport shell — no sidebar column, drawer handles navigation */
 .shell {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: var(--background);
 }
@@ -19,7 +20,6 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow: hidden;
 }
 
 .content {
@@ -28,41 +28,6 @@
   padding: 32px;
 }
 
-/* ── Mobile sidebar toggle button ── */
-.sidebarToggle {
-  display: none;
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 200;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 20px;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px var(--accent-glow);
-  border: none;
-  cursor: pointer;
-  transition: background .15s, transform .15s;
-}
-.sidebarToggle:hover { background: var(--accent-hover); transform: scale(1.08); }
-
-/* Dim overlay behind open sidebar on mobile */
-.sidebarOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 149;
-  backdrop-filter: blur(2px);
-}
-
 @media (max-width: 768px) {
-  .shell        { flex-direction: column; }
-  .content      { padding: 20px 16px; }
-  .sidebarToggle  { display: flex; }
-  .sidebarOverlay { display: block; }
+  .content { padding: 20px 16px; }
 }

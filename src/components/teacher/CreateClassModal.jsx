@@ -12,7 +12,7 @@ const SUBJECTS = [
 const LEVELS = ['Fundamental', 'Médio', 'Vestibular']
 
 // e.g. "MAT-3A-7X2K"
-function generateCode(subject) {
+export function generateCode(subject) {
   const prefix = subject.slice(0, 3).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   const chars  = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   const rand   = (n) => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
@@ -27,10 +27,19 @@ function validate({ name, subject, level }) {
   return e
 }
 
-const EMPTY = { name: '', subject: '', description: '', type: 'PUBLICA', level: '' }
+/**
+ * Dual-mode modal: create (no initialData) or edit (initialData provided).
+ *
+ * Create mode: generates a new code, calls onCreate(classObject).
+ * Edit mode:   preserves existing code/id/alunoIds, calls onEdit(updatedObject).
+ */
+export default function CreateClassModal({ onClose, onCreate, onEdit, initialData = null }) {
+  const isEdit = initialData !== null
 
-export default function CreateClassModal({ onClose, onCreate }) {
-  const [fields, setFields] = useState(EMPTY)
+  const [fields, setFields] = useState(() => isEdit
+    ? { name: initialData.nome, subject: initialData.disciplina, description: initialData.descricao ?? '', type: initialData.tipo, level: initialData.nivel }
+    : { name: '', subject: '', description: '', type: 'PUBLICA', level: '' }
+  )
   const [errors, setErrors] = useState({})
 
   function set(key, value) {
@@ -43,17 +52,28 @@ export default function CreateClassModal({ onClose, onCreate }) {
     const errs = validate(fields)
     if (Object.keys(errs).length) { setErrors(errs); return }
 
-    onCreate({
-      id:          Date.now(),
-      nome:        fields.name.trim(),
-      disciplina:  fields.subject,
-      descricao:   fields.description.trim(),
-      tipo:        fields.type,
-      nivel:       fields.level,
-      codigo:      generateCode(fields.subject),
-      alunoIds:    [],
-      criadaEm:    new Date().toISOString(),
-    })
+    if (isEdit) {
+      onEdit({
+        ...initialData,
+        nome:       fields.name.trim(),
+        disciplina: fields.subject,
+        descricao:  fields.description.trim(),
+        tipo:       fields.type,
+        nivel:      fields.level,
+      })
+    } else {
+      onCreate({
+        id:         Date.now(),
+        nome:       fields.name.trim(),
+        disciplina: fields.subject,
+        descricao:  fields.description.trim(),
+        tipo:       fields.type,
+        nivel:      fields.level,
+        codigo:     generateCode(fields.subject),
+        alunoIds:   [],
+        criadaEm:   new Date().toISOString(),
+      })
+    }
     onClose()
   }
 
@@ -64,10 +84,14 @@ export default function CreateClassModal({ onClose, onCreate }) {
         <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar">✕</button>
 
         <div className={styles.header}>
-          <span className={styles.headerIcon}>🏫</span>
+          <span className={styles.headerIcon}>{isEdit ? '✏️' : '🏫'}</span>
           <div>
-            <h2 id="modal-title" className={styles.title}>Criar nova turma</h2>
-            <p className={styles.sub}>Preencha os dados abaixo para criar sua turma.</p>
+            <h2 id="modal-title" className={styles.title}>
+              {isEdit ? 'Editar turma' : 'Criar nova turma'}
+            </h2>
+            <p className={styles.sub}>
+              {isEdit ? 'Atualize os dados da turma abaixo.' : 'Preencha os dados abaixo para criar sua turma.'}
+            </p>
           </div>
         </div>
 
@@ -80,7 +104,6 @@ export default function CreateClassModal({ onClose, onCreate }) {
             error={errors.name} autoFocus
           />
 
-          {/* Subject — native select styled to match InputField */}
           <div className={styles.fieldWrap}>
             <label htmlFor="class-subject" className={styles.label}>Disciplina</label>
             <select
@@ -101,7 +124,6 @@ export default function CreateClassModal({ onClose, onCreate }) {
             value={fields.description} onChange={e => set('description', e.target.value)}
           />
 
-          {/* Type toggle */}
           <div className={styles.fieldWrap}>
             <span className={styles.label}>Tipo de turma</span>
             <div className={styles.typeToggle} role="group" aria-label="Tipo de turma">
@@ -122,7 +144,6 @@ export default function CreateClassModal({ onClose, onCreate }) {
             </div>
           </div>
 
-          {/* Level — native select */}
           <div className={styles.fieldWrap}>
             <label htmlFor="class-level" className={styles.label}>Nível</label>
             <select
@@ -139,7 +160,9 @@ export default function CreateClassModal({ onClose, onCreate }) {
 
           <div className={styles.actions}>
             <Button variant="outline" type="button" onClick={onClose}>Cancelar</Button>
-            <Button variant="primary" type="submit">Criar turma</Button>
+            <Button variant="primary" type="submit">
+              {isEdit ? 'Salvar alterações' : 'Criar turma'}
+            </Button>
           </div>
 
         </form>

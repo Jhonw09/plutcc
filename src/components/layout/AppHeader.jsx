@@ -7,24 +7,28 @@ function getGreeting() {
   return hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 }
 
-/**
- * Generic authenticated-page header.
- *
- * @param {string}  subtitle   - Line below the greeting
- * @param {string}  emoji      - Emoji after the user's name (default 👋)
- * @param {boolean} showSearch - Whether to render the search bar (default false)
- * @param {string}  extraClass - Optional extra CSS class on the <header> element
- */
-export default function AppHeader({ subtitle, emoji = '👋', showSearch = false, extraClass = '' }) {
+export default function AppHeader({ subtitle, emoji = '👋', showSearch = false, extraClass = '', onMenuOpen }) {
   const { user } = useAuth()
 
   return (
     <header className={`${styles.header} ${extraClass}`}>
       <div className={styles.left}>
-        <h1 className={styles.greeting}>
-          {getGreeting()}, <span className={styles.name}>{user?.name ?? '...'}</span> {emoji}
-        </h1>
-        <p className={styles.sub}>{subtitle}</p>
+        <button
+          className={styles.hamburger}
+          onClick={onMenuOpen}
+          aria-label="Abrir menu"
+        >
+          <span className={styles.hamburgerLine} />
+          <span className={styles.hamburgerLine} />
+          <span className={styles.hamburgerLine} />
+        </button>
+
+        <div className={styles.titles}>
+          <h1 className={styles.greeting}>
+            {getGreeting()}, <span className={styles.name}>{user?.name ?? '...'}</span> {emoji}
+          </h1>
+          <p className={styles.sub}>{subtitle}</p>
+        </div>
       </div>
 
       <div className={styles.right}>
