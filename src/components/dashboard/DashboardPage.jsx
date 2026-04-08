@@ -1,119 +1,92 @@
+import { useState } from 'react'
 import DashboardLayout from './DashboardLayout'
-import { useAuth } from '../../context/AuthContext'
-import {
-  continueStudying,
-  weekDays,
-  weekActivity,
-  recentActivity,
-  weeklyGoal,
-} from '../../data/studentDashboard'
+import JoinClassModal  from './JoinClassModal'
+import JoinedClassCard from './JoinedClassCard'
+import { useAuth }     from '../../context/AuthContext'
 import styles from './DashboardPage.module.css'
 
-/* ── Component ── */
 export default function DashboardPage() {
   const { user } = useAuth()
-  const pct = Math.round((weeklyGoal.done / weeklyGoal.total) * 100)
+
+  const [joinedClasses, setJoinedClasses] = useState([])
+  const [modalOpen,     setModalOpen]     = useState(false)
+
+  function handleJoin(newClass) {
+    setJoinedClasses(prev => [newClass, ...prev])
+  }
+
+  const joinedCodes = joinedClasses.map(c => c.codigo)
+  const hasClasses  = joinedClasses.length > 0
 
   return (
     <DashboardLayout>
 
-      {/* ── Banner ── */}
-      <div className={styles.banner}>
-        <div className={styles.bannerLeft}>
-          <span className={styles.bannerTag}>Meta da semana</span>
-          <h2 className={styles.bannerTitle}>Você tá indo bem, {user?.name ?? 'aluno'}! 🚀</h2>
-          <p className={styles.bannerSub}>
-            {weeklyGoal.done} de {weeklyGoal.total} questões concluídas — faltam só {weeklyGoal.total - weeklyGoal.done} pra bater a meta.
-          </p>
-          <div className={styles.bannerTrackWrap}>
-            <div className={styles.bannerTrack}>
-              <div className={styles.bannerFill} style={{ width: `${pct}%` }} />
-            </div>
-            <span className={styles.bannerPct}>{pct}%</span>
+      {modalOpen && (
+        <JoinClassModal
+          onClose={() => setModalOpen(false)}
+          onJoin={handleJoin}
+          joinedCodes={joinedCodes}
+        />
+      )}
+
+      {/* ── NO CLASSES ── */}
+      {!hasClasses && (
+        <>
+          <div className={styles.welcome}>
+            <h2 className={styles.welcomeTitle}>Olá, {user?.name ?? 'aluno'}! 👋</h2>
+            <p className={styles.welcomeSub}>
+              Bem-vindo ao StudyConnect. Entre em uma turma para começar.
+            </p>
           </div>
-        </div>
-        {/* Decorative right side — abstract grid dots */}
-        <div className={styles.bannerDeco} aria-hidden="true">
-          <span className={styles.bannerCircle} />
-        </div>
-      </div>
 
-      {/* ── Two-column row: Continue Studying + Weekly Progress ── */}
-      <div className={styles.row}>
+          <div className={styles.heroEmpty}>
+            <span className={styles.heroEmptyIcon}>🏫</span>
+            <h3 className={styles.heroEmptyTitle}>
+              Você ainda não está matriculado em nenhuma turma
+            </h3>
+            <p className={styles.heroEmptyDesc}>
+              Insira o código que seu professor compartilhou ou explore turmas públicas na Comunidade.
+            </p>
+            <button className={styles.heroEmptyBtn} onClick={() => setModalOpen(true)}>
+              + Entrar em uma turma
+            </button>
+          </div>
+        </>
+      )}
 
-        {/* Continue Studying */}
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>De onde você parou</h3>
-          <div className={styles.subjectList}>
-            {continueStudying.map((s, i) => (
-              <button key={i} className={styles.subjectCard} style={{ '--card-border': s.border }}>
-                <div className={styles.subjectIconWrap} style={{ background: s.color }}>
-                  <span className={styles.subjectIcon}>{s.icon}</span>
-                </div>
-                <div className={styles.subjectInfo}>
-                  <span className={styles.subjectName}>{s.subject}</span>
-                  <span className={styles.subjectTopic}>{s.topic}</span>
-                  {/* Mini progress bar */}
-                  <div className={styles.miniTrack}>
-                    <div className={styles.miniFill} style={{ width: `${s.pct}%`, background: s.accent }} />
-                  </div>
-                </div>
-                <span className={styles.subjectPct} style={{ color: s.accent }}>{s.pct}%</span>
-                <span className={styles.subjectArrow}>→</span>
+      {/* ── HAS CLASSES ── */}
+      {hasClasses && (
+        <>
+          {/* My Classes — driven entirely by real local state */}
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>Minhas turmas</h3>
+              <button className={styles.sectionAction} onClick={() => setModalOpen(true)}>
+                + Entrar em uma turma
               </button>
-            ))}
-          </div>
-        </section>
+            </div>
+            <div className={styles.classesList}>
+              {joinedClasses.map(c => (
+                <JoinedClassCard key={c.codigo} {...c} />
+              ))}
+            </div>
+          </section>
 
-        {/* Weekly Progress */}
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Atividade semanal</h3>
-          <div className={styles.barChart}>
-            {weekDays.map((day, i) => (
-              <div key={day} className={styles.barCol}>
-                <div className={styles.barWrap}>
-                  <div
-                    className={`${styles.bar} ${weekActivity[i] === 0 ? styles.barEmpty : ''}`}
-                    style={{ height: `${Math.max(weekActivity[i], 4)}%` }}
-                  />
-                </div>
-                <span className={styles.barLabel}>{day}</span>
-              </div>
-            ))}
-          </div>
-          {/* Summary stats */}
-          <div className={styles.statRow}>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>4h 20m</span>
-              <span className={styles.statLabel}>Tempo total</span>
+          {/*
+            Progress, activity, and weekly stats will be populated here
+            once the backend returns real data for the enrolled classes.
+            Replace this placeholder with the banner + two-column row + activity section.
+          */}
+          <section className={styles.section}>
+            <div className={styles.dataPlaceholder}>
+              <span className={styles.dataPlaceholderIcon}>📊</span>
+              <p className={styles.dataPlaceholderText}>
+                Seu progresso e atividades aparecerão aqui assim que você começar a estudar nas suas turmas.
+              </p>
             </div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>36</span>
-              <span className={styles.statLabel}>Questões</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>5</span>
-              <span className={styles.statLabel}>Aulas</span>
-            </div>
-          </div>
-        </section>
-
-      </div>
-
-      {/* ── Recent Activity ── */}
-      <section className={styles.section} style={{ marginTop: 0 }}>
-        <h3 className={styles.sectionTitle}>Atividade recente</h3>
-        <div className={styles.activityList}>
-          {recentActivity.map((a, i) => (
-            <div key={i} className={styles.activityItem}>
-              <span className={styles.activityDot} style={{ background: a.color }} />
-              <span className={styles.activityIcon}>{a.icon}</span>
-              <span className={styles.activityText}>{a.text}</span>
-              <span className={styles.activityTime}>{a.time}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+          </section>
+        </>
+      )}
 
     </DashboardLayout>
   )

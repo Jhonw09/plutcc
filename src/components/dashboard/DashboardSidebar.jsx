@@ -1,23 +1,47 @@
+import { useNavigate, useLocation } from 'react-router-dom'
+import { STUDENT_ROUTES } from '../../constants/routes'
 import styles from './DashboardSidebar.module.css'
 
 const navItems = [
-  { icon: '🏠', label: 'Início',      id: 'home'      },
-  { icon: '📚', label: 'Disciplinas', id: 'subjects'  },
-  { icon: '📝', label: 'Exercícios',  id: 'exercises' },
-  { icon: '📋', label: 'Simulados',   id: 'exams'     },
-  { icon: '📊', label: 'Desempenho',  id: 'progress'  },
-  { icon: '🎯', label: 'Metas',       id: 'goals'     },
+  { icon: '🏠', label: 'Início',      path: STUDENT_ROUTES.home      },
+  { icon: '📚', label: 'Disciplinas', path: STUDENT_ROUTES.subjects   },
+  { icon: '📝', label: 'Exercícios',  path: STUDENT_ROUTES.exercises  },
+  { icon: '📋', label: 'Simulados',   path: STUDENT_ROUTES.exams      },
+  { icon: '📊', label: 'Desempenho',  path: STUDENT_ROUTES.progress   },
+  { icon: '🎯', label: 'Metas',       path: STUDENT_ROUTES.goals      },
 ]
 
 const bottomItems = [
-  { icon: '⚙️', label: 'Configurações', id: 'settings' },
-  { icon: '❓', label: 'Ajuda',          id: 'help'     },
+  { icon: '⚙️', label: 'Configurações', path: STUDENT_ROUTES.settings },
+  { icon: '❓', label: 'Ajuda',          path: STUDENT_ROUTES.help     },
 ]
 
-export default function DashboardSidebar({ active, onNavigate }) {
+export default function DashboardSidebar() {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  function isActive(path) {
+    // Exact match for home, prefix match for sub-routes
+    return path === STUDENT_ROUTES.home ? pathname === path : pathname.startsWith(path)
+  }
+
+  function renderItem(item) {
+    const active = isActive(item.path)
+    return (
+      <button
+        key={item.path}
+        className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
+        onClick={() => navigate(item.path)}
+      >
+        <span className={styles.navIcon}>{item.icon}</span>
+        <span className={styles.navText}>{item.label}</span>
+        {active && <span className={styles.activeBar} />}
+      </button>
+    )
+  }
+
   return (
     <aside className={styles.sidebar}>
-      {/* Logo */}
       <div className={styles.logo}>
         <svg width="160" height="26" viewBox="0 0 160 26" fill="none">
           <text x="0"  y="21" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="22" fill="#FFFFFF">Study</text>
@@ -25,35 +49,14 @@ export default function DashboardSidebar({ active, onNavigate }) {
         </svg>
       </div>
 
-      {/* Main nav */}
       <nav className={styles.nav}>
         <span className={styles.navLabel}>Menu</span>
-        {navItems.map(item => (
-          <button
-            key={item.id}
-            className={`${styles.navItem} ${active === item.id ? styles.navItemActive : ''}`}
-            onClick={() => onNavigate(item.id)}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            <span className={styles.navText}>{item.label}</span>
-            {active === item.id && <span className={styles.activeBar} />}
-          </button>
-        ))}
+        {navItems.map(renderItem)}
       </nav>
 
-      {/* Bottom items */}
       <div className={styles.bottom}>
         <div className={styles.divider} />
-        {bottomItems.map(item => (
-          <button
-            key={item.id}
-            className={`${styles.navItem} ${active === item.id ? styles.navItemActive : ''}`}
-            onClick={() => onNavigate(item.id)}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            <span className={styles.navText}>{item.label}</span>
-          </button>
-        ))}
+        {bottomItems.map(renderItem)}
       </div>
     </aside>
   )

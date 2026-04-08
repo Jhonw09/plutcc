@@ -36,6 +36,7 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
   const { login, signup } = useAuth()
 
   const [mode, setMode]       = useState(initialMode)
+  const [role, setRole]       = useState('student')
   const [fields, setFields]   = useState({ name: '', email: '', password: '', confirm: '' })
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
@@ -52,6 +53,11 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
     setFields({ name: '', email: '', password: '', confirm: '' })
   }
 
+  function handleRoleChange(r) {
+    setRole(r)
+    setErrors({})
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     const errs = mode === 'login'
@@ -63,13 +69,10 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
     setLoading(true)
     try {
       if (mode === 'login') {
-        // login() calls the API, normalises the role, and persists the user.
-        // It throws a localised error string on failure.
         await login({ email: fields.email, senha: fields.password })
       } else {
-        // signup() creates the account then calls login() internally,
-        // so the user is authenticated in a single step.
-        await signup({ nome: fields.name, email: fields.email, senha: fields.password })
+        const tipoUsuario = role === 'teacher' ? 'PROFESSOR' : 'ALUNO'
+        await signup({ nome: fields.name, email: fields.email, senha: fields.password, tipoUsuario })
       }
       if (onSuccess) onSuccess(mode)
     } catch (err) {
@@ -95,7 +98,24 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
         </div>
 
         <h2 className={styles.title}>{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</h2>
-        <p className={styles.sub}>{isLogin ? 'Entre para continuar estudando.' : 'É grátis e leva menos de 1 minuto.'}</p>
+        <p className={styles.sub}>{isLogin ? 'Entre para continuar.' : 'É grátis e leva menos de 1 minuto.'}</p>
+
+        <div className={styles.roleSelector} role="group" aria-label="Tipo de usuário">
+          <button
+            type="button"
+            className={`${styles.roleBtn} ${role === 'student' ? styles.roleBtnActive : ''}`}
+            onClick={() => handleRoleChange('student')}
+          >
+            🎓 Sou Aluno
+          </button>
+          <button
+            type="button"
+            className={`${styles.roleBtn} ${role === 'teacher' ? styles.roleBtnActive : ''}`}
+            onClick={() => handleRoleChange('teacher')}
+          >
+            🏫 Sou Professor
+          </button>
+        </div>
 
         {errors.form && <p className={styles.formError} role="alert">{errors.form}</p>}
 

@@ -1,21 +1,44 @@
+import { useNavigate, useLocation } from 'react-router-dom'
+import { TEACHER_ROUTES } from '../../constants/routes'
 import styles from '../dashboard/DashboardSidebar.module.css'
 
-// Teacher-specific nav — reuses the exact same CSS module as the student sidebar
 const navItems = [
-  { icon: '🏠', label: 'Início',      id: 'home'       },
-  { icon: '🏫', label: 'Turmas',      id: 'classes'    },
-  { icon: '👥', label: 'Alunos',      id: 'students'   },
-  { icon: '📝', label: 'Atividades',  id: 'activities' },
-  { icon: '📊', label: 'Relatórios',  id: 'reports'    },
-  { icon: '📅', label: 'Calendário',  id: 'calendar'   },
+  { icon: '🏠', label: 'Início',      path: TEACHER_ROUTES.home       },
+  { icon: '🏫', label: 'Turmas',      path: TEACHER_ROUTES.classes    },
+  { icon: '👥', label: 'Alunos',      path: TEACHER_ROUTES.students   },
+  { icon: '📝', label: 'Atividades',  path: TEACHER_ROUTES.activities },
+  { icon: '📊', label: 'Relatórios',  path: TEACHER_ROUTES.reports    },
+  { icon: '📅', label: 'Calendário',  path: TEACHER_ROUTES.calendar   },
 ]
 
 const bottomItems = [
-  { icon: '⚙️', label: 'Configurações', id: 'settings' },
-  { icon: '❓', label: 'Ajuda',          id: 'help'     },
+  { icon: '⚙️', label: 'Configurações', path: TEACHER_ROUTES.settings },
+  { icon: '❓', label: 'Ajuda',          path: TEACHER_ROUTES.help     },
 ]
 
-export default function TeacherSidebar({ active, onNavigate }) {
+export default function TeacherSidebar() {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  function isActive(path) {
+    return path === TEACHER_ROUTES.home ? pathname === path : pathname.startsWith(path)
+  }
+
+  function renderItem(item) {
+    const active = isActive(item.path)
+    return (
+      <button
+        key={item.path}
+        className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
+        onClick={() => navigate(item.path)}
+      >
+        <span className={styles.navIcon}>{item.icon}</span>
+        <span className={styles.navText}>{item.label}</span>
+        {active && <span className={styles.activeBar} />}
+      </button>
+    )
+  }
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
@@ -27,31 +50,12 @@ export default function TeacherSidebar({ active, onNavigate }) {
 
       <nav className={styles.nav}>
         <span className={styles.navLabel}>Professor</span>
-        {navItems.map(item => (
-          <button
-            key={item.id}
-            className={`${styles.navItem} ${active === item.id ? styles.navItemActive : ''}`}
-            onClick={() => onNavigate(item.id)}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            <span className={styles.navText}>{item.label}</span>
-            {active === item.id && <span className={styles.activeBar} />}
-          </button>
-        ))}
+        {navItems.map(renderItem)}
       </nav>
 
       <div className={styles.bottom}>
         <div className={styles.divider} />
-        {bottomItems.map(item => (
-          <button
-            key={item.id}
-            className={`${styles.navItem} ${active === item.id ? styles.navItemActive : ''}`}
-            onClick={() => onNavigate(item.id)}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            <span className={styles.navText}>{item.label}</span>
-          </button>
-        ))}
+        {bottomItems.map(renderItem)}
       </div>
     </aside>
   )

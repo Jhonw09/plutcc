@@ -134,3 +134,123 @@
   .statsGrid   { grid-template-columns: 1fr; }
   .actionsGrid { grid-template-columns: 1fr; }
 }
+
+/* ── Classes list ────────────────────────────────────────────────────────── */
+.classesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.emptyClasses {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 20px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 40px;
+  opacity: .5;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.emptyBtn {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.emptyBtn:hover { background: rgba(108, 92, 231, 0.18); }
+
+/* ── Hero empty state ────────────────────────────────────────────────────── */
+.heroEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 72px 24px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 20px;
+  animation: fadeUp 300ms ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.heroEmptyIcon {
+  font-size: 56px;
+  line-height: 1;
+  filter: grayscale(0.3);
+}
+
+.heroEmptyTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  max-width: 400px;
+  line-height: 1.3;
+}
+
+.heroEmptyDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 420px;
+  line-height: 1.7;
+}
+
+.heroEmptyBtn {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: background .15s, transform .15s;
+}
+.heroEmptyBtn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+/* ── Data placeholder (shown until backend data is available) ────────────── */
+.dataPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.dataPlaceholderIcon {
+  font-size: 36px;
+  opacity: .4;
+}
+
+.dataPlaceholderText {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 420px;
+  line-height: 1.7;
+}

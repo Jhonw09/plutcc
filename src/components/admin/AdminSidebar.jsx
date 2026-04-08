@@ -1,21 +1,45 @@
+import { useNavigate, useLocation } from 'react-router-dom'
+import { ADMIN_ROUTES } from '../../constants/routes'
 import styles from '../dashboard/DashboardSidebar.module.css'
 import adminStyles from './AdminSidebar.module.css'
 
 const navItems = [
-  { icon: '🛡️', label: 'Visão geral',   id: 'home'      },
-  { icon: '👥', label: 'Usuários',       id: 'users'     },
-  { icon: '🏫', label: 'Escolas',        id: 'schools'   },
-  { icon: '💰', label: 'Financeiro',     id: 'finance'   },
-  { icon: '📊', label: 'Relatórios',     id: 'reports'   },
-  { icon: '🚨', label: 'Tickets',        id: 'tickets'   },
+  { icon: '🛡️', label: 'Visão geral',   path: ADMIN_ROUTES.home     },
+  { icon: '👥', label: 'Usuários',       path: ADMIN_ROUTES.users    },
+  { icon: '🏫', label: 'Escolas',        path: ADMIN_ROUTES.schools  },
+  { icon: '💰', label: 'Financeiro',     path: ADMIN_ROUTES.finance  },
+  { icon: '📊', label: 'Relatórios',     path: ADMIN_ROUTES.reports  },
+  { icon: '🚨', label: 'Tickets',        path: ADMIN_ROUTES.tickets  },
 ]
 
 const bottomItems = [
-  { icon: '⚙️', label: 'Configurações', id: 'settings' },
-  { icon: '❓', label: 'Ajuda',          id: 'help'     },
+  { icon: '⚙️', label: 'Configurações', path: ADMIN_ROUTES.settings },
+  { icon: '❓', label: 'Ajuda',          path: ADMIN_ROUTES.help     },
 ]
 
-export default function AdminSidebar({ active, onNavigate }) {
+export default function AdminSidebar() {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  function isActive(path) {
+    return path === ADMIN_ROUTES.home ? pathname === path : pathname.startsWith(path)
+  }
+
+  function renderItem(item) {
+    const active = isActive(item.path)
+    return (
+      <button
+        key={item.path}
+        className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
+        onClick={() => navigate(item.path)}
+      >
+        <span className={styles.navIcon}>{item.icon}</span>
+        <span className={styles.navText}>{item.label}</span>
+        {active && <span className={styles.activeBar} />}
+      </button>
+    )
+  }
+
   return (
     <aside className={`${styles.sidebar} ${adminStyles.sidebar}`}>
       <div className={styles.logo}>
@@ -28,31 +52,12 @@ export default function AdminSidebar({ active, onNavigate }) {
 
       <nav className={styles.nav}>
         <span className={styles.navLabel}>Administração</span>
-        {navItems.map(item => (
-          <button
-            key={item.id}
-            className={`${styles.navItem} ${active === item.id ? styles.navItemActive : ''}`}
-            onClick={() => onNavigate(item.id)}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            <span className={styles.navText}>{item.label}</span>
-            {active === item.id && <span className={styles.activeBar} />}
-          </button>
-        ))}
+        {navItems.map(renderItem)}
       </nav>
 
       <div className={styles.bottom}>
         <div className={styles.divider} />
-        {bottomItems.map(item => (
-          <button
-            key={item.id}
-            className={`${styles.navItem} ${active === item.id ? styles.navItemActive : ''}`}
-            onClick={() => onNavigate(item.id)}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            <span className={styles.navText}>{item.label}</span>
-          </button>
-        ))}
+        {bottomItems.map(renderItem)}
       </div>
     </aside>
   )

@@ -49,11 +49,11 @@ export function AuthProvider({ children }) {
    * Always registers as ALUNO — tipoUsuario is fixed by the backend contract.
    * Throws a localised error string on failure.
    */
-  async function signup({ nome, email, senha }) {
+  async function signup({ nome, email, senha, tipoUsuario = 'ALUNO' }) {
     const res = await fetch(ENDPOINTS.signup, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ nome, email, senha, tipoUsuario: 'ALUNO', ativo: true }),
+      body:    JSON.stringify({ nome, email, senha, tipoUsuario, ativo: true }),
     })
 
     if (!res.ok) {
@@ -102,19 +102,15 @@ export function AuthProvider({ children }) {
 
   /**
    * Calls PUT /usuarios/{id} to update the authenticated user's profile.
-   * Only sends senha when the caller provides it (empty string = no change).
    * Throws a localised error string on failure.
    */
-  async function updateUser({ nome, email, senha }) {
+  async function updateUser({ nome, email }) {
     validateId(user?.id)
-
-    const body = { nome, email, tipoUsuario: user.tipoUsuario, ativo: true }
-    if (senha) body.senha = senha
 
     const res = await fetch(ENDPOINTS.userById(user.id), {
       method:  'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(body),
+      body:    JSON.stringify({ nome, email, tipoUsuario: user.tipoUsuario, ativo: true }),
     })
 
     if (!res.ok) {
@@ -122,14 +118,32 @@ export function AuthProvider({ children }) {
       throw new Error('Não foi possível salvar as alterações. Tente novamente.')
     }
 
-    const updated = {
-      ...user,
-      name:   nome,
-      avatar: nome.charAt(0).toUpperCase(),
-      email,
-    }
+    const updated = { ...user, name: nome, avatar: nome.charAt(0).toUpperCase(), email }
     persist(updated)
     setUser(updated)
+  }
+
+  /**
+   * Calls PUT /usuarios/{id} sending only the new password alongside the
+   * existing profile data (backend requires the full object).
+   * Throws a localised error string on failure.
+   */
+  async function changePassword({ senha }) {
+    validateId(user?.id)
+
+    const res = await fetch(ENDPOINTS.userById(user.id), {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        nome:        user.name,
+        email:       user.email,
+        tipoUsuario: user.tipoUsuario,
+        ativo:       true,
+        senha,
+      }),
+    })
+
+    if (!res.ok) throw new Error('Não foi possível alterar a senha. Tente novamente.')
   }
 
   /**
@@ -155,7 +169,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, updateUser, deleteUser, logout }}>
+    <AuthContext.Provider value={{ user, login, signup, updateUser, changePassword, deleteUser, logout }}>
       {children}
     </AuthContext.Provider>
   )
