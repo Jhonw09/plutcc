@@ -1,12 +1,33 @@
 /**
- * Service layer configuration.
+ * Service layer configuration with incremental API migration support.
  * 
- * Toggle USE_MOCK between true|false to switch between mock and real backend.
- * When USE_MOCK=true: services return mock data after simulated delay
- * When USE_MOCK=false: services make real fetch() calls to backend via ENDPOINTS
+ * STRATEGY:
+ *   Phase 1 (Current): Hybrid mode - CRUD operations try API first, fallback to localStorage
+ *   Phase 2 (Future): API-first mode - All operations use real API
+ *   Phase 3 (Final): Backend-only - Remove localStorage completely
+ * 
+ * HOW IT WORKS:
+ *   - USE_MOCK controls the fallback behavior in classService
+ *   - USE_MOCK = true  → Always use localStorage (safe, demo mode)
+ *   - USE_MOCK = false → Try API first, fallback to localStorage (current production)
+ *   
+ * MIGRATED OPERATIONS (API with automatic fallback):
+ *   ✅ createClass()
+ *   ✅ getClassById()
+ *   ✅ getClassesByUser()
+ *   ✅ joinClass()
+ *   ✅ leaveClass()
+ * 
+ * NOT YET MIGRATED (Still using localStorage):
+ *   📦 addMessageToMural() - Will migrate in Phase 2
+ *   📦 addActivityToMural() - Will migrate in Phase 2
+ *   📦 All comment operations - Will migrate in Phase 2
+ *   📦 Member management operations - Will migrate in Phase 2
+ *
+ * SET THIS TO CONTROL BACKEND:
  */
 
-export const USE_MOCK = true  // ← SET TO FALSE TO USE REAL BACKEND
+export const USE_MOCK = true  // ← true = demo mode (localStorage), false = production (API + fallback)
 
 /**
  * Simulates network delay (300–800ms random).

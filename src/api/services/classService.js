@@ -1,23 +1,25 @@
 /**
- * Class Service — Persistent Mock Database
+ * Class Service — Hybrid Mock + API Backend
  * 
- * Manages all class-related operations with full localStorage persistence.
- * Data persists across page reloads and behaves like a real backend.
+ * Manages all class-related operations with fallback support.
+ * - Production mode: Uses real API (with fallback to localStorage if unavailable)
+ * - Development/Demo mode: Uses localStorage
+ * 
+ * Configuration:
+ *   USE_MOCK = true  → Always use localStorage
+ *   USE_MOCK = false → Try API first, fallback to localStorage on error
  * 
  * Usage:
  *   import { classService } from './classService'
  *   const classData = await classService.createClass(professorId, classData)
  *   const turma = await classService.getClassById(classId)
- *   await classService.addMessageToMural(classId, userId, autorNome, texto)
- * 
- * Data Structure:
- *   - Classes stored in localStorage with full mural (messages + activities)
- *   - Each class includes members list and timestamps
- *   - All operations are async (for future backend compatibility)
- *   - Network delay simulated in mock mode
  */
 
 import { USE_MOCK, simulateNetworkDelay, ENDPOINTS } from './config'
+
+// Feature flag: When USE_MOCK=false, API failures automatically fall back to localStorage
+// This allows gradual migration without breaking the UI if backend is unavailable  
+const ENABLE_API_FALLBACK = true  // ← Set to false to force localStorage only
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LOCAL STORAGE PERSISTENCE
@@ -748,6 +750,46 @@ async function realDeleteCommentFromPost(classId, postId, commentId, userId) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HYBRID MODE: API WITH FALLBACK TO LOCALSTORAGE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Wrapper: Try real API first, fallback to mock localStorage on error.
+ * Used for critical CRUD operations during migration.
+ * @param {Function} realFn - Real API function
+ * @param {Function} mockFn - Mock/localStorage function
+ * @param {Array} args - Arguments to pass
+ */
+async function hybridCall(realFn, mockFn, args) {
+  // If mock mode is enabled, always use mock
+  if (USE_MOCK) {
+    return mockFn(...args)
+  }
+
+  // Try real API first
+  try {
+    const result = await realFn(...args)
+    console.log('[classService] ✅ API call succeeded, using real backend data')
+    return result
+  } catch (apiError) {
+    console.warn('[classService] ⚠️ API call failed, falling back to localStorage:', apiError.message)
+    
+    // Fallback to localStorage
+    if (ENABLE_API_FALLBACK) {
+      try {
+        return await mockFn(...args)
+      } catch (mockError) {
+        console.error('[classService] ❌ Both API and mock failed:', mockError.message)
+        throw apiError  // Throw original API error
+      }
+    } else {
+      // If fallback is disabled, throw original API error
+      throw apiError
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PUBLIC API (Dynamic routing between mock & real)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -763,23 +805,26 @@ if (USE_MOCK) {
 export const classService = {
   /**
    * Create a new class.
+   * ✅ MIGRATED: Tries real API first, falls back to localStorage automatically.
    * @param {string} professorId - Teacher's user ID
    * @param {Object} classData - { nome, disciplina, descricao, tipo, nivel }
    * @returns {Promise<{id, codigo, nome, membros, mural, ...}>}
    */
   createClass: (professorId, classData) =>
-    USE_MOCK ? mockCreateClass(professorId, classData) : realCreateClass(professorId, classData),
+    hybridCall(realCreateClass, mockCreateClass, [professorId, classData]),
 
   /**
    * Get a specific class by ID.
+   * ✅ MIGRATED: Tries real API first, falls back to localStorage automatically.
    * @param {string} classId
    * @returns {Promise<{id, codigo, nome, membros, mural, ...}>}
    */
   getClassById: (classId) =>
-    USE_MOCK ? mockGetClassById(classId) : realGetClassById(classId),
+    hybridCall(realGetClassById, mockGetClassById, [classId]),
 
   /**
    * Get classes for a user (by role).
+   * ✅ MIGRATED: Tries real API first, falls back to localStorage automatically.
    * Students: classes they're enrolled in
    * Teachers: classes they created
    * @param {string} userId
@@ -787,25 +832,27 @@ export const classService = {
    * @returns {Promise<Array<{id, codigo, nome, ...}>>}
    */
   getClassesByUser: (userId, role) =>
-    USE_MOCK ? mockGetClassesByUser(userId, role) : realGetClassesByUser(userId, role),
+    hybridCall(realGetClassesByUser, mockGetClassesByUser, [userId, role]),
 
   /**
    * Join a class using a code.
+   * ✅ MIGRATED: Tries real API first, falls back to localStorage automatically.
    * @param {string} userId
    * @param {Object} payload - { codigo }
    * @returns {Promise<{id, codigo, nome, membros, mural, ...}>}
    */
   joinClass: (userId, payload) =>
-    USE_MOCK ? mockJoinClass(userId, payload) : realJoinClass(userId, payload),
+    hybridCall(realJoinClass, mockJoinClass, [userId, payload]),
 
   /**
    * Leave a class.
+   * ✅ MIGRATED: Tries real API first, falls back to localStorage automatically.
    * @param {string} userId
    * @param {string} classId
    * @returns {Promise<{success: true}>}
    */
   leaveClass: (userId, classId) =>
-    USE_MOCK ? mockLeaveClass(userId, classId) : realLeaveClass(userId, classId),
+    hybridCall(realLeaveClass, mockLeaveClass, [userId, classId]),
 
   /**
    * Add a message to the class mural.

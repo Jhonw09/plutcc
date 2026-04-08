@@ -3,6 +3,18 @@
  * 
  * Provides access to class service operations with loading and error state management.
  * 
+ * ✅ MIGRATED OPERATIONS (API with localStorage fallback):
+ *   - getClassesByUser()
+ *   - getClassById()
+ *   - joinClass()
+ *   - leaveClass()
+ *   - createClass()
+ * 
+ * 📦 NOT YET MIGRATED (Still using localStorage):
+ *   - addMessageToMural()
+ *   - addActivityToMural()
+ *   - Comments and deletions
+ * 
  * Usage:
  *   const { 
  *     joinClass, 
@@ -11,8 +23,8 @@
  *     getClassById,
  *     addMessageToMural,
  *     addActivityToMural,
- *     loading, 
- *     error 
+ *     loading,  // true while any operation is in progress
+ *     error     // error message if any operation failed
  *   } = useClass()
  */
 
