@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import TeacherLayout       from '../components/teacher/TeacherLayout'
 import ClassCard           from '../components/teacher/ClassCard'
 import CreateClassModal    from '../components/teacher/CreateClassModal'
@@ -6,6 +6,7 @@ import { ConfirmModal }    from '../components/ui/ConfirmModal'
 import { Toast }           from '../components/ui/Toast'
 import { useToast }        from '../hooks/useToast'
 import { useAuth }         from '../context/AuthContext'
+import { useClass }        from '../hooks/useClass'
 import styles from './TeacherDashboardPage.module.css'
 
 // ── Filter options ────────────────────────────────────────────────────────────
@@ -23,7 +24,10 @@ const SORT_OPTIONS = [
 
 // ── Derived stats from local class list ───────────────────────────────────────
 function buildStats(classes) {
-  const totalStudents = classes.reduce((s, c) => s + (c.alunoIds?.length ?? 0), 0)
+  const totalStudents = classes.reduce((s, c) => {
+    const studentCount = (c.membros ?? []).filter(m => m.role === 'student').length
+    return s + studentCount
+  }, 0)
   const publicCount   = classes.filter(c => c.tipo === 'PUBLICA').length
   return [
     { id: 'classes',  icon: '🏫', label: 'Turmas ativas',   value: classes.length,  delta: null },
@@ -36,6 +40,7 @@ function buildStats(classes) {
 export default function TeacherDashboardPage() {
   const { user } = useAuth()
   const { toasts, toast, dismiss } = useToast()
+  const { getClassesByUser, loading: classesLoading, error: classesError } = useClass()
 
   // ── Class state ──────────────────────────────────────────────────────────────
   const [classes, setClasses] = useState([])
@@ -49,6 +54,20 @@ export default function TeacherDashboardPage() {
   const [search,     setSearch]     = useState('')
   const [filterSubj, setFilterSubj] = useState('Todas')
   const [sortBy,     setSortBy]     = useState('recent')
+
+  // Load teacher's classes on mount
+  useEffect(() => {
+    async function loadClasses() {
+      try {
+        const teacherClasses = await getClassesByUser('teacher')
+        setClasses(teacherClasses)
+      } catch (err) {
+        console.error('Erro ao carregar turmas:', err)
+        toast('Erro ao carregar turmas. Tente novamente.', 'error')
+      }
+    }
+    loadClasses()
+  }, [getClassesByUser, toast])
 
   // ── Derived: filtered + sorted classes ───────────────────────────────────────
   const visibleClasses = useMemo(() => {
@@ -68,7 +87,13 @@ export default function TeacherDashboardPage() {
     }
 
     if (sortBy === 'name')     list.sort((a, b) => a.nome.localeCompare(b.nome))
-    if (sortBy === 'students') list.sort((a, b) => (b.alunoIds?.length ?? 0) - (a.alunoIds?.length ?? 0))
+    if (sortBy === 'students') {
+      list.sort((a, b) => {
+        const aStudents = (a.membros ?? []).filter(m => m.role === 'student').length
+        const bStudents = (b.membros ?? []).filter(m => m.role === 'student').length
+        return bStudents - aStudents
+      })
+    }
     if (sortBy === 'recent')   list.sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
 
     return list
@@ -79,9 +104,18 @@ export default function TeacherDashboardPage() {
   const isFiltered = search.trim() || filterSubj !== 'Todas'
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
-  function handleCreate(newClass) {
-    setClasses(prev => [newClass, ...prev])
-    toast(`Turma "${newClass.nome}" criada com sucesso!`, 'success')
+  async function handleCreate(newClass) {
+    try {
+      // newClass has: nome, disciplina, descricao, tipo, nivel, professorId, professorNome
+      // Call classService via direct import to create this class
+      const { classService } = await import('../api/services/classService')
+      const createdClass = await classService.createClass(user?.id, newClass)
+      setClasses(prev => [createdClass, ...prev])
+      toast(`Turma "${createdClass.nome}" criada com sucesso!`, 'success')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao criar turma'
+      toast(msg, 'error')
+    }
   }
 
   function handleEdit(updated) {

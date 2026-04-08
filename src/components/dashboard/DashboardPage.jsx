@@ -1,18 +1,55 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from './DashboardLayout'
 import JoinClassModal  from './JoinClassModal'
 import JoinedClassCard from './JoinedClassCard'
-import { useAuth }     from '../../context/AuthContext'
+import { useClass }    from '../../hooks/useClass'
 import styles from './DashboardPage.module.css'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { getClassesByUser, loading, error } = useClass()
 
   const [joinedClasses, setJoinedClasses] = useState([])
   const [modalOpen,     setModalOpen]     = useState(false)
 
-  function handleJoin(newClass) {
-    setJoinedClasses(prev => [newClass, ...prev])
+  // Fetch enrolled classes on mount
+  useEffect(() => {
+    async function loadClasses() {
+      try {
+        const classes = await getClassesByUser('student')
+        // Ensure all classes have membros array
+        const safeClasses = (classes ?? []).map(c => ({
+          ...c,
+          membros: c.membros ?? [],
+        }))
+        setJoinedClasses(safeClasses)
+      } catch (err) {
+        console.error('Erro ao carregar turmas:', err)
+        setJoinedClasses([])
+      }
+    }
+    loadClasses()
+  }, [getClassesByUser])
+
+  async function handleJoin(newClass) {
+    // Immediately refetch all classes to sync with localStorage
+    try {
+      const classes = await getClassesByUser('student')
+      // Ensure all classes have membros array with proper structure
+      const safeClasses = (classes ?? []).map(c => ({
+        ...c,
+        membros: c.membros ?? [],
+      }))
+      setJoinedClasses(safeClasses)
+      setModalOpen(false)
+    } catch (err) {
+      console.error('Erro ao sincronizar turmas:', err)
+      // Fallback: at least update the state with the new class
+      const safeNewClass = {
+        ...newClass,
+        membros: newClass.membros ?? [],
+      }
+      setJoinedClasses(prev => [safeNewClass, ...prev])
+    }
   }
 
   const joinedCodes = joinedClasses.map(c => c.codigo)
@@ -29,8 +66,25 @@ export default function DashboardPage() {
         />
       )}
 
+      {/* ── LOADING ── */}
+      {loading && (
+        <div className={styles.heroEmpty}>
+          <span className={styles.heroEmptyIcon}>⏳</span>
+          <h3 className={styles.heroEmptyTitle}>Carregando turmas...</h3>
+        </div>
+      )}
+
+      {/* ── ERROR ── */}
+      {error && (
+        <div className={styles.heroEmpty}>
+          <span className={styles.heroEmptyIcon}>⚠️</span>
+          <h3 className={styles.heroEmptyTitle}>Erro ao carregar turmas</h3>
+          <p className={styles.heroEmptyDesc}>{error}</p>
+        </div>
+      )}
+
       {/* ── NO CLASSES ── */}
-      {!hasClasses && (
+      {!loading && !error && !hasClasses && (
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}>🏫</span>
           <h3 className={styles.heroEmptyTitle}>
@@ -46,7 +100,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── HAS CLASSES ── */}
-      {hasClasses && (
+      {!loading && !error && hasClasses && (
         <>
           {/* My Classes — driven entirely by real local state */}
           <section className={styles.section}>

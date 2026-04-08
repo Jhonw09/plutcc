@@ -1,0 +1,416 @@
+================================================================================
+                        SERVICE ARCHITECTURE DIAGRAM
+================================================================================
+
+
+HIGH-LEVEL DATA FLOW
+================================================================================
+
+User Interaction (Component):
+  👤 User clicks "Join Class"
+      ↓
+      ↓ Component calls: await joinClass('ABC123')
+      ↓
+  ┌─────────────────────────────────────────────────────────────┐
+  │ useClass() Hook                                             │
+  │ - Manages loading/error state                               │
+  │ - Calls classService.joinClass(userId, { codigo })          │
+  └─────────────────────────────────────────────────────────────┘
+      ↓
+      ↓ classService checks: USE_MOCK === true?
+      ↓
+      ├─ YES → Call mockJoinClass(userId, { codigo })
+      │           - Simulate network delay (300–800ms)
+      │           - Validate inputs
+      │           - Modify mock database (mockEnrollments)
+      │           - Return mock class data
+      │
+      └─ NO → Call realJoinClass(userId, { codigo })
+              - POST to /api/v1/turmas/entrar
+              - Wait for backend response
+              - Return real class data
+      ↓
+  Hook receives result (or error)
+      ↓
+  Hook stores in state (result or error)
+      ↓
+  Component renders updated UI
+
+
+DIRECTORY STRUCTURE (BEFORE & AFTER)
+================================================================================
+
+BEFORE (Direct fetch):
+──────────────────────
+
+src/
+├── context/
+│   └── AuthContext.jsx        ← Contains fetch() calls
+├── components/
+│   └── DashboardPage.jsx      ← Manages local state, calls context
+└── api/
+    └── config.js              ← Just endpoint URLs
+
+
+AFTER (Service-based):
+──────────────────────
+
+src/
+├── api/
+│   ├── config.js              ← Original (still used)
+│   └── services/              ← NEW: All business logic here
+│       ├── config.js          ← Mock toggle, shared config
+│       ├── authService.js     ← Auth operations
+│       └── classService.js    ← Class operations
+│
+├── context/
+│   └── AuthContext.jsx        ← SIMPLIFIED: Uses authService
+│
+├── hooks/
+│   ├── useAuth.js             ← Access AuthContext
+│   ├── useClass.js            ← NEW: Use classService + state
+│   └── ... (other hooks)
+└── components/
+    └── DashboardPage.jsx      ← UNCHANGED: Uses hooks
+
+
+COMPONENT USAGE COMPARISON
+================================================================================
+
+BEFORE (Direct fetch in context):
+─────────────────────────────────
+
+Component:
+  const { login } = useAuth()
+  await login({ email, senha })
+
+AuthContext:
+  async function login({ email, senha }) {
+    const res = await fetch(ENDPOINTS.login, {...})
+    if (!res.ok) throw new Error('...')
+    return res.json()
+  }
+
+Problem: Can't easily switch to mock data
+
+AFTER (Services with toggle):
+─────────────────────────────
+
+Component:
+  const { login } = useAuth()
+  await login({ email, senha })  ← SAME API!
+
+Context:
+  async function login({ email, senha }) {
+    const data = await authService.login({ email, senha })  ← Delegated
+    // ... process result
+  }
+
+Service:
+  export const authService = {
+    login: (creds) =>
+      USE_MOCK ? mockLogin(creds) : realLogin(creds)  ← Toggle decides
+  }
+
+Benefit: Same component code, switch backends by changing ONE variable
+
+
+SERVICE INTERNAL LOGIC
+================================================================================
+
+authService.login() decision tree:
+
+  authService.login({ email, senha })
+    ↓
+    ├─ USE_MOCK === true? ─────────────────────────────────────┐
+    │                                                           │
+    │  YES                                         NO           │
+    ↓                                               ↓
+  mockLogin()                                  realLogin()
+    ↓                                               ↓
+  Check: email exists?                        fetch(ENDPOINTS.login)
+    ↓                                               ↓
+  Check: password matches?                    Check: res.ok?
+    ↓                                               ↓
+  Return mock user object                     Parse & return JSON
+  + 300–800ms delay                               ↓
+                                           { id, nome, role, ... }
+
+
+ERROR HANDLING FLOW
+================================================================================
+
+Error Thrown in Service:
+
+  mockJoinClass()
+    ├─ userId missing? → throw new Error('Sessão inválida...')
+    ├─ codigo invalid? → throw new Error('Código inválido...')
+    └─ already enrolled? → throw new Error('Já inscrito...')
+
+  realJoinClass()
+    ├─ userId missing? → throw new Error('Sessão inválida...')
+    ├─ res.status === 404? → throw new Error('Código inválido...')
+    ├─ res.status === 409? → throw new Error('Já inscrito...')
+    └─ other error? → throw new Error('Erro ao...')
+
+Error Caught in Hook:
+
+  async function handleJoin() {
+    try {
+      await joinClass(codigo)
+      // Success
+    } catch (err) {
+      // err.message = 'Código inválido...' (Portuguese, user-ready)
+      setError(err.message)
+    }
+  }
+
+Error Displayed in Component:
+
+  {error && <Alert variant="error">{error}</Alert>}
+  ↓
+  User sees: "Código inválido." (in Portuguese)
+
+
+STATE MANAGEMENT LAYERS
+================================================================================
+
+Layer 1: AuthContext (Global Auth State)
+─────────────────────────────────────────
+
+  AuthContext
+    └─ user: { id, name, role, email, ... }
+    └─ login()
+    └─ signup()
+    └─ logout()
+    └─ updateUser()
+    └─ changePassword()
+    └─ deleteUser()
+
+  Accessed via: const { user, login } = useAuth()
+  Persisted: localStorage with key 'sc_user'
+  Scope: Global (available to entire app)
+
+
+Layer 2: Local Component State (Per-component state)
+─────────────────────────────────────────────────────
+
+  Example in DashboardPage:
+    - joinedClasses: [Class, Class, ...]
+    - modalOpen: boolean
+    - selectedClass: Class | null
+
+  Controlled by: Component locally
+  Persisted: Not persisted (reset on refresh)
+  Scope: Single component
+
+
+Layer 3: Hook State (useClass loading/error)
+──────────────────────────────────────────────
+
+  useClass returns:
+    - loading: boolean
+    - error: string | null
+    - joinClass: async function
+    - ...other methods
+
+  Purpose: Manage data fetching state
+  Scope: Available to any component calling hook
+
+
+MOCK DATA PERSISTENCE
+================================================================================
+
+Mock Storage (In-memory):
+
+  mockUsers = [...]           ← Resets on page refresh
+  mockClasses = [...]         ← Resets on page refresh
+  mockEnrollments = {...}     ← Resets on page refresh
+
+  Example:
+    User signs up → stored in mockUsers
+    User joins class → stored in mockEnrollments[userId]
+    Page refresh → mockUsers/mockEnrollments reset
+    User logs out → must re-signup to see same data
+
+Real Storage (Database):
+
+  Backend database maintains:
+    - Users table
+    - Classes table
+    - Enrollments table
+
+  Example:
+    User signs up → stored in DB
+    User joins class → stored in DB
+    Page refresh → DB still has data
+    User logs out → logs back in, sees previous state
+
+
+MIGRATION PATH: MOCK → REAL
+================================================================================
+
+Timeline (Typical):
+
+  Week 1: Frontend dev with mock data
+    ├─ UI components built
+    ├─ Services created (mock implementations)
+    ├─ Testing with mock
+    └─ USE_MOCK = true
+
+  Week 2: Backend development (in parallel)
+    ├─ Backend team builds APIs
+    ├─ Frontend tests with mock continues
+    └─ Backend testing locally
+
+  Week 3: Integration ready
+    ├─ Backend APIs ready
+    ├─ Response formats finalized
+    ├─ Frontend ready to integrate
+    └─ START INTEGRATION
+
+  Week 4: Integration
+    ├─ Set USE_MOCK = false
+    ├─ Update ENDPOINTS if paths changed
+    ├─ Fix any response format mismatches
+    ├─ Debug CORS, auth headers, etc.
+    └─ DONE!
+
+
+Migration Steps:
+
+  1. Backend development complete
+     └─ All endpoints implemented
+     └─ Response formats documented
+
+  2. Update ENDPOINTS in config.js if needed
+     └─ Example: /turmas → /classes (if backend changed path)
+
+  3. Change USE_MOCK = false
+     └─ Single line change
+
+  4. Test flow:
+     ├─ Reload frontend
+     ├─ Try signup → check Network tab (should see POST)
+     ├─ Try login → check Network tab (should see POST)
+     ├─ Try join class → check Network tab (should see POST)
+     └─ Check backend logs (should see requests)
+
+  5. Debug issues:
+     ├─ 404: Endpoint path mismatch
+     ├─ 400: Request body format wrong
+     ├─ 401: Auth header/token issue
+     ├─ 403: Permission/role issue
+     ├─ 500: Backend error (check server logs)
+     ├─ CORS: Backend not allowing frontend domain
+
+  6. Resolution:
+     ├─ Updated ENDPOINTS paths
+     ├─ Fixed request/response format
+     ├─ Added/configured auth headers
+     ├─ Updated backend response handling
+     └─ Both sides tested & working
+
+
+DEPLOYMENT SCENARIOS
+================================================================================
+
+Scenario 1: Frontend-only (mock mode in production)
+──────────────────────────────────────────────────
+
+  USE_MOCK = true
+  Deploy to Vercel (or similar)
+  Users see mock data
+  Good for: Demo, MVP, prototype
+  Not good for: Production with real users
+
+
+Scenario 2: Frontend + Backend (both deployed)
+────────────────────────────────────────────────
+
+  USE_MOCK = false
+  Frontend deployed to Vercel
+  Backend deployed to Render/Railway/Heroku
+  .env set: VITE_API_URL=https://backend.example.com
+  Users see real data from backend
+  Good for: Production
+  Not good for: Development (slower, needs backend running)
+
+
+BUILD CONFIG:
+─────────────
+
+Development (.env.local):
+  VITE_API_URL=http://localhost:8080
+  (or just rely on Vite proxy)
+
+Production (.env.production):
+  VITE_API_URL=https://api.example.com
+
+Deployment uses .env.production values.
+
+
+SUMMARY COMPARISON TABLE
+================================================================================
+
+Feature              | Mock Mode          | Real Mode
+──────               | ──────────         | ─────────
+USE_MOCK value       | true               | false
+Data source          | In-memory objects  | Backend API
+Network delay        | Simulated (300-800 | Real (depends on
+                     | ms)                | network)
+Data persistence     | None (resets on    | In database
+                     | refresh)           |
+Error messages       | Fixed, controlled  | From backend
+Backend required     | No                 | Yes
+CORS issues          | No                 | Maybe
+Testing scope        | UI logic           | Full stack
+Development speed    | Fast               | Slower
+Production ready     | Only for demo      | Yes
+
+
+PERFORMANCE CHARACTERISTICS
+================================================================================
+
+Mock Mode Benefits:
+  ✓ Testing UI independently
+  ✓ Development speed (no backend needed)
+  ✓ Predictable errors (controlled)
+  ✓ Consistent network delay (good for UX testing)
+  ✓ Can't break backend (nothing to break!)
+
+Real Mode Benefits:
+  ✓ Testing full integration
+  ✓ Real data persistence
+  ✓ Real error scenarios
+  ✓ Real network conditions
+  ✓ Closer to production experience
+
+
+TROUBLESHOOTING TABLE
+================================================================================
+
+Issue               | Symptom           | Cause              | Fix
+───────             | ────────          | ──────             | ────
+Mock not called     | No delay, instant | USE_MOCK = false  | Set to true
+Real not called     | Still seeing      | USE_MOCK = true   | Set to false
+                    | mock data         |                    |
+Blank page          | No error, page    | Service threws    | Check
+                    | empty             | error with no     | console
+                    |                   | catch             | for error
+404 on endpoint     | Network error     | ENDPOINTS path    | Update path
+                    |                   | wrong              | in config.js
+CORS errors         | "Access denied"   | Backend not       | Add CORS
+                    | in console        | allowing frontend  | headers
+Login won't persist | User lost on      | localStorage      | Check browser
+                    | refresh           | not working       | settings
+Service undefined   | "Cannot read      | Import missing    | Add: import
+                    | 'joinClass' of    | or wrong path     | { classService }
+                    | undefined"        |                   |
+
+
+=====================================================================
+
+For detailed explanations, see: API_ARCHITECTURE.md
+For quick examples, see: QUICK_REFERENCE.md
+For full checklist, see: REFACTORING_SUMMARY.txt

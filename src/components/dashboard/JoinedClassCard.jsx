@@ -9,13 +9,17 @@ const SUBJECT_EMOJI = {
   Artes: '🎨', Informática: '💻', Filosofia: '🧠', Sociologia: '⚖️',
 }
 
-export default function JoinedClassCard({ id, nome, disciplina, descricao, tipo, nivel, codigo, professor }) {
+export default function JoinedClassCard({ id, nome, disciplina, descricao, tipo, nivel, codigo, professorNome, membros }) {
   const navigate = useNavigate()
   const isPublic = tipo === 'PUBLICA'
+  // Count only students (members with role === 'student')
+  const students = (membros ?? []).filter(m => m.role === 'student')
+  const studentCount = students.length
+  const displayProfessor = professorNome ?? 'Professor'
 
   function handleOpen() {
     navigate(`/turma/${id ?? codigo}`, {
-      state: { id: id ?? codigo, nome, disciplina, descricao, tipo, nivel, codigo, professor },
+      state: { id: id ?? codigo, nome, disciplina, descricao, tipo, nivel, codigo, professorNome },
     })
   }
 
@@ -30,7 +34,7 @@ export default function JoinedClassCard({ id, nome, disciplina, descricao, tipo,
         <div className={styles.top}>
           <div className={styles.meta}>
             <span className={styles.name}>{nome}</span>
-            <span className={styles.teacher}>{professor}</span>
+            <span className={styles.teacher}>{displayProfessor}</span>
           </div>
           {/* Type badge — top-right, visually separated from subject/level */}
           <span className={styles.typeBadge} style={typeBadgeStyle(tipo)}>
@@ -44,6 +48,9 @@ export default function JoinedClassCard({ id, nome, disciplina, descricao, tipo,
           <code className={styles.code}>{codigo}</code>
           <Tag value={disciplina} />
           <Tag value={nivel} />
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
+            👥 {studentCount} {studentCount === 1 ? 'aluno' : 'alunos'}
+          </span>
           <button className={styles.enterBtn} onClick={e => { e.stopPropagation(); handleOpen() }}>Acessar →</button>
         </div>
       </div>

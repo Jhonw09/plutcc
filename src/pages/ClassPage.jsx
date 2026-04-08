@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import AppLayout        from '../components/layout/AppLayout'
 import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import TeacherSidebar   from '../components/teacher/TeacherSidebar'
@@ -7,22 +7,26 @@ import DashboardHeader  from '../components/dashboard/DashboardHeader'
 import { Avatar }       from '../components/ui/Avatar'
 import { Button }       from '../components/ui/Button'
 import { InputField }   from '../components/ui/InputField'
+import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useAuth }      from '../context/AuthContext'
+import { useClass }     from '../hooks/useClass'
 import { ROLE_ROUTES }  from '../constants/routes'
 import { typeBadgeStyle } from '../utils/subjectColors'
 import { Tag } from '../components/ui/Tag'
 import styles      from './ClassPage.module.css'
 import modalStyles from '../components/teacher/CreateClassModal.module.css'
 
-// ── Mock class data — replace with GET /api/v1/turmas/:id ────────────────
+// ── Default fallback for UI when data not yet loaded ────────────────────────
 const MOCK = {
-  nome:       'Turma de Exemplo',
-  disciplina: 'Matemática',
-  tipo:       'PUBLICA',
-  nivel:      'Médio',
-  codigo:     'MAT-EX-0001',
-  professor:  'Prof. Carlos Lima',
-  descricao:  'Funções, geometria analítica e preparação para o ENEM.',
+  id:       'loading',
+  nome:     '...',
+  codigo:   'CARREGANDO...',
+  tipo:     'PUBLICA',
+  nivel:    'Médio',
+  disciplina: 'Carregando',
+  professor: 'Professor',
+  membros:  [],
+  mural:    [],
 }
 
 const SUBJECT_EMOJI = {
@@ -46,17 +50,6 @@ function formatTime(iso) {
   if (diff < 3600)  return `há ${Math.floor(diff / 60)} min`
   if (diff < 86400) return `há ${Math.floor(diff / 3600)}h`
   return new Date(iso).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
-}
-
-function makePost(user, text, type = 'normal') {
-  return {
-    id:        Date.now() + Math.random(),
-    author:    user?.name ?? 'Professor',
-    initial:   (user?.name ?? 'P')[0].toUpperCase(),
-    text,
-    type,       // 'normal' | 'system'
-    createdAt: new Date().toISOString(),
-  }
 }
 
 // ── Shared UI ─────────────────────────────────────────────────────────────
@@ -95,27 +88,55 @@ function ModalShell({ title, icon, sub, onClose, children }) {
 
 // ── PostItem ──────────────────────────────────────────────────────────────
 
-function PostItem({ post, user, isTeacher, onDelete }) {
+function PostItem({ post, user, isTeacher, classId, onCommentAdded, onDelete }) {
+  const { addCommentToPost, deleteCommentFromPost, loading: commenting } = useClass()
   const [draft,          setDraft]          = useState('')
-  const [comments,       setComments]       = useState([])
   const [showCommentBox, setShowCommentBox] = useState(false)
+  const [commentError,   setCommentError]   = useState(null)
 
-  function submitComment(e) {
+  // Load comments from post (from localStorage via classService)
+  const comments = post.comentarios ?? []
+
+  async function submitComment(e) {
     e.preventDefault()
     const text = draft.trim()
     if (!text) return
-    setComments(prev => [...prev, {
-      id:        Date.now(),
-      author:    user?.name ?? 'Você',
-      initial:   (user?.name ?? 'V')[0].toUpperCase(),
-      text,
-      createdAt: new Date().toISOString(),
-    }])
-    setDraft('')
+
+    setCommentError(null)
+    try {
+      await addCommentToPost(classId, post.id, text)
+      setDraft('')
+      // Trigger refetch to get updated comments
+      if (onCommentAdded) onCommentAdded()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao comentar'
+      setCommentError(msg)
+    }
   }
 
-  function deleteComment(id) {
-    setComments(prev => prev.filter(c => c.id !== id))
+  async function deleteComment(commentId) {
+    setCommentError(null)
+    try {
+      // DEBUG: Log user and comment info
+      console.log('[PostItem] deleteComment called:', {
+        userId: user?.id,
+        userRole: user?.role,
+        userName: user?.name,
+        classId,
+        postId: post.id,
+        commentId,
+        comments: comments.map(c => ({ id: c.id, autorId: c.autorId, autor: c.autor })),
+        isTeacher,
+      })
+
+      await deleteCommentFromPost(classId, post.id, commentId)
+      // Trigger refetch to get updated comments
+      if (onCommentAdded) onCommentAdded()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao deletar comentário'
+      console.error('[PostItem] deleteComment failed:', msg)
+      setCommentError(msg)
+    }
   }
 
   const isSystem = post.type === 'system'
@@ -159,11 +180,19 @@ function PostItem({ post, user, isTeacher, onDelete }) {
         <button
           className={styles.commentToggle}
           onClick={() => setShowCommentBox(v => !v)}
+          disabled={commenting}
         >
           💬 {comments.length > 0
             ? `${comments.length} comentário${comments.length !== 1 ? 's' : ''}`
             : 'Comentar'}
         </button>
+      )}
+
+      {/* Error message for comments */}
+      {commentError && (
+        <div style={{ color: 'var(--error)', fontSize: '0.85rem', marginBottom: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.25rem' }}>
+          {commentError}
+        </div>
       )}
 
       {/* Comment list */}
@@ -172,25 +201,28 @@ function PostItem({ post, user, isTeacher, onDelete }) {
           {comments.map(c => (
             <div key={c.id} className={styles.commentRow}>
               <Avatar
-                initial={c.initial}
+                initial={(c.autor?.[0] ?? 'U').toUpperCase()}
                 bg="var(--surface-3)"
                 color="var(--text-secondary)"
                 size={28}
               />
               <div className={styles.commentBubble}>
-                <span className={styles.commentAuthor}>{c.author}</span>
-                <span className={styles.commentText}>{c.text}</span>
+                <span className={styles.commentAuthor}>{c.autor}</span>
+                <span className={styles.commentText}>{c.texto}</span>
               </div>
               <span className={styles.commentTime}>{formatTime(c.createdAt)}</span>
-              {/* Delete comment — available to everyone for their own UX */}
-              <button
-                className={styles.commentDeleteBtn}
-                onClick={() => deleteComment(c.id)}
-                aria-label="Excluir comentário"
-                title="Excluir comentário"
-              >
-                ✕
-              </button>
+              {/* Delete comment — show only if user is author OR user is teacher */}
+              {(c.autorId === user?.id || isTeacher) && (
+                <button
+                  className={styles.commentDeleteBtn}
+                  onClick={() => deleteComment(c.id)}
+                  aria-label="Excluir comentário"
+                  title={c.autorId === user?.id ? 'Excluir seu comentário' : 'Excluir comentário'}
+                  disabled={commenting}
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -209,15 +241,16 @@ function PostItem({ post, user, isTeacher, onDelete }) {
             className={styles.commentInput}
             placeholder="Escreva um comentário…"
             value={draft}
-            onChange={e => setDraft(e.target.value)}
+            onChange={e => { setDraft(e.target.value); setCommentError(null) }}
             autoFocus
+            disabled={commenting}
           />
           <button
             type="submit"
             className={styles.commentSubmit}
-            disabled={!draft.trim()}
+            disabled={!draft.trim() || commenting}
           >
-            Enviar
+            {commenting ? 'Enviando...' : 'Enviar'}
           </button>
         </form>
       )}
@@ -227,16 +260,26 @@ function PostItem({ post, user, isTeacher, onDelete }) {
 
 // ── MuralTab ──────────────────────────────────────────────────────────────
 
-function MuralTab({ posts, setPosts, isTeacher, user }) {
+function MuralTab({ classData, classId, isTeacher, user, onPostAdded }) {
+  const { addMessageToMural, loading: posting, error: postError } = useClass()
   const [composerOpen, setComposerOpen] = useState(false)
   const [draft,        setDraft]        = useState('')
+  const [postingError, setPostingError] = useState(null)
 
-  function handlePublish() {
+  async function handlePublish() {
     const text = draft.trim()
     if (!text) return
-    setPosts(prev => [makePost(user, text), ...prev])
-    setDraft('')
-    setComposerOpen(false)
+    
+    setPostingError(null)
+    try {
+      await addMessageToMural(classId, text)
+      setDraft('')
+      setComposerOpen(false)
+      if (onPostAdded) onPostAdded()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao publicar'
+      setPostingError(msg)
+    }
   }
 
   function handleKeyDown(e) {
@@ -244,9 +287,18 @@ function MuralTab({ posts, setPosts, isTeacher, user }) {
     if (e.key === 'Escape') { setComposerOpen(false); setDraft('') }
   }
 
-  function deletePost(id) {
-    setPosts(prev => prev.filter(p => p.id !== id))
-  }
+  // Transform mural items (tipo='mensagem' or tipo='sistema') into readable post format
+  const posts = (classData?.mural ?? [])
+    .filter(item => item.tipo === 'mensagem' || item.tipo === 'sistema')
+    .map(item => ({
+      id: item.id,
+      author: item.autor,
+      initial: (item.autor?.[0] ?? 'U').toUpperCase(),
+      text: item.texto,
+      type: item.tipo === 'sistema' ? 'system' : 'normal',
+      createdAt: item.createdAt,
+      comentarios: item.comentarios ?? [],
+    }))
 
   return (
     <div className={styles.muralWrap}>
@@ -282,26 +334,33 @@ function MuralTab({ posts, setPosts, isTeacher, user }) {
                   className={styles.composerTextarea}
                   placeholder="Escreva um anúncio, tarefa ou aviso para a turma…"
                   value={draft}
-                  onChange={e => setDraft(e.target.value)}
+                  onChange={e => { setDraft(e.target.value); setPostingError(null) }}
                   onKeyDown={handleKeyDown}
                   rows={4}
                   autoFocus
+                  disabled={posting}
                 />
               </div>
+              {(postingError || postError) && (
+                <div style={{ color: 'var(--error)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                  {postingError || postError}
+                </div>
+              )}
               <div className={styles.composerActions}>
                 <span className={styles.composerHint}>Ctrl + Enter para publicar</span>
                 <button
                   className={styles.composerCancel}
-                  onClick={() => { setComposerOpen(false); setDraft('') }}
+                  onClick={() => { setComposerOpen(false); setDraft(''); setPostingError(null) }}
+                  disabled={posting}
                 >
                   Cancelar
                 </button>
                 <Button
                   variant="primary"
                   onClick={handlePublish}
-                  disabled={!draft.trim()}
+                  disabled={!draft.trim() || posting}
                 >
-                  Publicar
+                  {posting ? 'Publicando...' : 'Publicar'}
                 </Button>
               </div>
             </div>
@@ -313,7 +372,7 @@ function MuralTab({ posts, setPosts, isTeacher, user }) {
       {posts.length === 0 ? (
         <EmptyState
           icon="📭"
-          text="Nenhuma publicação ainda. Quando o backend estiver conectado, as publicações e comentários da turma aparecerão aqui."
+          text="Nenhuma publicação ainda. Comece a conversa!"
         />
       ) : (
         <div className={styles.postList}>
@@ -323,7 +382,9 @@ function MuralTab({ posts, setPosts, isTeacher, user }) {
               post={p}
               user={user}
               isTeacher={isTeacher}
-              onDelete={deletePost}
+              classId={classId}
+              onCommentAdded={onPostAdded}
+              onDelete={() => {}} // TODO: implement delete via service
             />
           ))}
         </div>
@@ -436,42 +497,61 @@ function CreateActivityModal({ onClose, onCreate }) {
 
 // ── AtividadesTab ─────────────────────────────────────────────────────────
 
-function AtividadesTab({ isTeacher, user, onAddPost, disciplina, nivel }) {
-  const [activities,   setActivities]   = useState([])
+function AtividadesTab({ classData, classId, isTeacher, onAddPost, disciplina, nivel }) {
+  const { addActivityToMural, loading: posting } = useClass()
   const [actModalOpen, setActModalOpen] = useState(false)
+  const [postingError, setPostingError] = useState(null)
 
-  function handleCreate(fields) {
-    const newActivity = { id: Date.now(), ...fields }
-    setActivities(prev => [newActivity, ...prev])
-
-    // Inject a system post into the Mural so students are notified
-    onAddPost(makePost(
-      user,
-      `📝 Nova atividade criada: "${fields.title}"${fields.dueDate
-        ? ` — entrega em ${new Date(fields.dueDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}`
-        : ''}.`,
-      'system',
-    ))
+  async function handleCreate(fields) {
+    setPostingError(null)
+    try {
+      await addActivityToMural(classId, {
+        titulo: fields.title,
+        instrucoes: fields.description,
+        dataEntrega: fields.dueDate || null,
+      })
+      setActModalOpen(false)
+      if (onAddPost) onAddPost()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao criar atividade'
+      setPostingError(msg)
+    }
   }
 
-  function deleteActivity(id) {
-    setActivities(prev => prev.filter(a => a.id !== id))
-  }
+  // Filter mural to only get activities (tipo === 'atividade')
+  const activities = (classData?.mural ?? [])
+    .filter(item => item.tipo === 'atividade')
+    .map(item => ({
+      id: item.id,
+      title: item.titulo,
+      description: item.instrucoes,
+      dueDate: item.dataEntrega,
+      createdAt: item.createdAt,
+    }))
 
   return (
     <>
       {actModalOpen && (
         <CreateActivityModal
-          onClose={() => setActModalOpen(false)}
+          onClose={() => {
+            setActModalOpen(false)
+            setPostingError(null)
+          }}
           onCreate={handleCreate}
         />
       )}
 
       {isTeacher && (
         <div className={styles.tabActions}>
-          <Button variant="primary" onClick={() => setActModalOpen(true)}>
-            + Criar atividade
+          <Button variant="primary" onClick={() => setActModalOpen(true)} disabled={posting}>
+            {posting ? 'Criando...' : '+ Criar atividade'}
           </Button>
+        </div>
+      )}
+
+      {postingError && (
+        <div style={{ color: 'var(--error)', fontSize: '0.85rem', marginBottom: '1rem', padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem' }}>
+          {postingError}
         </div>
       )}
 
@@ -480,8 +560,8 @@ function AtividadesTab({ isTeacher, user, onAddPost, disciplina, nivel }) {
           icon="📝"
           text={
             isTeacher
-              ? 'Nenhuma atividade criada ainda. Quando o backend estiver conectado, as atividades aparecerão aqui.'
-              : 'Nenhuma atividade disponível ainda. Quando o backend estiver conectado, as atividades aparecerão aqui.'
+              ? 'Nenhuma atividade criada ainda. Crie uma nova atividade para os alunos.'
+              : 'Nenhuma atividade disponível ainda. As atividades do professor aparecerão aqui.'
           }
         />
       ) : (
@@ -491,7 +571,7 @@ function AtividadesTab({ isTeacher, user, onAddPost, disciplina, nivel }) {
               key={a.id}
               activity={a}
               isTeacher={isTeacher}
-              onDelete={deleteActivity}
+              onDelete={() => {}}  // TODO: implement delete via service
               disciplina={disciplina}
               nivel={nivel}
             />
@@ -504,34 +584,106 @@ function AtividadesTab({ isTeacher, user, onAddPost, disciplina, nivel }) {
 
 // ── MateriaisTab ──────────────────────────────────────────────────────────
 
-function MateriaisTab() {
+function MateriaisTab({ classData }) {
+  const materiais = classData?.materiais ?? []
+
   return (
-    <EmptyState
-      icon="📂"
-      text="Nenhum material publicado ainda. Materiais adicionados pelo professor aparecerão aqui."
-    />
+    <div>
+      {materiais.length === 0 ? (
+        <EmptyState
+          icon="📂"
+          text="Nenhum material publicado ainda. Materiais adicionados pelo professor aparecerão aqui."
+        />
+      ) : (
+        <div className={styles.activityList}>
+          {materiais.map(m => (
+            <div key={m.id} className={styles.materialItem} style={{ padding: '1.25rem', borderRadius: '0.75rem', backgroundColor: 'var(--surface-2)', marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '1.5rem', minWidth: '2rem', textAlign: 'center' }}>📄</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>{m.nome}</div>
+                {m.descricao && (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{m.descricao}</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
 // ── MembrosTab ────────────────────────────────────────────────────────────
 
-function MembrosTab({ classe, user, isTeacher }) {
-  const students = [] // TODO: GET /api/v1/turmas/:id/alunos
+function MembrosTab({ classData, classId, isTeacher, onMemberRemoved }) {
+  const { removeMember, loading: removing } = useClass()
+  const [removingId, setRemovingId] = useState(null)
+  const [removeErrorMsg, setRemoveErrorMsg] = useState(null)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, studentId: null, studentName: null })
+  
+  const membres = classData?.membros ?? []
+  
+  // Find professor data
+  const professorMember = membres.find(m => m.role === 'teacher')
+  const professorName = professorMember?.nome ?? classData?.professorNome ?? 'Professor'
+  const professorInitial = (professorName?.[0] ?? 'P').toUpperCase()
 
-  // If the viewer is the teacher, use the live auth name.
-  // Otherwise fall back to whatever the class data says (future: backend will
-  // return the real teacher name as part of GET /api/v1/turmas/:id).
-  const teacherName    = isTeacher ? (user?.name ?? classe.professor) : classe.professor
-  const teacherInitial = teacherName?.[0]?.toUpperCase() ?? 'P'
+  // Get students
+  const students = membres.filter(m => m.role === 'student')
+
+  function handleRemoveStudent(studentId, studentName) {
+    // Open the confirmation modal instead of using window.confirm()
+    setConfirmModal({ isOpen: true, studentId, studentName })
+  }
+
+  async function confirmRemoveStudent() {
+    const { studentId } = confirmModal
+    setConfirmModal({ isOpen: false, studentId: null, studentName: null })
+    
+    setRemovingId(studentId)
+    setRemoveErrorMsg(null)
+
+    try {
+      await removeMember(classId, studentId)
+      // Trigger refetch to update members list
+      if (onMemberRemoved) onMemberRemoved()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao remover aluno'
+      setRemoveErrorMsg(msg)
+    } finally {
+      setRemovingId(null)
+    }
+  }
+
+  function cancelRemoveStudent() {
+    setConfirmModal({ isOpen: false, studentId: null, studentName: null })
+  }
 
   return (
     <div className={styles.membersWrap}>
+      {/* Confirm modal for removing student */}
+      {confirmModal.isOpen && (
+        <ConfirmModal
+          title="Remover aluno"
+          message={`Tem certeza que deseja remover ${confirmModal.studentName} da turma? Esta ação não pode ser desfeita.`}
+          confirmLabel="Remover"
+          onConfirm={confirmRemoveStudent}
+          onCancel={cancelRemoveStudent}
+        />
+      )}
+
+      {removeErrorMsg && (
+        <div style={{ color: 'var(--error)', fontSize: '0.85rem', marginBottom: '1rem', padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem' }}>
+          {removeErrorMsg}
+        </div>
+      )}
+
       <div className={styles.membersGroup}>
         <span className={styles.membersGroupLabel}>Professor</span>
         <div className={styles.memberRow}>
-          <Avatar initial={teacherInitial} bg="var(--accent-soft)" color="var(--accent)" size={38} />
+          <Avatar initial={professorInitial} bg="var(--accent-soft)" color="var(--accent)" size={38} />
           <div className={styles.memberInfo}>
-            <span className={styles.memberName}>{teacherName}</span>
+            <span className={styles.memberName}>{professorName}</span>
             <span className={styles.memberRole}>Professor</span>
           </div>
           <span className={styles.memberBadge}>Professor</span>
@@ -543,15 +695,28 @@ function MembrosTab({ classe, user, isTeacher }) {
         {students.length === 0 ? (
           <EmptyState
             icon="👤"
-            text={`Nenhum aluno entrou ainda. Compartilhe o código ${classe.codigo} para que alunos entrem na turma.`}
+            text={`Nenhum aluno entrou ainda. Compartilhe o código ${classData?.codigo ?? '...'} para que alunos entrem na turma.`}
           />
         ) : (
-          students.map((s, i) => (
-            <div key={i} className={styles.memberRow}>
-              <Avatar initial={s.name[0]} bg="var(--surface-3)" color="var(--text-secondary)" size={38} />
+          students.map((s) => (
+            <div key={s.id} className={styles.memberRow}>
+              <Avatar initial={(s.nome?.[0] ?? 'A').toUpperCase()} bg="var(--surface-3)" color="var(--text-secondary)" size={38} />
               <div className={styles.memberInfo}>
-                <span className={styles.memberName}>{s.name}</span>
+                <span className={styles.memberName}>{s.nome}</span>
+                <span className={styles.memberRole}>Aluno</span>
               </div>
+              {/* Remove button — teacher only */}
+              {isTeacher && (
+                <button
+                  className={styles.memberRemoveBtn}
+                  onClick={() => handleRemoveStudent(s.id, s.nome)}
+                  aria-label="Remover aluno"
+                  title="Remover aluno da turma"
+                  disabled={removingId === s.id || removing}
+                >
+                  {removingId === s.id ? '⏳' : '🗑'}
+                </button>
+              )}
             </div>
           ))
         )}
@@ -566,19 +731,50 @@ export default function ClassPage() {
   const { id }    = useParams()
   const { user }  = useAuth()
   const navigate  = useNavigate()
-  const location  = useLocation()
   const isTeacher = user?.role === 'teacher'
 
-  // ── Lifted state — shared between MuralTab and AtividadesTab ──
-  const [posts,      setPosts]      = useState([])
-  const [activeTab,  setActiveTab]  = useState('mural')
+  // Service hook
+  const { getClassById, error } = useClass()
 
-  // Prefer data passed via navigation state; fall back to MOCK on direct URL visit.
-  // TODO: replace MOCK fallback with fetch(`/api/v1/turmas/${id}`)
-  const classe   = { ...MOCK, ...location.state, id }
-  const isPublic  = classe.tipo === 'PUBLICA'
+  // State
+  const [classData, setClassData] = useState(MOCK)
+  const [activeTab, setActiveTab] = useState('mural')
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  const isPublic  = classData?.tipo === 'PUBLICA'
   const backPath  = ROLE_ROUTES[user?.role] ?? '/dashboard'
   const Sidebar   = isTeacher ? TeacherSidebar : DashboardSidebar
+
+  // Fetch class data on mount and when refreshTrigger changes
+  useEffect(() => {
+    if (!id) return
+    
+    (async () => {
+      try {
+        const data = await getClassById(id)
+        setClassData(data)
+      } catch (err) {
+        console.error('Erro ao carregar turma:', err)
+        // Keep showing MOCK or previously loaded data
+      }
+    })()
+  }, [id, getClassById, refreshTrigger])
+
+  if (error) {
+    return (
+      <AppLayout sidebar={Sidebar} header={DashboardHeader}>
+        <div className={styles.page}>
+          <button className={styles.backBtn} onClick={() => navigate(backPath)}>
+            ← Voltar ao painel
+          </button>
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--error)' }}>
+            <p>❌ Erro ao carregar turma</p>
+            <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>{error}</p>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
 
   return (
     <AppLayout sidebar={Sidebar} header={DashboardHeader}>
@@ -593,28 +789,28 @@ export default function ClassPage() {
         <div className={styles.classHeader}>
           <div className={styles.classHeaderLeft}>
             <span className={styles.classIcon}>
-              {SUBJECT_EMOJI[classe.disciplina] ?? '📚'}
+              {SUBJECT_EMOJI[classData?.disciplina] ?? '📚'}
             </span>
             <div className={styles.classMeta}>
-              <h1 className={styles.className}>{classe.nome}</h1>
+              <h1 className={styles.className}>{classData?.nome}</h1>
               <div className={styles.classPills}>
-                <Tag value={classe.disciplina} size="md" />
-                <Tag value={classe.nivel} size="md" />
+                <Tag value={classData?.disciplina} size="md" />
+                <Tag value={classData?.nivel} size="md" />
               </div>
-              {classe.descricao && (
-                <p className={styles.classDesc}>{classe.descricao}</p>
+              {classData?.descricao && (
+                <p className={styles.classDesc}>{classData.descricao}</p>
               )}
             </div>
           </div>
 
           <div className={styles.classHeaderRight}>
             {/* Type badge — top-right, filled soft color, separate from subject/level */}
-            <span className={styles.typeBadge} style={typeBadgeStyle(classe.tipo)}>
+            <span className={styles.typeBadge} style={typeBadgeStyle(classData?.tipo)}>
               {isPublic ? '🌐 Pública' : '🔒 Privada'}
             </span>
             <div className={styles.codeBox}>
               <span className={styles.codeLabel}>Código</span>
-              <code className={styles.code}>{classe.codigo}</code>
+              <code className={styles.code}>{classData?.codigo ?? 'CARREGANDO...'}</code>
             </div>
           </div>
         </div>
@@ -634,28 +830,46 @@ export default function ClassPage() {
           ))}
         </div>
 
-        {/* Tab content */}
+        {/* Tab content — conditionally render based on activeTab */}
         <div className={styles.tabContent}>
           {activeTab === 'mural' && (
             <MuralTab
-              posts={posts}
-              setPosts={setPosts}
+              classData={classData}
+              classId={id}
               isTeacher={isTeacher}
               user={user}
+              onPostAdded={() => setRefreshTrigger(prev => prev + 1)}
             />
           )}
-          {activeTab === 'materiais'  && <MateriaisTab />}
+
           {activeTab === 'atividades' && (
             <AtividadesTab
+              classData={classData}
+              classId={id}
               isTeacher={isTeacher}
               user={user}
-              onAddPost={post => setPosts(prev => [post, ...prev])}
-              disciplina={classe.disciplina}
-              nivel={classe.nivel}
+              onAddPost={() => setRefreshTrigger(prev => prev + 1)}
+              disciplina={classData?.disciplina ?? 'Disciplina'}
+              nivel={classData?.nivel ?? 'Nível'}
             />
           )}
+
+          {activeTab === 'materiais' && (
+            <MateriaisTab
+              classData={classData}
+              classId={id}
+              isTeacher={isTeacher}
+            />
+          )}
+
           {activeTab === 'membros' && (
-            <MembrosTab classe={classe} user={user} isTeacher={isTeacher} />
+            <MembrosTab
+              classData={classData}
+              classId={id}
+              user={user}
+              isTeacher={isTeacher}
+              onMemberRemoved={() => setRefreshTrigger(prev => prev + 1)}
+            />
           )}
         </div>
 

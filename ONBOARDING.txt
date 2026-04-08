@@ -1,0 +1,848 @@
+================================================================================
+                    PROJECT ONBOARDING GUIDE: StudyConnect (PlutCC)
+================================================================================
+
+TABLE OF CONTENTS
+================================================================================
+1. Project Overview
+2. Tech Stack
+3. Project Structure
+4. Frontend Architecture
+5. Routing
+6. State Management
+7. API / Backend Integration
+8. Authentication & Authorization
+9. Styling
+10. Environment & Setup
+11. Code Standards & Conventions
+12. Current Status
+13. Important Notes & Gotchas
+14. Quick Reference: Important Files
+15. Your Next Steps as a New Dev
+
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+WHAT IS IT?
+-----------
+StudyConnect is an educational platform that connects students, teachers, and
+administrators in a unified digital learning ecosystem. Think of it as a
+learning management system (LMS) similar to Google Classroom or Blackboard,
+but specifically tailored for the Brazilian education system.
+
+WHAT PROBLEM DOES IT SOLVE?
+-----------
+For Students:
+  - Centralized access to classes, exercises, exams, and progress tracking
+
+For Teachers:
+  - Tools to manage classes, monitor student progress, create activities,
+    and generate reports
+
+For Admins:
+  - System-wide oversight (user management, school management, financials,
+    support tickets)
+
+TARGET USERS
+-----------
+- Primary: Students and teachers in Brazilian schools
+- Secondary: School administrators and financial managers
+- The platform uses Portuguese as the primary language (note the Portuguese
+  property names and labels throughout)
+
+
+================================================================================
+2. TECH STACK
+================================================================================
+
+TECHNOLOGY CHOICES
+-----------
+Frontend Framework: React 19.2.4
+  - Latest version with modern hooks
+  - Stable and well-supported ecosystem
+
+Build Tool: Vite 8.0.4
+  - Lightning-fast dev server & builds
+  - Minimal configuration required
+  - Fast HMR (hot module replacement) for development
+
+Routing: React Router 7.14.0
+  - Client-side routing with role-based protection
+  - Modern API with v7 features
+
+Styling: Vanilla CSS + CSS Modules
+  - No build-time overhead (native CSS)
+  - Dark theme with CSS Variables system
+  - Scoped styling prevents conflicts
+
+State Management: Context API
+  - Simple, no Redux needed currently
+  - Good for small-to-medium apps
+  - Easy to upgrade to Redux later if needed
+
+Linting: ESLint 9
+  - With React Hooks & React Refresh plugins
+  - Prevents common mistakes
+
+Deployment: Vercel
+  - Configured in vercel.json
+  - Zero-config deployment
+
+WHY THESE CHOICES?
+-----------
+- React 19: Modern, stable, good ecosystem
+- Vite: Extremely fast HMR during development, minimal configuration
+- Context API: Sufficient for current auth-only global state (no UI redux
+  complexity)
+- CSS Modules: Scoped styling prevents conflicts, easier maintenance than
+  global CSS
+- ESLint: Prevents common mistakes (unused vars, component naming, hook rules)
+- Vercel: Zero-config deployment, excellent for Vite+React apps
+
+
+================================================================================
+3. PROJECT STRUCTURE
+================================================================================
+
+plutcc/
+├── src/
+│   ├── main.jsx                 # App entry point, wraps App with providers
+│   ├── App.jsx                  # Main router configuration
+│   ├── App.css                  # Global component class definitions
+│   ├── index.css                # Global CSS variables, reset, theme
+│   │
+│   ├── pages/                   # Full-page components (one per route)
+│   │   ├── LandingPage.jsx      # Public landing page (login/signup)
+│   │   ├── ClassPage.jsx        # Individual class detail view
+│   │   ├── TeacherDashboardPage.jsx
+│   │   ├── AdminDashboardPage.jsx
+│   │   └── placeholders.jsx     # Stub pages for coming-soon features
+│   │
+│   ├── components/              # Reusable UI components
+│   │   ├── Navbar.jsx           # Public header with nav links
+│   │   ├── Footer.jsx           # Public footer
+│   │   ├── Hero.jsx, Features.jsx, etc.  # Landing page sections
+│   │   ├── AuthForm.jsx         # Login/signup form
+│   │   ├── ProtectedRoute.jsx   # Role-based route wrapper
+│   │   ├── TransitionOverlay.jsx # Page transition effect
+│   │   │
+│   │   ├── dashboard/           # Student dashboard & components
+│   │   │   ├── DashboardPage.jsx, DashboardLayout.jsx
+│   │   │   ├── JoinClassModal.jsx, JoinedClassCard.jsx
+│   │   │   ├── DashboardHeader.jsx, DashboardSidebar.jsx
+│   │   │   └── ProfileDropdown.jsx
+│   │   │
+│   │   ├── teacher/             # Teacher-specific components
+│   │   ├── admin/               # Admin-specific components
+│   │   ├── layout/              # Shared layout wrappers
+│   │   └── ui/                  # Base UI components
+│   │       ├── Button.jsx, InputField.jsx
+│   │       ├── Avatar.jsx, Tag.jsx, Toast.jsx
+│   │       └── Modal components
+│   │
+│   ├── context/                 # Global state (Context API)
+│   │   └── AuthContext.jsx      # User auth, login, signup, user profile
+│   │
+│   ├── hooks/                   # Custom React hooks
+│   │   ├── useAuth.jsx          # Access AuthContext
+│   │   ├── useCTA.jsx           # Navigation to signup
+│   │   ├── useCountUp.jsx       # Animated number counter
+│   │   └── useToast.jsx         # Toast notifications
+│   │
+│   ├── api/                     # Backend integration
+│   │   └── config.js            # Base URL, endpoints constants
+│   │
+│   ├── constants/               # App-wide constants
+│   │   ├── routes.js            # Route path constants + role-specific routes
+│   │   └── storageKeys.js       # localStorage key names
+│   │
+│   ├── data/                    # Mock data & static content
+│   │   ├── studentDashboard.js, teacherDashboard.js, adminDashboard.js
+│   │   ├── features.js, plans.js, testimonials.js
+│   │   └── mockClasses.js       # Sample class data
+│   │
+│   ├── utils/                   # Utility functions
+│   │   └── subjectColors.js     # Color mapping for subjects
+│   │
+│   └── assets/                  # Images, icons (if any)
+│
+├── public/                      # Static files served as-is
+├── index.html                   # HTML entry point
+├── vite.config.js               # Vite configuration + dev proxy setup
+├── eslint.config.js             # ESLint rules
+├── vercel.json                  # Vercel deployment config
+└── package.json                 # Dependencies, scripts
+
+
+KEY DIRECTORIES EXPLAINED
+-----------
+pages/
+  One component per route — keeps routing clear and components large/page-like
+
+components/
+  Reusable, smaller pieces; dashboard/teacher/admin/ subdirs keep role-specific
+  components organized
+
+context/
+  Currently only AuthContext — no Redux needed yet
+
+api/
+  Centralized endpoint definitions; easy to switch backend URLs in dev vs
+  production
+
+
+================================================================================
+4. FRONTEND ARCHITECTURE
+================================================================================
+
+COMPONENT PATTERNS
+-----------
+
+1. Page Components (in pages/)
+   - Full-screen views mapped to routes
+   - Often wrap smaller components together
+   - Example: DashboardPage.jsx = layout + cards + modals
+
+2. Layout Components (in components/layout/ & subfolders)
+   - Provide structure (header, sidebar, footer)
+   - Used inside pages to maintain consistent navigation
+   - Example: DashboardLayout.jsx wraps student dashboard pages
+
+3. Feature Components (in components/)
+   - Self-contained UI sections (Hero, Features, Plans)
+   - Can be reused across pages
+   - CSS Modules prevent style conflicts
+
+4. Base UI Components (in components/ui/)
+   - Atoms: Button.jsx, InputField.jsx, Avatar.jsx
+   - Modals: JoinClassModal.jsx, ConfirmModal.jsx
+   - Reusable across the app
+
+STYLING APPROACH
+-----------
+Each component file has a corresponding .module.css file.
+Example: Navbar.jsx → Navbar.module.css
+
+CSS Variables defined in index.css (dark theme):
+  --background: #0D0D0D
+  --accent: #6C5CE7       (purple — all interactive elements)
+  --text: #FFFFFF
+  --success: #22C55E
+  --danger: #EF4444
+  --border, --border-hover, etc.
+
+COMPONENT COMPOSITION
+-----------
+Example: DashboardPage uses DashboardLayout
+
+<DashboardPage>
+  <DashboardLayout>  {/* provides header + sidebar */}
+    {/* page content */}
+  </DashboardLayout>
+</DashboardPage>
+
+
+================================================================================
+5. ROUTING
+================================================================================
+
+HOW ROUTING WORKS
+-----------
+Routes are defined in App.jsx using React Router v7:
+
+<Routes>
+  <Route path="/" element={<LandingPage />} />
+  <Route path="/dashboard" element={
+    <S><DashboardPage /></S>
+  } />
+  {/* ... */}
+</Routes>
+
+ROLE ABBREVIATIONS IN CODE
+-----------
+<S> = Student Protected (role="student")
+<T> = Teacher Protected (role="teacher")
+<A> = Admin Protected (role="admin")
+
+These are wrapper shortcuts that call <ProtectedRoute role="student">.
+
+ROUTE CONSTANTS
+-----------
+Centralized in constants/routes.js:
+
+export const STUDENT_ROUTES = {
+  home: '/dashboard',
+  subjects: '/dashboard/disciplinas',
+  // ...
+}
+
+export const TEACHER_ROUTES = {
+  home: '/teacher-dashboard',
+  classes: '/teacher-dashboard/turmas',
+  // ...
+}
+
+Use these constants in navigation to avoid hardcoding paths:
+import { STUDENT_ROUTES } from '@/constants/routes'
+navigate(STUDENT_ROUTES.subjects)
+
+PROTECTED ROUTES
+-----------
+ProtectedRoute.jsx:
+  - Checks if user is logged in (!user → redirect to /)
+  - Optionally checks user role (user.role !== role → redirect to /)
+  - Usage:
+    <Route path="/admin" element={
+      <ProtectedRoute role="admin"><AdminPage /></ProtectedRoute>
+    } />
+
+ROUTE HIERARCHY
+-----------
+/ (public landing + auth)
+├── /dashboard (student)
+├── /dashboard/disciplinas, /exercicios, etc. (student subroutes)
+├── /teacher-dashboard (teacher)
+├── /admin (admin)
+└── * (404 → redirect to /)
+
+
+================================================================================
+6. STATE MANAGEMENT
+================================================================================
+
+CURRENT APPROACH: React Context API + localStorage (no Redux)
+
+AUTHCONTEXT
+-----------
+The only global state provider in context/AuthContext.jsx
+
+Exports:
+user (state)
+  {
+    id: "123",
+    name: "João Silva",
+    avatar: "J",              # first letter of name
+    role: "student",          # "student" | "teacher" | "admin"
+    tipoUsuario: "ALUNO",     # backend format for API calls
+    email: "joao@example.com"
+  }
+
+signup() — register new account
+login() — authenticate user
+updateUser() — edit profile
+changePassword() — change password
+logout() — clear session
+
+HOW TO USE AUTHCONTEXT
+-----------
+import { useAuth } from '../context/AuthContext'
+
+function MyComponent() {
+  const { user, login, logout } = useAuth()
+  
+  if (!user) return <p>Not logged in</p>
+  return <h1>Hello, {user.name}!</h1>
+}
+
+LOCAL STORAGE
+-----------
+Key: sc_user (defined in constants/storageKeys.js)
+Persists: Full user object after login
+Survives: Page refreshes (F5 keeps user logged in)
+Cleared: On logout
+
+WHY CONTEXT API (NO REDUX)?
+-----------
+- App is not overly complex yet
+- Only one global state (auth) needed
+- Fewer dependencies, simpler to understand
+- Easy to add Redux later if needed
+
+
+================================================================================
+7. API / BACKEND INTEGRATION
+================================================================================
+
+BACKEND URL
+-----------
+Dev: Proxied through Vite to http://localhost:8080/api
+Production: Configured via VITE_API_URL environment variable
+
+ENDPOINTS
+-----------
+Defined in api/config.js:
+
+const API_BASE = `${BASE}/api/v1`
+
+export const ENDPOINTS = {
+  login:    `${API_BASE}/auth/login`,        # POST
+  signup:   `${API_BASE}/usuarios`,          # POST
+  userById: (id) => `${API_BASE}/usuarios/${id}`,  # PUT, DELETE
+}
+
+API CALLS
+-----------
+- Handled directly in AuthContext using native fetch()
+- No separate service layer yet (can be added later)
+- Error handling: HTTP status codes mapped to user-friendly Portuguese messages
+
+EXAMPLE API CALL
+-----------
+async function login({ email, senha }) {
+  const res = await fetch(ENDPOINTS.login, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, senha }),
+  })
+  
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('E-mail ou senha incorretos.')
+    throw new Error('Erro no servidor. Tente novamente.')
+  }
+  
+  const data = await res.json()
+  # ... process and return
+}
+
+DEV SETUP (VITE PROXY)
+-----------
+In vite.config.js, requests to /api are forwarded to the backend:
+
+proxy: {
+  '/api': {
+    target: 'http://localhost:8080',
+    changeOrigin: true,
+  },
+}
+
+This means in your code you can call /api/v1/... and Vite proxies it.
+
+
+================================================================================
+8. AUTHENTICATION & AUTHORIZATION
+================================================================================
+
+USER ROLES
+-----------
+Backend returns role in uppercase (ADMIN, PROFESSOR, ALUNO), mapped to
+frontend names in AuthContext.jsx:
+
+const ROLE_MAP = {
+  ADMIN:     'admin',
+  PROFESSOR: 'teacher',
+  ALUNO:     'student',
+}
+
+LOGIN/SIGNUP FLOW
+-----------
+
+1. Signup (POST /api/v1/usuarios):
+   - User submits: { nome, email, senha }
+   - Always registers as ALUNO (student) — tipoUsuario is fixed by backend
+   - On success: Automatically logs the user in with same credentials
+   - Error: Duplicate email → "Este e-mail já está cadastrado."
+
+2. Login (POST /api/v1/auth/login):
+   - User submits: { email, senha }
+   - Backend returns: { id, nome, role }
+   - Frontend maps role and stores in localStorage
+   - User can now access role-specific routes
+
+3. Logout:
+   - Clears localStorage
+   - Sets user state to null
+   - Redirects to landing page
+
+TOKEN STORAGE
+-----------
+- Currently: No JWT tokens in code — user object stored in localStorage
+- The backend likely returns a session cookie or token (not visible in
+  frontend code)
+- Assumption: Backend manages JWT/session server-side
+
+ROLE-BASED ACCESS
+-----------
+Done via <ProtectedRoute role="student"> wrapper
+Checks user.role before rendering
+Unauthorized → redirects to /
+
+PERMISSION LEVELS BY ROLE
+-----------
+Feature                 | Student | Teacher | Admin
+-----------             | ------- | ------- | -----
+Dashboard               | Yes     | Yes     | Yes
+View classes            | Yes     | Yes     | Yes
+Create activities       | No      | Yes     | No
+Manage users            | No      | No      | Yes
+View system reports     | No      | No      | Yes
+
+
+================================================================================
+9. STYLING
+================================================================================
+
+DESIGN SYSTEM
+-----------
+All colors defined as CSS variables in index.css:
+
+:root {
+  /* Backgrounds */
+  --background: #0D0D0D;      # main bg
+  --surface: #121212;          # cards, containers
+  --surface-2: #1A1A1A;
+  --surface-3: #222222;
+
+  /* Text */
+  --text: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --text-muted: #52525B;
+
+  /* Accent (purple — used for ALL interactive elements) */
+  --accent: #6C5CE7;
+  --accent-hover: #5A4BD1;
+  --accent-soft: rgba(108, 92, 231, 0.10);
+  --accent-glow: rgba(108, 92, 231, 0.22);
+  --accent-border: rgba(108, 92, 231, 0.25);
+
+  /* Semantic */
+  --success: #22C55E;
+  --success-bg: rgba(34, 197, 94, 0.10);
+  --danger: #EF4444;
+  --danger-bg: rgba(239, 68, 68, 0.10);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(108, 92, 231, 0.40);
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+CSS MODULES PATTERN
+-----------
+Each component has its own .module.css file:
+
+// Navbar.jsx
+import styles from './Navbar.module.css'
+
+<header className={styles.header}>
+  <nav className={styles.nav}>
+    <a className={styles.navLink}>Link</a>
+  </nav>
+</header>
+
+/* Navbar.module.css */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+}
+
+.navLink {
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+
+.navLink:hover {
+  color: var(--text);
+}
+
+GLOBAL CLASSES (IN APP.CSS)
+-----------
+.container — max-width wrapper (1200px)
+.section-tag, .section-title, .section-sub — typography helpers
+.btn-primary, .btn-secondary — button styles
+
+THEME VARIANT
+-----------
+.adminTheme class available for a "full black" premium admin look
+Applied to layout root—overrides only tokens that differ
+
+NAMING CONVENTION
+-----------
+- camelCase for component class names: .navLink, .headerContainer
+- One component per file, one .module.css per component
+- Avoid nesting deeper than 3 levels; use BEM for complex components
+
+RESPONSIVE DESIGN
+-----------
+- Mobile-first approach
+- Breakpoints via @media queries:
+
+@media (max-width: 768px) { /* tablet */ }
+@media (max-width: 480px) { /* mobile */ }
+
+
+================================================================================
+10. ENVIRONMENT & SETUP
+================================================================================
+
+HOW TO RUN LOCALLY
+-----------
+# Install dependencies
+npm install
+
+# Start dev server (HMR enabled, proxy to localhost:8080)
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint code
+npm lint
+
+Then open http://localhost:5173 (Vite's default).
+
+ENVIRONMENT VARIABLES
+-----------
+Create a .env file in the project root (not in git):
+
+# Backend API URL (optional — defaults to dev proxy)
+VITE_API_URL=https://api.example.com
+
+# Add others as needed
+
+DEVELOPMENT PREREQUISITES
+-----------
+- Node.js 16+ and npm/yarn
+- Backend running on http://localhost:8080 (for Vite proxy to work)
+- Modern browser (Chrome, Firefox, Safari, Edge)
+
+COMMON SETUP ISSUES
+-----------
+Issue                   | Cause                        | Fix
+-----------             | ------                       | ---
+404 on refresh          | SPA routing                  | Vercel has rewrites config; local dev should work
+CORS errors             | Backend not configured       | Ensure backend allows requests from localhost:5173
+Blank page              | AuthContext initialization   | Check browser console for errors in AuthContext
+Proxy not working       | Backend down                 | Start backend on port 8080 first
+localStorage persist    | Private browsing             | Disable private mode or use incognito carefully
+issue                   |                              |
+
+
+================================================================================
+11. CODE STANDARDS & CONVENTIONS
+================================================================================
+
+NAMING
+-----------
+Type               | Convention              | Example
+-----------        | -----------             | ----------
+Components         | PascalCase              | DashboardPage, JoinClassModal
+Files              | PascalCase (components) | Navbar.jsx, storageKeys.js
+                   | lowercase (utils)       |
+Functions          | camelCase               | handleJoin, formatDate
+Constants          | UPPER_SNAKE_CASE       | ROLE_ROUTES, STORAGE_KEYS
+CSS classes        | camelCase               | .navLink, .headerContainer
+Variables          | camelCase               | userData, isLoading
+Boolean vars       | is/has prefix           | isOpen, hasClasses, isLoading
+
+COMPONENT STRUCTURE
+-----------
+import { useState } from 'react'
+import SomeComponent from './SomeComponent'
+import styles from './MyComponent.module.css'
+
+/**
+ * Brief description of what this component does.
+ * @param {string} title - Title text
+ * @param {function} onClose - Callback when closed
+ */
+export default function MyComponent({ title, onClose }) {
+  // Hooks first
+  const [isOpen, setIsOpen] = useState(false)
+  const { user } = useAuth()
+
+  // Handlers
+  function handleClick() {
+    // logic
+  }
+
+  // Render
+  return (
+    <div className={styles.container}>
+      {/* JSX */}
+    </div>
+  )
+}
+
+ESLINT RULES
+-----------
+- No unused variables (except uppercase: _UpperCase is allowed as throwaway)
+- React Hooks followed correctly (dependencies, no conditional calls)
+- React Refresh compatible (avoid non-JSX files exporting components)
+- No direct DOM manipulation (use React refs if necessary)
+
+Run linter:
+npm run lint
+
+
+================================================================================
+12. CURRENT STATUS
+================================================================================
+
+COMPLETE
+-----------
+✓ Public landing page (LandingPage)
+✓ Authentication system (signup, login, logout)
+✓ Role-based routing (student, teacher, admin)
+✓ Student dashboard skeleton with join-class modal
+✓ Teacher dashboard skeleton
+✓ Admin dashboard skeleton
+✓ Navbar, Footer, responsive design
+✓ Design system (colors, typography, spacing)
+✓ ESLint setup
+
+IN PROGRESS / PLACEHOLDERS
+-----------
+~ Student pages: Subjects, Exercises, Exams, Progress, Goals
+~ Teacher pages: Classes, Students, Activities, Reports, Calendar
+~ Admin pages: Users, Schools, Finance, Reports, Tickets
+~ Settings (shared across all roles)
+~ Help pages
+
+BACKEND INTEGRATION
+-----------
+✓ /auth/login endpoint
+✓ /usuarios (create account, update profile, change password)
+~ Class management endpoints (need implementation)
+~ Activity/exercise endpoints (need implementation)
+~ Report generation (need implementation)
+
+KNOWN TECHNICAL DEBT
+-----------
+- No error boundaries yet (add for production)
+- No loading states on API calls (currently feels instant)
+- LocalStorage validation is minimal (assume backend validates)
+- No offline mode support
+- No caching strategy for API responses
+
+
+================================================================================
+13. IMPORTANT NOTES & GOTCHAS
+================================================================================
+
+CRITICAL THINGS TO KNOW
+-----------
+
+1. PORTUGUESE NAMING EVERYWHERE
+   Routes use Portuguese slugs: /dashboard/disciplinas, /teacher-dashboard/turmas
+   Database fields use Portuguese: tipoUsuario, nome, ativo
+   Error messages must be in Portuguese
+   When adding features, keep language consistent
+
+2. USER ID VALIDATION
+   AuthContext has validateId(user?.id)
+   This prevents accidental calls to /usuarios/undefined
+   Always check this if modifying auth code!
+
+3. SESSIONS PERSIST ON F5
+   User object stored in localStorage with key sc_user
+   Page refresh keeps user logged in
+   If localStorage has no id, it's cleared (old session format)
+
+4. ROLE MAPPING QUIRK
+   Backend returns: { role: 'ADMIN' | 'PROFESSOR' | 'ALUNO' }
+   Frontend stores: { role: 'admin' | 'teacher' | 'student' }
+   And also keeps original: { tipoUsuario: 'ADMIN' | 'PROFESSOR' | 'ALUNO' }
+   (for PUT/DELETE requests)
+   Always use user.role in frontend, user.tipoUsuario in API calls
+
+5. PLACEHOLDER PAGES USE ONE-LINER COMPONENTS
+   All stub pages exported from pages/placeholders.jsx
+   Replace each export with a real page when implementing
+   Current "Coming Soon" design is intentional—quick to implement full pages
+
+6. PROTECTEDROUTE REDIRECT BEHAVIOR
+   Unauthenticated → redirect to / (landing page)
+   Wrong role → redirect to / (not to role-specific dashboard)
+   Only one role per user (no multi-role support yet)
+
+7. CSS VARIABLES ARE YOUR FRIEND
+   Always use var(--accent) instead of hardcoding #6C5CE7
+   This makes theme switching trivial
+   If design changes, update .root once—entire app updates
+
+8. API CALLS AND ERROR HANDLING
+   All errors thrown are strings (meant for UI toast/alert)
+   No try-catch needed in components—AuthContext handles it
+   If you add new API endpoints, follow the same pattern
+
+9. CLASS JOINING SYSTEM
+   Student dashboard has a JoinClassModal
+   Currently stores classes in React state (not persisted to backend yet)
+   Page refresh = classes disappear
+   Next step: connect to backend class management endpoints
+
+10. COMPONENT COMPOSITION SHORTCUTS IN APP.JSX
+    const S = (children) => <ProtectedRoute role="student">{children}</ProtectedRoute>
+    <Route path="/dashboard" element={<S><DashboardPage /></S>} />
+    These are intentional abbreviations. They're clear in context but worth knowing.
+
+
+================================================================================
+14. QUICK REFERENCE: IMPORTANT FILES
+================================================================================
+
+File                            | Purpose                          | When to edit
+-----------                     | -----------                      | -----------
+src/App.jsx                     | Route definitions                | Adding/removing routes
+src/context/AuthContext.jsx     | Auth state & functions           | Changing auth logic or adding user data
+src/constants/routes.js         | Route path constants             | Adding new routes (update both App.jsx and routes.js)
+src/api/config.js               | API endpoints                    | Adding new backend endpoints
+src/index.css                   | Global CSS variables & theme     | Changing colors or design tokens
+src/App.css                     | Global component classes         | Adding shared button/container styles
+vite.config.js                  | Build & dev configuration        | Changing backend proxy URL (unlikely)
+eslint.config.js                | Linting rules                    | Relaxing/enforcing code standards
+
+
+================================================================================
+15. YOUR NEXT STEPS AS A NEW DEV
+================================================================================
+
+1. RUN THE PROJECT LOCALLY
+   cd plutcc
+   npm install
+   npm run dev
+   
+   Open http://localhost:5173
+
+2. TEST AUTHENTICATION
+   - Signup with a test account
+   - Verify localStorage has sc_user
+   - Logout and log back in
+   - Refresh page—session should persist
+
+3. EXPLORE THE ROUTING
+   - Click between student/teacher/admin dashboards (sign up as each role)
+   - Try visiting /admin without signing in as admin—should redirect
+
+4. READ ONE COMPONENT TOP-TO-BOTTOM
+   - Start with Navbar.jsx or Hero.jsx (simpler)
+   - Then DashboardPage.jsx (more complex)
+   - Understand how props flow and state is managed
+
+5. MAKE A SMALL CHANGE
+   - Change a color in index.css
+   - Update a button label
+   - Add a new nav link
+   - Get comfortable with the dev loop (save → HMR)
+
+6. ASK QUESTIONS!
+   - If anything is unclear, it's fair game
+   - The codebase is fairly well-structured but always room for improvement
+
+
+================================================================================
+                    Welcome to the team! 🚀
+         Feel free to ask questions as you explore.
+================================================================================

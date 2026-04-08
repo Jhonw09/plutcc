@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Button }     from '../ui/Button'
 import { InputField } from '../ui/InputField'
-import { MOCK_CLASSES } from '../../data/mockClasses'
+import { useClass }   from '../../hooks/useClass'
+import { useAuth }    from '../../context/AuthContext'
 import styles from './JoinClassModal.module.css'
 
 const SUBJECT_EMOJI = {
@@ -16,6 +17,9 @@ function normalise(code) {
 }
 
 export default function JoinClassModal({ onClose, onJoin, joinedCodes = [] }) {
+  const { user } = useAuth()
+  const { joinClass, loading } = useClass()
+  
   const [code,    setCode]    = useState('')
   const [error,   setError]   = useState('')
   const [preview, setPreview] = useState(null)   // found class before confirming
@@ -26,20 +30,12 @@ export default function JoinClassModal({ onClose, onJoin, joinedCodes = [] }) {
     setPreview(null)
   }
 
-  function handleSearch(e) {
+  async function handleSearch(e) {
     e.preventDefault()
     const key = normalise(code)
 
     if (!key) {
       setError('Informe o código da turma.')
-      return
-    }
-
-    const found = MOCK_CLASSES[key]
-
-    if (!found) {
-      setError('Código inválido. Verifique e tente novamente.')
-      setPreview(null)
       return
     }
 
@@ -50,12 +46,26 @@ export default function JoinClassModal({ onClose, onJoin, joinedCodes = [] }) {
     }
 
     setError('')
-    setPreview(found)
+    try {
+      // joinClass with just a code will search and return class data
+      const found = await joinClass(key)
+      setPreview(found)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Código inválido. Verifique e tente novamente.'
+      setError(msg)
+      setPreview(null)
+    }
   }
 
-  function handleConfirm() {
-    onJoin({ ...preview })
-    onClose()
+  async function handleConfirm() {
+    try {
+      // The class is already joined via the preview request, so just return it
+      onJoin({ ...preview })
+      onClose()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao entrar na turma.'
+      setError(msg)
+    }
   }
 
   return (
@@ -67,7 +77,7 @@ export default function JoinClassModal({ onClose, onJoin, joinedCodes = [] }) {
         aria-modal="true"
         aria-labelledby="join-modal-title"
       >
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar">✕</button>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar" disabled={loading}>✕</button>
 
         {/* Header */}
         <div className={styles.header}>
@@ -90,9 +100,16 @@ export default function JoinClassModal({ onClose, onJoin, joinedCodes = [] }) {
             error={error}
             autoFocus
             autoComplete="off"
+            disabled={loading}
             style={{ textTransform: 'uppercase', letterSpacing: '1px', fontFamily: 'monospace' }}
           />
-          <Button variant="outline" type="submit">Buscar turma</Button>
+          <Button 
+            variant="outline" 
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? 'Buscando...' : 'Buscar turma'}
+          </Button>
         </form>
 
         {/* Preview card — shown after a successful lookup */}
@@ -104,7 +121,7 @@ export default function JoinClassModal({ onClose, onJoin, joinedCodes = [] }) {
               </span>
               <div className={styles.previewMeta}>
                 <span className={styles.previewName}>{preview.nome}</span>
-                <span className={styles.previewTeacher}>{preview.professor}</span>
+                <span className={styles.previewTeacher}>{preview.professorNome}</span>
               </div>
               <span className={`${styles.typeBadge} ${preview.tipo === 'PUBLICA' ? styles.public : styles.private}`}>
                 {preview.tipo === 'PUBLICA' ? '🌐 Pública' : '🔒 Privada'}
@@ -119,12 +136,17 @@ export default function JoinClassModal({ onClose, onJoin, joinedCodes = [] }) {
               <span className={styles.pill}>{preview.disciplina}</span>
               <span className={styles.pill}>{preview.nivel}</span>
               <span className={styles.pill}>
-                👥 {preview.alunoIds.length} aluno{preview.alunoIds.length !== 1 ? 's' : ''}
+                👥 {preview.membros?.length ?? 0} membro{(preview.membros?.length ?? 0) !== 1 ? 's' : ''}
               </span>
             </div>
 
-            <Button variant="primary" onClick={handleConfirm} className={styles.confirmBtn}>
-              ✓ Entrar na turma
+            <Button 
+              variant="primary" 
+              onClick={handleConfirm} 
+              className={styles.confirmBtn}
+              disabled={loading}
+            >
+              {loading ? '⏳ Entrando...' : '✓ Entrar na turma'}
             </Button>
           </div>
         )}
