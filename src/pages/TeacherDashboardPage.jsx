@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import TeacherLayout       from '../components/teacher/TeacherLayout'
 import ClassCard           from '../components/teacher/ClassCard'
 import CreateClassModal    from '../components/teacher/CreateClassModal'
@@ -6,7 +6,7 @@ import { ConfirmModal }    from '../components/ui/ConfirmModal'
 import { Toast }           from '../components/ui/Toast'
 import { useToast }        from '../hooks/useToast'
 import { useAuth }         from '../context/AuthContext'
-import { useClass }        from '../hooks/useClass'
+import { useTurmas }       from '../hooks/useTurmas'
 import styles from './TeacherDashboardPage.module.css'
 
 // ── Filter options ────────────────────────────────────────────────────────────
@@ -22,16 +22,12 @@ const SORT_OPTIONS = [
   { value: 'students', label: 'Mais alunos'   },
 ]
 
-// ── Derived stats from local class list ───────────────────────────────────────
+// ── Derived stats from API class list ───────────────────────────────────────
 function buildStats(classes) {
-  const totalStudents = classes.reduce((s, c) => {
-    const studentCount = (c.membros ?? []).filter(m => m.role === 'student').length
-    return s + studentCount
-  }, 0)
-  const publicCount   = classes.filter(c => c.tipo === 'PUBLICA').length
+  const publicCount = classes.filter(c => c.tipo === 'PUBLICA').length
   return [
     { id: 'classes',  icon: '🏫', label: 'Turmas ativas',   value: classes.length,  delta: null },
-    { id: 'students', icon: '👥', label: 'Total de alunos', value: totalStudents,   delta: null },
+    { id: 'students', icon: '👥', label: 'Total de alunos', value: 'N/A',          delta: null }, // API doesn't provide member counts yet
     { id: 'public',   icon: '🌐', label: 'Turmas públicas', value: publicCount,     delta: null },
     { id: 'private',  icon: '🔒', label: 'Turmas privadas', value: classes.length - publicCount, delta: null },
   ]
@@ -40,7 +36,7 @@ function buildStats(classes) {
 export default function TeacherDashboardPage() {
   const { user } = useAuth()
   const { toasts, toast, dismiss } = useToast()
-  const { getClassesByUser, loading: classesLoading, error: classesError } = useClass()
+  const { turmas, loading, error, createTurma: createTurmaHandler, refreshTurmas } = useTurmas()
 
   // ── Class state ──────────────────────────────────────────────────────────────
   const [classes, setClasses] = useState([])
@@ -55,19 +51,10 @@ export default function TeacherDashboardPage() {
   const [filterSubj, setFilterSubj] = useState('Todas')
   const [sortBy,     setSortBy]     = useState('recent')
 
-  // Load teacher's classes on mount
+  // Sync turmas from hook to local state for filtering
   useEffect(() => {
-    async function loadClasses() {
-      try {
-        const teacherClasses = await getClassesByUser('teacher')
-        setClasses(teacherClasses)
-      } catch (err) {
-        console.error('Erro ao carregar turmas:', err)
-        toast('Erro ao carregar turmas. Tente novamente.', 'error')
-      }
-    }
-    loadClasses()
-  }, [getClassesByUser, toast])
+    setClasses(turmas)
+  }, [turmas])
 
   // ── Derived: filtered + sorted classes ───────────────────────────────────────
   const visibleClasses = useMemo(() => {
@@ -77,27 +64,23 @@ export default function TeacherDashboardPage() {
       const q = search.trim().toLowerCase()
       list = list.filter(c =>
         c.nome.toLowerCase().includes(q) ||
-        c.disciplina.toLowerCase().includes(q) ||
+        (c.descricao && c.descricao.toLowerCase().includes(q)) ||
         c.codigo.toLowerCase().includes(q)
       )
     }
 
-    if (filterSubj !== 'Todas') {
-      list = list.filter(c => c.disciplina === filterSubj)
-    }
+    // Note: API doesn't provide disciplina field, so subject filtering is disabled for now
+    // if (filterSubj !== 'Todas') {
+    //   list = list.filter(c => c.disciplina === filterSubj)
+    // }
 
     if (sortBy === 'name')     list.sort((a, b) => a.nome.localeCompare(b.nome))
-    if (sortBy === 'students') {
-      list.sort((a, b) => {
-        const aStudents = (a.membros ?? []).filter(m => m.role === 'student').length
-        const bStudents = (b.membros ?? []).filter(m => m.role === 'student').length
-        return bStudents - aStudents
-      })
-    }
+    // Note: API doesn't provide member counts, so student sorting is disabled
+    // if (sortBy === 'students') { ... }
     if (sortBy === 'recent')   list.sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
 
     return list
-  }, [classes, search, filterSubj, sortBy])
+  }, [classes, search, sortBy])
 
   const stats    = useMemo(() => buildStats(classes), [classes])
   const hasClasses = classes.length > 0
@@ -106,15 +89,14 @@ export default function TeacherDashboardPage() {
   // ── Handlers ─────────────────────────────────────────────────────────────────
   async function handleCreate(newClass) {
     try {
-      // newClass has: nome, disciplina, descricao, tipo, nivel, professorId, professorNome
-      // Call classService via direct import to create this class
-      const { classService } = await import('../api/services/classService')
-      const createdClass = await classService.createClass(user?.id, newClass)
-      setClasses(prev => [createdClass, ...prev])
+      const createdClass = await createTurmaHandler(newClass)
+      await refreshTurmas()
       toast(`Turma "${createdClass.nome}" criada com sucesso!`, 'success')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro ao criar turma'
+      console.error('Erro ao criar turma:', err)
       toast(msg, 'error')
+      throw err
     }
   }
 
@@ -171,8 +153,31 @@ export default function TeacherDashboardPage() {
       {/* ── Toasts ── */}
       <Toast toasts={toasts} onDismiss={dismiss} />
 
-      {/* ── EMPTY STATE ── */}
-      {!hasClasses && (
+      {/* ── LOADING STATE ── */}
+      {loading && (
+        <div className={styles.loading}>
+          <div className={styles.loadingSpinner}>⏳</div>
+          <p>Carregando turmas...</p>
+        </div>
+      )}
+
+      {/* ── ERROR STATE ── */}
+      {error && !loading && (
+        <div className={styles.error}>
+          <span className={styles.errorIcon}>⚠️</span>
+          <h3>Erro ao carregar turmas</h3>
+          <p>{error}</p>
+          <button
+            className={styles.retryBtn}
+            onClick={() => window.location.reload()}
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {/* ── CONTENT (only show when loaded and no error) ── */}
+      {!loading && !error && (
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}>🏫</span>
           <h3 className={styles.heroEmptyTitle}>

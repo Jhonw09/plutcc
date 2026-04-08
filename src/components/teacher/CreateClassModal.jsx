@@ -64,21 +64,16 @@ export default function CreateClassModal({ onClose, onCreate, onEdit, initialDat
       setLoading(true)
       setApiError('')
       try {
-        // Call classService via a simple sync approach: create the data locally
-        // The classService.createClass will be called once we have the createClass function from useClass hook
         const newClass = {
-          nome:       fields.name.trim(),
-          disciplina: fields.subject,
-          descricao:  fields.description.trim(),
-          tipo:       fields.type,
-          nivel:      fields.level,
-          professorId: user?.id,
+          nome:          fields.name.trim(),
+          disciplina:    fields.subject,
+          descricao:     fields.description.trim(),
+          tipo:          fields.type,
+          nivel:         fields.level,
+          professorId:   user?.id,
           professorNome: user?.name,
         }
-        
-        // Since we don't have a direct useClass hook call here, we'll just call onCreate
-        // which should handle the persistence
-        onCreate(newClass)
+        await onCreate(newClass)
         onClose()
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Erro ao criar turma'

@@ -27,7 +27,7 @@
  * SET THIS TO CONTROL BACKEND:
  */
 
-export const USE_MOCK = true  // ← true = demo mode (localStorage), false = production (API + fallback)
+export const USE_MOCK = false  // ← PRODUCTION MODE: Use real API only
 
 /**
  * Simulates network delay (300–800ms random).
