@@ -13,12 +13,7 @@ import Footer    from '../components/Footer'
 import AuthForm  from '../components/AuthForm'
 import TransitionOverlay from '../components/TransitionOverlay'
 import { useAuth } from '../context/AuthContext'
-
-const ROLE_ROUTES = {
-  teacher: '/teacher-dashboard',
-  student: '/dashboard',
-  admin:   '/admin',
-}
+import { ROLE_ROUTES, DEFAULT_ROUTE } from '../constants/routes'
 
 export default function LandingPage({ initialAuth = null }) {
   const { user } = useAuth()
@@ -31,7 +26,7 @@ export default function LandingPage({ initialAuth = null }) {
   const [overlayLabel, setOverlayLabel] = useState('Entrando...')
 
   // Redirect authenticated users — placed AFTER all hooks
-  if (user) return <Navigate to={ROLE_ROUTES[user.role] ?? '/dashboard'} replace />
+  if (user) return <Navigate to={ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE} replace />
 
   function openAuth(mode) {
     setAuthMode(mode)

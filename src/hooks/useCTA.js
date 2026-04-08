@@ -1,11 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-
-const ROLE_ROUTES = {
-  student: '/dashboard',
-  teacher: '/teacher-dashboard',
-  admin:   '/admin',
-}
+import { ROLE_ROUTES, DEFAULT_ROUTE } from '../constants/routes'
 
 export function useCTA() {
   const { user } = useAuth()
@@ -15,7 +10,7 @@ export function useCTA() {
   return function handleCTA(e) {
     if (e?.preventDefault) e.preventDefault()
     if (user) {
-      navigate(ROLE_ROUTES[user.role] ?? '/dashboard')
+      navigate(ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE)
     } else {
       // If already on /cadastro the URL won't change and React Router
       // won't remount the component. Navigate to / first (replace so it
