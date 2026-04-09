@@ -224,3 +224,10 @@
   .card.featured { transform: none; }
   .section { padding: 56px 0; }
 }
+@media (max-width: 480px) {
+  .grid { max-width: 100%; }
+  .planTop { padding: 24px 20px 18px; }
+  .featureList { padding: 16px 20px; }
+  .cta { margin: 0 20px 20px; }
+  .section { padding: 40px 0; }
+}

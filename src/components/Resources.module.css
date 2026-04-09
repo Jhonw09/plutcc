@@ -135,3 +135,10 @@
   .grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
   .section { padding: 56px 0; }
 }
+@media (max-width: 480px) {
+  .grid { max-width: 100%; }
+  .cardTop { padding: 24px 20px 18px; }
+  .featureList { padding: 16px 20px; }
+  .cta { margin: 0 20px 20px; }
+  .section { padding: 40px 0; }
+}

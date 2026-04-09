@@ -135,3 +135,9 @@
   .card    { padding: 28px 24px; }
   .quote   { font-size: 16px; }
 }
+@media (max-width: 480px) {
+  .section { padding: 40px 0; }
+  .card    { padding: 20px 16px; }
+  .quote   { font-size: 15px; }
+  .header  { margin-bottom: 36px; }
+}
