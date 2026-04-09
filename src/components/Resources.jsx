@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { resources } from '../data'
+import Icon from './ui/Icon'
 import styles from './Resources.module.css'
 
 export default function Resources() {
@@ -21,7 +22,7 @@ export default function Resources() {
             <div key={r.id} className={styles.card}>
 
               <div className={styles.cardTop}>
-                <span className={styles.cardIcon}>{r.icon}</span>
+                <span className={styles.cardIcon}><Icon name={r.icon} size={32} /></span>
                 <h3 className={styles.cardName}>{r.name}</h3>
                 <p className={styles.cardDesc}>{r.desc}</p>
               </div>
@@ -49,7 +50,7 @@ export default function Resources() {
         </div>
 
         <p className={styles.note}>
-          ✅ Sem cadastro obrigatório &nbsp;·&nbsp; ✅ Sem cartão de crédito &nbsp;·&nbsp; ✅ 100% gratuito
+          ✓ Sem cadastro obrigatório &nbsp;·&nbsp; ✓ Sem cartão de crédito &nbsp;·&nbsp; ✓ 100% gratuito
         </p>
 
       </div>

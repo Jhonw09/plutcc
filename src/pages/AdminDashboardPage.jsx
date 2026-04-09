@@ -12,7 +12,7 @@ export default function AdminDashboardPage() {
 
       {/* ── Welcome ── */}
       <div className={styles.welcome}>
-        <h2 className={styles.welcomeTitle}>Painel Administrativo 🛡️</h2>
+        <h2 className={styles.welcomeTitle}>Painel Administrativo</h2>
         <p className={styles.welcomeSub}>
           Visão geral da plataforma — {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>

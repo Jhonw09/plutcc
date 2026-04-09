@@ -1,3 +1,4 @@
+import Icon from './ui/Icon'
 import styles from './Footer.module.css'
 
 const cols = {
@@ -26,12 +27,14 @@ export default function Footer() {
             </p>
             <div className={styles.social}>
               {[
-                { label: 'Instagram', icon: '📸' },
-                { label: 'YouTube',   icon: '▶️' },
-                { label: 'Facebook',  icon: '👍' },
-                { label: 'LinkedIn',  icon: '💼' },
+                { label: 'Instagram', icon: 'instagram' },
+                { label: 'YouTube',   icon: 'youtube'   },
+                { label: 'Facebook',  icon: 'facebook'  },
+                { label: 'LinkedIn',  icon: 'linkedin'  },
               ].map(s => (
-                <a key={s.label} href="#" className={styles.socialBtn} aria-label={s.label}>{s.icon}</a>
+                <a key={s.label} href="#" className={styles.socialBtn} aria-label={s.label}>
+                  <Icon name={s.icon} size={16} />
+                </a>
               ))}
             </div>
             <div className={styles.apps}>

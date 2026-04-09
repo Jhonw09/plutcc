@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from './DashboardLayout'
 import JoinClassModal  from './JoinClassModal'
 import JoinedClassCard from './JoinedClassCard'
+import Icon           from '../ui/Icon'
 import { useClass }    from '../../hooks/useClass'
 import styles from './DashboardPage.module.css'
 
@@ -69,7 +70,7 @@ export default function DashboardPage() {
       {/* ── LOADING ── */}
       {loading && (
         <div className={styles.heroEmpty}>
-          <span className={styles.heroEmptyIcon}>⏳</span>
+          <span className={styles.heroEmptyIcon}><Icon name="clock" size={48} /></span>
           <h3 className={styles.heroEmptyTitle}>Carregando turmas...</h3>
         </div>
       )}
@@ -77,7 +78,7 @@ export default function DashboardPage() {
       {/* ── ERROR ── */}
       {error && (
         <div className={styles.heroEmpty}>
-          <span className={styles.heroEmptyIcon}>⚠️</span>
+          <span className={styles.heroEmptyIcon}><Icon name="warning" size={48} /></span>
           <h3 className={styles.heroEmptyTitle}>Erro ao carregar turmas</h3>
           <p className={styles.heroEmptyDesc}>{error}</p>
         </div>
@@ -86,7 +87,7 @@ export default function DashboardPage() {
       {/* ── NO CLASSES ── */}
       {!loading && !error && !hasClasses && (
         <div className={styles.heroEmpty}>
-          <span className={styles.heroEmptyIcon}>🏫</span>
+          <span className={styles.heroEmptyIcon}><Icon name="school" size={48} /></span>
           <h3 className={styles.heroEmptyTitle}>
             Você ainda não está em nenhuma turma
           </h3>
@@ -124,7 +125,7 @@ export default function DashboardPage() {
           */}
           <section className={styles.section}>
             <div className={styles.dataPlaceholder}>
-              <span className={styles.dataPlaceholderIcon}>📊</span>
+              <span className={styles.dataPlaceholderIcon}><Icon name="barChart" size={36} /></span>
               <p className={styles.dataPlaceholderText}>
                 Seu progresso e atividades aparecerão aqui assim que você começar a estudar nas suas turmas.
               </p>

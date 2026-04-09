@@ -1,5 +1,6 @@
 import { useCTA } from '../hooks/useCTA'
 import { features } from '../data/features'
+import Icon from './ui/Icon'
 import styles from './Features.module.css'
 
 export default function Features() {
@@ -18,7 +19,7 @@ export default function Features() {
           {features.map((f, i) => (
             <div key={i} className={styles.card}>
               <div className={styles.iconWrap} style={{ background: f.color }}>
-                <span>{f.icon}</span>
+                <Icon name={f.icon} size={26} />
               </div>
               <h3 className={styles.cardTitle}>{f.title}</h3>
               <p className={styles.cardDesc}>{f.desc}</p>

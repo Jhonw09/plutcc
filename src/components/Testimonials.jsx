@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from './ui/Icon'
 import styles from './Testimonials.module.css'
 
 const testimonials = [
@@ -94,7 +95,7 @@ export default function Testimonials() {
               <div>
                 <strong className={styles.authorName}>{testimonials[active].name}</strong>
                 <span className={styles.authorRole}>{testimonials[active].role}</span>
-                <span className={styles.authorSchool}>📍 {testimonials[active].school}</span>
+                <span className={styles.authorSchool}><Icon name="pin" size={12} style={{display:'inline',verticalAlign:'middle',marginRight:4}} />{testimonials[active].school}</span>
               </div>
             </div>
           </div>

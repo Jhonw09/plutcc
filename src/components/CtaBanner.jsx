@@ -1,4 +1,5 @@
 import { useCTA } from '../hooks/useCTA'
+import Icon from './ui/Icon'
 import styles from './CtaBanner.module.css'
 
 export default function CtaBanner() {
@@ -37,17 +38,17 @@ export default function CtaBanner() {
           <div className={styles.right}>
             <div className={styles.dashCard}>
               <div className={styles.dashHeader}>
-                <span className={styles.dashTitle}>📊 Painel da Escola</span>
+                <span className={styles.dashTitle}>Painel da Escola</span>
                 <span className={styles.dashBadge}>Ao vivo</span>
               </div>
               <div className={styles.dashStats}>
                 {[
-                  { label: 'Alunos ativos hoje', value: '1.247', icon: '👥' },
-                  { label: 'Questões respondidas', value: '8.432', icon: '📝' },
-                  { label: 'Horas de estudo', value: '2.891', icon: '⏱️' },
+                  { label: 'Alunos ativos hoje',    value: '1.247', icon: 'users'   },
+                  { label: 'Questões respondidas',   value: '8.432', icon: 'pencil'  },
+                  { label: 'Horas de estudo',         value: '2.891', icon: 'clock'   },
                 ].map((s, i) => (
                   <div key={i} className={styles.dashStat}>
-                    <span className={styles.dashStatIcon}>{s.icon}</span>
+                    <span className={styles.dashStatIcon}><Icon name={s.icon} size={18} /></span>
                     <div>
                       <strong>{s.value}</strong>
                       <span>{s.label}</span>
