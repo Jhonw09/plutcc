@@ -30,7 +30,9 @@ export default function Resources() {
               <ul className={styles.featureList}>
                 {r.features.map((f) => (
                   <li key={f.text} className={styles.featureItem}>
-                    <span className={styles.featureIcon}>✓</span>
+                    <span className={styles.featureIcon}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
                     {f.text}
                   </li>
                 ))}
@@ -49,9 +51,16 @@ export default function Resources() {
           ))}
         </div>
 
-        <p className={styles.note}>
-          ✓ Sem cadastro obrigatório &nbsp;·&nbsp; ✓ Sem cartão de crédito &nbsp;·&nbsp; ✓ 100% gratuito
-        </p>
+        <div className={styles.note}>
+          {['Sem cadastro obrigatório', 'Sem cartão de crédito', '100% gratuito'].map(t => (
+            <span key={t} style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {t}
+            </span>
+          ))}
+        </div>
 
       </div>
     </section>

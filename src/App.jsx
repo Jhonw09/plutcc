@@ -12,6 +12,7 @@ import {
   SettingsPage, HelpPage,
 } from './pages/placeholders'
 
+import BlogPage             from './pages/BlogPage'
 import './App.css'
 
 function S({ children }) {
@@ -59,6 +60,8 @@ export default function App() {
       <Route path="/admin/tickets"          element={<A><TicketsPage /></A>} />
       <Route path="/admin/configuracoes"    element={<A><SettingsPage /></A>} />
       <Route path="/admin/ajuda"            element={<A><HelpPage /></A>} />
+
+      <Route path="/sobre" element={<BlogPage />} />
 
       {/* ── Catch-all */}
       <Route path="/turma/:id" element={<ProtectedRoute><ClassPage /></ProtectedRoute>} />
