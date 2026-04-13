@@ -13,10 +13,8 @@ export default function TrilhaCard({ trilha, started = false, onStart }) {
 
   const handleClick = () => {
     if (started) {
-      // Navigate to trilha page
-      navigate(`/trilha/${trilha.id}`)
+      navigate(`/dashboard/trilha/${trilha.id}`)
     } else {
-      // Call onStart
       onStart()
     }
   }

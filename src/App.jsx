@@ -5,6 +5,7 @@ import TeacherDashboardPage from './pages/TeacherDashboardPage'
 import TeacherTrilhaPage    from './pages/TeacherTrilhaPage'
 import AdminDashboardPage   from './pages/AdminDashboardPage'
 import TrilhaPage           from './pages/TrilhaPage'
+import StudentTrilhaPage    from './pages/StudentTrilhaPage'
 import ProtectedRoute       from './components/ProtectedRoute'
 import {
   SubjectsPage, ExercisesPage, ExamsPage, ProgressPage, GoalsPage,
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="/dashboard/metas"            element={<S><GoalsPage /></S>} />
       <Route path="/dashboard/configuracoes"    element={<S><SettingsPage /></S>} />
       <Route path="/dashboard/ajuda"            element={<S><HelpPage /></S>} />
+      <Route path="/dashboard/trilha/:id"        element={<S><StudentTrilhaPage /></S>} />
 
       {/* ── Teacher ── */}
       <Route path="/teacher-dashboard"                    element={<T><TeacherDashboardPage /></T>} />
