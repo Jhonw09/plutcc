@@ -3,7 +3,7 @@ import LandingPage          from './pages/LandingPage'
 import DashboardPage        from './components/dashboard/DashboardPage'
 import TeacherDashboardPage from './pages/TeacherDashboardPage'
 import AdminDashboardPage   from './pages/AdminDashboardPage'
-import ClassPage            from './pages/ClassPage'
+import TrilhaPage           from './pages/TrilhaPage'
 import ProtectedRoute       from './components/ProtectedRoute'
 import {
   SubjectsPage, ExercisesPage, ExamsPage, ProgressPage, GoalsPage,
@@ -61,7 +61,7 @@ export default function App() {
       <Route path="/admin/ajuda"            element={<A><HelpPage /></A>} />
 
       {/* ── Catch-all */}
-      <Route path="/turma/:id" element={<ProtectedRoute><ClassPage /></ProtectedRoute>} />
+      <Route path="/trilha/:id" element={<ProtectedRoute><TrilhaPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

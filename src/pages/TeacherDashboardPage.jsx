@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import TeacherLayout       from '../components/teacher/TeacherLayout'
-import ClassCard           from '../components/teacher/ClassCard'
-import CreateClassModal    from '../components/teacher/CreateClassModal'
+import TrilhaCard         from '../components/teacher/TrilhaCard'
+import CreateTrilhaModal   from '../components/teacher/CreateTrilhaModal'
 import { ConfirmModal }    from '../components/ui/ConfirmModal'
 import { Toast }           from '../components/ui/Toast'
 import { useToast }        from '../hooks/useToast'
 import { useAuth }         from '../context/AuthContext'
-import { useTurmas }       from '../hooks/useTurmas'
+import { useTrilhas }      from '../hooks/useTrilhas'
 import styles from './TeacherDashboardPage.module.css'
 
 // ── Filter options ────────────────────────────────────────────────────────────
@@ -26,17 +26,17 @@ const SORT_OPTIONS = [
 function buildStats(classes) {
   const publicCount = classes.filter(c => c.tipo === 'PUBLICA').length
   return [
-    { id: 'classes',  icon: '🏫', label: 'Turmas ativas',   value: classes.length,  delta: null },
+    { id: 'classes',  icon: '🏫', label: 'Trilhas ativas',   value: classes.length,  delta: null },
     { id: 'students', icon: '👥', label: 'Total de alunos', value: 'N/A',          delta: null }, // API doesn't provide member counts yet
-    { id: 'public',   icon: '🌐', label: 'Turmas públicas', value: publicCount,     delta: null },
-    { id: 'private',  icon: '🔒', label: 'Turmas privadas', value: classes.length - publicCount, delta: null },
+    { id: 'public',   icon: '🌐', label: 'Trilhas públicas', value: publicCount,     delta: null },
+    { id: 'private',  icon: '🔒', label: 'Trilhas privadas', value: classes.length - publicCount, delta: null },
   ]
 }
 
 export default function TeacherDashboardPage() {
   const { user } = useAuth()
   const { toasts, toast, dismiss } = useToast()
-  const { turmas, loading, error, createTurma: createTurmaHandler, refreshTurmas } = useTurmas()
+  const { trilhas, loading, error, createTrilha: createTrilhaHandler, refreshTrilhas } = useTrilhas()
 
   // ── Class state ──────────────────────────────────────────────────────────────
   const [classes, setClasses] = useState([])
@@ -51,10 +51,10 @@ export default function TeacherDashboardPage() {
   const [filterSubj, setFilterSubj] = useState('Todas')
   const [sortBy,     setSortBy]     = useState('recent')
 
-  // Sync turmas from hook to local state for filtering
+  // Sync trilhas from hook to local state for filtering
   useEffect(() => {
-    setClasses(turmas)
-  }, [turmas])
+    setClasses(trilhas)
+  }, [trilhas])
 
   // ── Derived: filtered + sorted classes ───────────────────────────────────────
   const visibleClasses = useMemo(() => {
@@ -89,12 +89,12 @@ export default function TeacherDashboardPage() {
   // ── Handlers ─────────────────────────────────────────────────────────────────
   async function handleCreate(newClass) {
     try {
-      const createdClass = await createTurmaHandler(newClass)
-      await refreshTurmas()
-      toast(`Turma "${createdClass.nome}" criada com sucesso!`, 'success')
+      const createdClass = await createTrilhaHandler(newClass)
+      await refreshTrilhas()
+      toast(`Trilha "${createdClass.nome}" criada com sucesso!`, 'success')
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar turma'
-      console.error('Erro ao criar turma:', err)
+      const msg = err instanceof Error ? err.message : 'Erro ao criar trilha'
+      console.error('Erro ao criar trilha:', err)
       toast(msg, 'error')
       throw err
     }
@@ -102,14 +102,14 @@ export default function TeacherDashboardPage() {
 
   function handleEdit(updated) {
     setClasses(prev => prev.map(c => c.id === updated.id ? updated : c))
-    toast(`Turma "${updated.nome}" atualizada.`, 'success')
+    toast(`Trilha "${updated.nome}" atualizada.`, 'success')
     setEditTarget(null)
   }
 
   function handleDeleteConfirm() {
     const nome = deleteTarget.nome
     setClasses(prev => prev.filter(c => c.id !== deleteTarget.id))
-    toast(`Turma "${nome}" excluída.`, 'error')
+    toast(`Trilha "${nome}" excluída.`, 'error')
     setDeleteTarget(null)
   }
 
@@ -132,7 +132,7 @@ export default function TeacherDashboardPage() {
 
       {/* ── Modals ── */}
       {classModalOpen && (
-        <CreateClassModal
+        <CreateTrilhaModal
           onClose={closeClassModal}
           onCreate={handleCreate}
           onEdit={handleEdit}
@@ -142,9 +142,9 @@ export default function TeacherDashboardPage() {
 
       {deleteTarget && (
         <ConfirmModal
-          title="Excluir turma"
-          message={`Tem certeza que deseja excluir "${deleteTarget.nome}"? Esta ação não pode ser desfeita.`}
-          confirmLabel="Excluir turma"
+          title="Excluir trilha"
+          message={`Tem certeza que deseja excluir a trilha "${nome}"? Esta ação não pode ser desfeita.`}
+          confirmLabel="Excluir trilha"
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
         />
@@ -157,7 +157,7 @@ export default function TeacherDashboardPage() {
       {loading && (
         <div className={styles.loading}>
           <div className={styles.loadingSpinner}>⏳</div>
-          <p>Carregando turmas...</p>
+          <p>Carregando trilhas...</p>
         </div>
       )}
 
@@ -165,7 +165,7 @@ export default function TeacherDashboardPage() {
       {error && !loading && (
         <div className={styles.error}>
           <span className={styles.errorIcon}>⚠️</span>
-          <h3>Erro ao carregar turmas</h3>
+          <h3>Erro ao carregar trilhas</h3>
           <p>{error}</p>
           <button
             className={styles.retryBtn}
@@ -181,13 +181,13 @@ export default function TeacherDashboardPage() {
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}>🏫</span>
           <h3 className={styles.heroEmptyTitle}>
-            Você ainda não criou nenhuma turma
+            Você ainda não criou nenhuma trilha
           </h3>
           <p className={styles.heroEmptyDesc}>
-            Crie uma turma, compartilhe o código com seus alunos e comece a acompanhar o desempenho deles.
+            Crie uma trilha e comece a organizar seu conteúdo educacional.
           </p>
           <button className={styles.heroEmptyBtn} onClick={() => setClassModalOpen(true)}>
-            + Criar primeira turma
+            + Criar primeira trilha
           </button>
         </div>
       )}
@@ -210,7 +210,7 @@ export default function TeacherDashboardPage() {
           <section className={styles.section}>
             <div className={styles.classesHeader}>
               <div className={styles.classesHeaderTop}>
-                <h3 className={styles.sectionTitle}>Minhas turmas</h3>
+                <h3 className={styles.sectionTitle}>Minhas trilhas</h3>
                 <button className={styles.newClassBtn} onClick={() => setClassModalOpen(true)}>
                   + Nova turma
                 </button>
@@ -265,7 +265,7 @@ export default function TeacherDashboardPage() {
             {visibleClasses.length > 0 ? (
               <div className={styles.classesList}>
                 {visibleClasses.map(c => (
-                  <ClassCard
+                  <TrilhaCard
                     key={c.id}
                     {...c}
                     onEdit={openEdit}

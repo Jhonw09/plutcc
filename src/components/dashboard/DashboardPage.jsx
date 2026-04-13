@@ -1,76 +1,36 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from './DashboardLayout'
-import JoinClassModal  from './JoinClassModal'
-import JoinedClassCard from './JoinedClassCard'
-import { useClass }    from '../../hooks/useClass'
+import TrilhaCard from './TrilhaCard'
+import { useTrilhas } from '../../hooks/useTrilhas'
 import styles from './DashboardPage.module.css'
 
 export default function DashboardPage() {
-  const { getClassesByUser, loading, error } = useClass()
+  const { trilhas, loading, error, refreshTrilhas } = useTrilhas()
 
-  const [joinedClasses, setJoinedClasses] = useState([])
-  const [modalOpen,     setModalOpen]     = useState(false)
+  const [startedTrilhas, setStartedTrilhas] = useState([])
 
-  // Fetch enrolled classes on mount
+  // Fetch available trilhas on mount
   useEffect(() => {
-    async function loadClasses() {
-      try {
-        const classes = await getClassesByUser('student')
-        // Ensure all classes have membros array
-        const safeClasses = (classes ?? []).map(c => ({
-          ...c,
-          membros: c.membros ?? [],
-        }))
-        setJoinedClasses(safeClasses)
-      } catch (err) {
-        console.error('Erro ao carregar turmas:', err)
-        setJoinedClasses([])
-      }
-    }
-    loadClasses()
-  }, [getClassesByUser])
+    // Trilhas are loaded by the hook
+  }, [])
 
-  async function handleJoin(newClass) {
-    // Immediately refetch all classes to sync with localStorage
-    try {
-      const classes = await getClassesByUser('student')
-      // Ensure all classes have membros array with proper structure
-      const safeClasses = (classes ?? []).map(c => ({
-        ...c,
-        membros: c.membros ?? [],
-      }))
-      setJoinedClasses(safeClasses)
-      setModalOpen(false)
-    } catch (err) {
-      console.error('Erro ao sincronizar turmas:', err)
-      // Fallback: at least update the state with the new class
-      const safeNewClass = {
-        ...newClass,
-        membros: newClass.membros ?? [],
-      }
-      setJoinedClasses(prev => [safeNewClass, ...prev])
-    }
+  async function handleStartTrilha(trilha) {
+    // For now, just add to started trilhas
+    // In future, this could call an API to enroll
+    setStartedTrilhas(prev => [...prev, trilha])
   }
 
-  const joinedCodes = joinedClasses.map(c => c.codigo)
-  const hasClasses  = joinedClasses.length > 0
+  const availableTrilhas = trilhas.filter(t => !startedTrilhas.find(st => st.id === t.id))
+  const hasTrilhas = trilhas.length > 0
 
   return (
     <DashboardLayout>
-
-      {modalOpen && (
-        <JoinClassModal
-          onClose={() => setModalOpen(false)}
-          onJoin={handleJoin}
-          joinedCodes={joinedCodes}
-        />
-      )}
 
       {/* ── LOADING ── */}
       {loading && (
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}>⏳</span>
-          <h3 className={styles.heroEmptyTitle}>Carregando turmas...</h3>
+          <h3 className={styles.heroEmptyTitle}>Carregando trilhas...</h3>
         </div>
       )}
 
@@ -78,56 +38,50 @@ export default function DashboardPage() {
       {error && (
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}>⚠️</span>
-          <h3 className={styles.heroEmptyTitle}>Erro ao carregar turmas</h3>
+          <h3 className={styles.heroEmptyTitle}>Erro ao carregar trilhas</h3>
           <p className={styles.heroEmptyDesc}>{error}</p>
         </div>
       )}
 
-      {/* ── NO CLASSES ── */}
-      {!loading && !error && !hasClasses && (
+      {/* ── NO TRILHAS ── */}
+      {!loading && !error && !hasTrilhas && (
         <div className={styles.heroEmpty}>
-          <span className={styles.heroEmptyIcon}>🏫</span>
+          <span className={styles.heroEmptyIcon}>📚</span>
           <h3 className={styles.heroEmptyTitle}>
-            Você ainda não está em nenhuma turma
+            Nenhuma trilha disponível
           </h3>
           <p className={styles.heroEmptyDesc}>
-            Insira o código que seu professor compartilhou para entrar em uma turma.
+            Ainda não há trilhas de estudo disponíveis. Volte mais tarde!
           </p>
-          <button className={styles.heroEmptyBtn} onClick={() => setModalOpen(true)}>
-            + Entrar em uma turma
-          </button>
         </div>
       )}
 
-      {/* ── HAS CLASSES ── */}
-      {!loading && !error && hasClasses && (
+      {/* ── HAS TRILHAS ── */}
+      {!loading && !error && hasTrilhas && (
         <>
-          {/* My Classes — driven entirely by real local state */}
+          {/* Started Trilhas */}
+          {startedTrilhas.length > 0 && (
+            <section className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <h3 className={styles.sectionTitle}>Trilhas iniciadas</h3>
+              </div>
+              <div className={styles.classesList}>
+                {startedTrilhas.map(t => (
+                  <TrilhaCard key={t.id} trilha={t} started={true} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Available Trilhas */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionTitle}>Minhas turmas</h3>
-              <button className={styles.sectionAction} onClick={() => setModalOpen(true)}>
-                + Entrar em uma turma
-              </button>
+              <h3 className={styles.sectionTitle}>Trilhas disponíveis</h3>
             </div>
             <div className={styles.classesList}>
-              {joinedClasses.map(c => (
-                <JoinedClassCard key={c.codigo} {...c} />
+              {availableTrilhas.map(t => (
+                <TrilhaCard key={t.id} trilha={t} onStart={() => handleStartTrilha(t)} />
               ))}
-            </div>
-          </section>
-
-          {/*
-            Progress, activity, and weekly stats will be populated here
-            once the backend returns real data for the enrolled classes.
-            Replace this placeholder with the banner + two-column row + activity section.
-          */}
-          <section className={styles.section}>
-            <div className={styles.dataPlaceholder}>
-              <span className={styles.dataPlaceholderIcon}>📊</span>
-              <p className={styles.dataPlaceholderText}>
-                Seu progresso e atividades aparecerão aqui assim que você começar a estudar nas suas turmas.
-              </p>
             </div>
           </section>
         </>

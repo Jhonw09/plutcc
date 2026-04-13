@@ -3,7 +3,7 @@ import { Button }     from '../ui/Button'
 import { InputField } from '../ui/InputField'
 import { useClass }   from '../../hooks/useClass'
 import { useAuth }    from '../../context/AuthContext'
-import styles from './CreateClassModal.module.css'
+import styles from './CreateTrilhaModal.module.css'
 
 const SUBJECTS = [
   'Matemática', 'Português', 'Química', 'Biologia',
@@ -15,7 +15,7 @@ const LEVELS = ['Fundamental', 'Médio', 'Vestibular']
 
 function validate({ name, subject, level }) {
   const e = {}
-  if (!name.trim())    e.name    = 'Informe o nome da turma.'
+  if (!name.trim())    e.name    = 'Informe o nome da trilha.'
   if (!subject)        e.subject = 'Selecione uma disciplina.'
   if (!level)          e.level   = 'Selecione um nível.'
   return e
@@ -24,10 +24,10 @@ function validate({ name, subject, level }) {
 /**
  * Dual-mode modal: create (no initialData) or edit (initialData provided).
  *
- * Create mode: calls classService.createClass directly, returns class with auto-generated code.
- * Edit mode:   preserves existing code/id, calls onEdit(updatedObject).
+ * Create mode: calls trilhaService.createTrilha directly, returns trilha.
+ * Edit mode:   preserves existing id, calls onEdit(updatedObject).
  */
-export default function CreateClassModal({ onClose, onCreate, onEdit, initialData = null }) {
+export default function CreateTrilhaModal({ onClose, onCreate, onEdit, initialData = null }) {
   const { user } = useAuth()
   const isEdit = initialData !== null
 
@@ -76,7 +76,7 @@ export default function CreateClassModal({ onClose, onCreate, onEdit, initialDat
         await onCreate(newClass)
         onClose()
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Erro ao criar turma'
+        const msg = err instanceof Error ? err.message : 'Erro ao criar trilha'
         setApiError(msg)
       } finally {
         setLoading(false)
@@ -94,10 +94,10 @@ export default function CreateClassModal({ onClose, onCreate, onEdit, initialDat
           <span className={styles.headerIcon}>{isEdit ? '✏️' : '🏫'}</span>
           <div>
             <h2 id="modal-title" className={styles.title}>
-              {isEdit ? 'Editar turma' : 'Criar nova turma'}
+              {isEdit ? 'Editar trilha' : 'Criar nova trilha'}
             </h2>
             <p className={styles.sub}>
-              {isEdit ? 'Atualize os dados da turma abaixo.' : 'Preencha os dados abaixo para criar sua turma.'}
+              {isEdit ? 'Atualize os dados da trilha abaixo.' : 'Preencha os dados abaixo para criar sua trilha.'}
             </p>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function CreateClassModal({ onClose, onCreate, onEdit, initialDat
         <form onSubmit={handleSubmit} noValidate className={styles.form}>
 
           <InputField
-            id="class-name" name="name" label="Nome da turma"
+            id="trilha-name" name="name" label="Nome da trilha"
             placeholder="Ex: 3º A — Matemática"
             value={fields.name} onChange={e => set('name', e.target.value)}
             error={errors.name} autoFocus disabled={loading}
@@ -128,14 +128,14 @@ export default function CreateClassModal({ onClose, onCreate, onEdit, initialDat
 
           <InputField
             id="class-desc" name="description" label="Descrição (opcional)"
-            placeholder="Sobre o que é essa turma?"
+            placeholder="Sobre o que é essa trilha?"
             value={fields.description} onChange={e => set('description', e.target.value)}
             disabled={loading}
           />
 
           <div className={styles.fieldWrap}>
-            <span className={styles.label}>Tipo de turma</span>
-            <div className={styles.typeToggle} role="group" aria-label="Tipo de turma">
+            <span className={styles.label}>Tipo de trilha</span>
+            <div className={styles.typeToggle} role="group" aria-label="Tipo de trilha">
               {[
                 { value: 'PUBLICA',  label: '🌐 Pública',  hint: 'Aparece na comunidade' },
                 { value: 'PRIVADA',  label: '🔒 Privada',  hint: 'Acesso apenas por código' },
@@ -178,7 +178,7 @@ export default function CreateClassModal({ onClose, onCreate, onEdit, initialDat
           <div className={styles.actions}>
             <Button variant="outline" type="button" onClick={onClose} disabled={loading}>Cancelar</Button>
             <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? '⏳ Criando...' : (isEdit ? 'Salvar alterações' : 'Criar turma')}
+              {loading ? '⏳ Criando...' : (isEdit ? 'Salvar alterações' : 'Criar trilha')}
             </Button>
           </div>
 

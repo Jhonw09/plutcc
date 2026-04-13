@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { typeBadgeStyle } from '../../utils/subjectColors'
-import styles from './ClassCard.module.css'
+import styles from './TrilhaCard.module.css'
 
 const LEVEL_EMOJI = { Fundamental: '📗', Médio: '📘', Vestibular: '🎯' }
 export const SUBJECT_EMOJI = {
@@ -21,15 +21,14 @@ function formatRelative(iso) {
 }
 
 /**
- * @param {function} onEdit   - Called with the class object to open edit modal
- * @param {function} onDelete - Called with the class id to trigger delete confirm
+ * @param {function} onEdit   - Called with the trilha object to open edit modal
+ * @param {function} onDelete - Called with the trilha id to trigger delete confirm
  */
-export default function ClassCard({ id, nome, disciplina, descricao, tipo, nivel, codigo, alunoIds, criadaEm, onEdit, onDelete }) {
+export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nivel, criadaEm, onEdit, onDelete }) {
   const navigate   = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef    = useRef(null)
   const isPublic   = tipo === 'PUBLICA'
-  const studentCount = alunoIds?.length ?? 0
 
   // Close menu on outside click
   useEffect(() => {
@@ -44,15 +43,15 @@ export default function ClassCard({ id, nome, disciplina, descricao, tipo, nivel
   function handleCardClick(e) {
     // Don't navigate if the actions menu was clicked
     if (menuRef.current?.contains(e.target)) return
-    navigate(`/turma/${id}`, {
-      state: { id, nome, disciplina, descricao, tipo, nivel, codigo, alunoIds },
+    navigate(`/trilha/${id}`, {
+      state: { id, nome, disciplina, descricao, tipo, nivel },
     })
   }
 
   function handleEdit(e) {
     e.stopPropagation()
     setMenuOpen(false)
-    onEdit({ id, nome, disciplina, descricao, tipo, nivel, codigo, alunoIds, criadaEm })
+    onEdit({ id, nome, disciplina, descricao, tipo, nivel, criadaEm })
   }
 
   function handleDelete(e) {
@@ -127,10 +126,6 @@ export default function ClassCard({ id, nome, disciplina, descricao, tipo, nivel
             )}
           </div>
 
-          <div className={styles.codeWrap}>
-            <span className={styles.codeLabel}>Código</span>
-            <code className={styles.code}>{codigo}</code>
-          </div>
         </div>
 
       </div>
