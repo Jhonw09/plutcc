@@ -196,9 +196,6 @@ export async function deleteAula(id) {
 
   const response = await fetch(ENDPOINTS.aulaById(id), {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    }
   })
 
   if (!response.ok) {
@@ -206,6 +203,4 @@ export async function deleteAula(id) {
     console.error('[aulaService] Delete failed:', response.status, errorText)
     throw new Error(`Erro ao deletar aula: ${response.status} ${response.statusText}`)
   }
-
-  console.log('[aulaService] Aula deleted successfully')
 }

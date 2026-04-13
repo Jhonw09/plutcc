@@ -8,8 +8,9 @@ export default defineConfig(({ command }) => ({
   server: command === 'serve' ? {
     proxy: {
       '/api': {
-        target:       'http://localhost:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
+        rewrite: (path) => path,
       },
     },
   } : {},

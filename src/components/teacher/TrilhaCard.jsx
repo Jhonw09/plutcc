@@ -44,7 +44,7 @@ export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nive
 
   function handleCardClick(e) {
     if (menuRef.current?.contains(e.target)) return
-    navigate(`/trilha/${id}`, {
+    navigate(`/professor/trilha/${id}`, {
       state: { id, nome, disciplina, descricao, tipo, nivel },
     })
   }

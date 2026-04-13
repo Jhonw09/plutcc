@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import LandingPage          from './pages/LandingPage'
 import DashboardPage        from './components/dashboard/DashboardPage'
 import TeacherDashboardPage from './pages/TeacherDashboardPage'
+import TeacherTrilhaPage    from './pages/TeacherTrilhaPage'
 import AdminDashboardPage   from './pages/AdminDashboardPage'
 import TrilhaPage           from './pages/TrilhaPage'
 import ProtectedRoute       from './components/ProtectedRoute'
@@ -13,6 +14,7 @@ import {
 } from './pages/placeholders'
 
 import BlogPage             from './pages/BlogPage'
+import ExplorarTrilhas      from './pages/ExplorarTrilhas'
 import './App.css'
 
 function S({ children }) {
@@ -51,6 +53,8 @@ export default function App() {
       <Route path="/teacher-dashboard/configuracoes"      element={<T><SettingsPage /></T>} />
       <Route path="/teacher-dashboard/ajuda"              element={<T><HelpPage /></T>} />
 
+      <Route path="/professor/trilha/:id"                    element={<T><TeacherTrilhaPage /></T>} />
+
       {/* ── Admin ── */}
       <Route path="/admin"                  element={<A><AdminDashboardPage /></A>} />
       <Route path="/admin/usuarios"         element={<A><UsersPage /></A>} />
@@ -62,6 +66,7 @@ export default function App() {
       <Route path="/admin/ajuda"            element={<A><HelpPage /></A>} />
 
       <Route path="/sobre" element={<BlogPage />} />
+      <Route path="/explorar" element={<S><ExplorarTrilhas /></S>} />
 
       {/* ── Catch-all */}
       <Route path="/trilha/:id" element={<ProtectedRoute><TrilhaPage /></ProtectedRoute>} />

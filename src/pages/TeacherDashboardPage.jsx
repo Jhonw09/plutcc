@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate }      from 'react-router-dom'
 import TeacherLayout       from '../components/teacher/TeacherLayout'
 import TrilhaCard         from '../components/teacher/TrilhaCard'
 import CreateTrilhaModal   from '../components/teacher/CreateTrilhaModal'
@@ -35,9 +36,10 @@ function buildStats(classes) {
 }
 
 export default function TeacherDashboardPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { toasts, toast, dismiss } = useToast()
-  const { trilhas, loading, error, createTrilha: createTrilhaHandler, refreshTrilhas } = useTrilhas()
+  const { trilhas, loading, error, createTrilha: createTrilhaHandler, deleteTrilha: deleteTrilhaHandler, refreshTrilhas } = useTrilhas()
 
   // ── Class state ──────────────────────────────────────────────────────────────
   const [classes, setClasses] = useState([])
@@ -93,6 +95,7 @@ export default function TeacherDashboardPage() {
       const createdClass = await createTrilhaHandler(newClass)
       await refreshTrilhas()
       toast(`Trilha "${createdClass.nome}" criada com sucesso!`, 'success')
+      navigate(`/trilha/${createdClass.id}`)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro ao criar trilha'
       console.error('Erro ao criar trilha:', err)
@@ -107,11 +110,16 @@ export default function TeacherDashboardPage() {
     setEditTarget(null)
   }
 
-  function handleDeleteConfirm() {
-    const nome = deleteTarget.nome
-    setClasses(prev => prev.filter(c => c.id !== deleteTarget.id))
-    toast(`Trilha "${nome}" excluída.`, 'error')
-    setDeleteTarget(null)
+  async function handleDeleteConfirm() {
+    const { id, nome } = deleteTarget
+    try {
+      await deleteTrilhaHandler(id)
+      toast(`Trilha "${nome}" excluída.`, 'error')
+    } catch (err) {
+      toast(err.message || 'Erro ao excluir trilha.', 'error')
+    } finally {
+      setDeleteTarget(null)
+    }
   }
 
   function openEdit(classObj) {
@@ -144,7 +152,7 @@ export default function TeacherDashboardPage() {
       {deleteTarget && (
         <ConfirmModal
           title="Excluir trilha"
-          message={`Tem certeza que deseja excluir a trilha "${nome}"? Esta ação não pode ser desfeita.`}
+          message={`Tem certeza que deseja excluir a trilha "${deleteTarget.nome}"? Esta ação não pode ser desfeita.`}
           confirmLabel="Excluir trilha"
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
@@ -177,18 +185,18 @@ export default function TeacherDashboardPage() {
         </div>
       )}
 
-      {/* ── CONTENT (only show when loaded and no error) ── */}
-      {!loading && !error && (
+      {/* ── EMPTY STATE (loaded, no error, no classes) ── */}
+      {!loading && !error && !hasClasses && (
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}><Icon name="school" size={48} /></span>
           <h3 className={styles.heroEmptyTitle}>
-            Você ainda não criou nenhuma trilha
+            Está na hora de criar sua primeira trilha
           </h3>
           <p className={styles.heroEmptyDesc}>
-            Crie uma trilha e comece a organizar seu conteúdo educacional.
+            Organize seu conteúdo em uma trilha para seus alunos começarem a aprender.
           </p>
           <button className={styles.heroEmptyBtn} onClick={() => setClassModalOpen(true)}>
-            + Criar primeira trilha
+            Criar trilha
           </button>
         </div>
       )}

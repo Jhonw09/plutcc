@@ -172,6 +172,13 @@ export async function getMyTrilhas(professorId) {
   console.log('[trilhaService] My trilhas loaded:', trilhas.length, 'items')
   return trilhas
 }
-// ─────────────────────────────────────────────────────────────────────────────
-// UTILITY FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────────
+
+export async function deleteTrilha(id, professorId) {
+  if (!id) throw new Error('ID da trilha é obrigatório')
+  if (!professorId) throw new Error('ID do professor é obrigatório')
+  const response = await fetch(`${ENDPOINTS.trilhaById(id)}?professorId=${professorId}`, { method: 'DELETE' })
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Erro ao excluir trilha: ${response.status} ${errorText}`)
+  }
+}

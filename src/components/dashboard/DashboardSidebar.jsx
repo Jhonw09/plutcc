@@ -4,6 +4,7 @@ import styles from './DashboardSidebar.module.css'
 
 const navItems = [
   { icon: '🏠', label: 'Início',      path: STUDENT_ROUTES.home      },
+  { icon: '🔭', label: 'Explorar',    path: STUDENT_ROUTES.explore   },
   { icon: '📚', label: 'Disciplinas', path: STUDENT_ROUTES.subjects   },
   { icon: '📝', label: 'Exercícios',  path: STUDENT_ROUTES.exercises  },
   { icon: '📋', label: 'Simulados',   path: STUDENT_ROUTES.exams      },

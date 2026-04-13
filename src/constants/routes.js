@@ -8,6 +8,7 @@ export const DEFAULT_ROUTE = '/dashboard'
 
 // ── Student routes ──────────────────────────────────────────
 export const STUDENT_ROUTES = {
+  explore:    '/explorar',
   home:      '/dashboard',
   subjects:  '/dashboard/disciplinas',
   exercises: '/dashboard/exercicios',

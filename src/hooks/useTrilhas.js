@@ -15,7 +15,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { getMyTrilhas, createTrilha as apiCreateTrilha } from '../api/services/trilhaService'
+import { getMyTrilhas, createTrilha as apiCreateTrilha, deleteTrilha as apiDeleteTrilha } from '../api/services/trilhaService'
 import { useAuth } from '../context/AuthContext'
 
 export function useTrilhas() {
@@ -72,6 +72,12 @@ export function useTrilhas() {
     }
   }, [])
 
+  // Delete trilha function
+  const deleteTrilhaHandler = useCallback(async (id) => {
+    await apiDeleteTrilha(id, user?.id)
+    setTrilhas(prev => prev.filter(t => t.id !== id))
+  }, [user?.id])
+
   // Refresh trilhas from API
   const refreshTrilhas = useCallback(async () => {
     await loadTrilhas()
@@ -82,6 +88,7 @@ export function useTrilhas() {
     loading,
     error,
     createTrilha: createTrilhaHandler,
+    deleteTrilha: deleteTrilhaHandler,
     refreshTrilhas
   }
 }
