@@ -5,6 +5,7 @@ import styles from './ProfileDropdown.module.css'
 
 const ROLE_LABELS = { student: 'Aluno', teacher: 'Professor', admin: 'Admin' }
 // view | profile | password | delete
+// amazonq-ignore-next-line
 const MODE = { VIEW: 'view', PROFILE: 'profile', PASSWORD: 'password', DELETE: 'delete' }
 
 export default function ProfileDropdown() {

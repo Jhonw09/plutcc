@@ -187,9 +187,6 @@ async function login({ email, senha }) {
 
 ### Login Happy Path
 ```
-User Input:
-  email: "joao@example.com"
-  password: "123456"
 
 ↓ AuthForm validation passes
 
@@ -234,9 +231,7 @@ User Input:
 
 ### Login Error Path
 ```
-User Input:
-  email: "fake@example.com"
-  password: "wrong"
+
 
 ↓ AuthContext.login() called
   [AuthContext] Starting login flow...

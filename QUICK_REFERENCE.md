@@ -195,31 +195,6 @@ classService
   ✓ classService.getAllClasses(userId)
 
 
-MOCK DATA TEST CREDENTIALS
-================================================================================
-
-Student Account:
-  Email: joao@example.com
-  Password: 123456
-  Role: ALUNO
-
-Teacher Account:
-  Email: maria@example.com
-  Password: 123456
-  Role: PROFESSOR
-
-Admin Account:
-  Email: admin@example.com
-  Password: 123456
-  Role: ADMIN
-
-Mock Classes:
-  - Code: ABC123 (Matemática)
-  - Code: DEF456 (Português)
-
-
-FILES YOU NEED TO KNOW
-================================================================================
 
 To understand how it works:
   ✓ Read: API_ARCHITECTURE.md

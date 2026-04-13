@@ -178,20 +178,6 @@ MOCK DATA FOR TESTING
 
 Pre-configured test accounts:
 
-Student:
-  Email: joao@example.com
-  Password: 123456
-  Role: ALUNO (student)
-
-Teacher:
-  Email: maria@example.com
-  Password: 123456
-  Role: PROFESSOR (teacher)
-
-Admin:
-  Email: admin@example.com
-  Password: 123456
-  Role: ADMIN (admin)
 
 Mock Classes:
 
