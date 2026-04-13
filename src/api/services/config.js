@@ -1,30 +1,8 @@
 /**
- * Service layer configuration with incremental API migration support.
- * 
- * STRATEGY:
- *   Phase 1 (Current): Hybrid mode - CRUD operations try API first, fallback to localStorage
- *   Phase 2 (Future): API-first mode - All operations use real API
- *   Phase 3 (Final): Backend-only - Remove localStorage completely
- * 
- * HOW IT WORKS:
- *   - USE_MOCK controls the fallback behavior in classService
- *   - USE_MOCK = true  → Always use localStorage (safe, demo mode)
- *   - USE_MOCK = false → Try API first, fallback to localStorage (current production)
- *   
- * MIGRATED OPERATIONS (API with automatic fallback):
- *   ✅ createClass()
- *   ✅ getClassById()
- *   ✅ getClassesByUser()
- *   ✅ joinClass()
- *   ✅ leaveClass()
- * 
- * NOT YET MIGRATED (Still using localStorage):
- *   📦 addMessageToMural() - Will migrate in Phase 2
- *   📦 addActivityToMural() - Will migrate in Phase 2
- *   📦 All comment operations - Will migrate in Phase 2
- *   📦 Member management operations - Will migrate in Phase 2
+ * Service layer configuration.
  *
- * SET THIS TO CONTROL BACKEND:
+ * USE_MOCK = false → Use real API (production mode)
+ * USE_MOCK = true  → Always use localStorage (demo mode)
  */
 
 export const USE_MOCK = false  // ← PRODUCTION MODE: Use real API only
@@ -50,16 +28,10 @@ export const ENDPOINTS = {
   signup:   `${API_BASE}/usuarios`,
   userById: (id) => `${API_BASE}/usuarios/${id}`,
   
-  // Class endpoints
-  classes:           `${API_BASE}/turmas`,
-  createClass:       `${API_BASE}/turmas`,
-  classById: (id)    => `${API_BASE}/turmas/${id}`,
-  myClasses:         `${API_BASE}/turmas/minhas`,
-  joinClass:         `${API_BASE}/turmas/entrar`,
-  leaveClass: (id)   => `${API_BASE}/turmas/${id}/sair`,
-  classMembers: (id) => `${API_BASE}/turmas/${id}/membros`,
-  addMessage: (id)   => `${API_BASE}/turmas/${id}/mural/mensagem`,
-  addActivity: (id)  => `${API_BASE}/turmas/${id}/mural/atividade`,
+  // Trilha endpoints
+  trilhas:              `${API_BASE}/trilhas`,
+  trilhaById: (id)      => `${API_BASE}/trilhas/${id}`,
+  minhasTrilhas:        `${API_BASE}/trilhas/minhas`,
 }
 
 /**

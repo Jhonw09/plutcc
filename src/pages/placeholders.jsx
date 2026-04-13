@@ -25,7 +25,7 @@ export function ProgressPage()  { return <ComingSoon title="Desempenho"   emoji=
 export function GoalsPage()     { return <ComingSoon title="Metas"        emoji="🎯" /> }
 
 // ── Teacher ──────────────────────────────────────────────────────────────────
-export function ClassesPage()    { return <ComingSoon title="Turmas"      emoji="🏫" /> }
+export function TrilhasPage()   { return <ComingSoon title="Trilhas"      emoji="🏫" /> }
 export function StudentsPage()   { return <ComingSoon title="Alunos"      emoji="👥" /> }
 export function ActivitiesPage() { return <ComingSoon title="Atividades"  emoji="📝" /> }
 export function ReportsPage()    { return <ComingSoon title="Relatórios"  emoji="📊" /> }

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Button }     from '../ui/Button'
 import { InputField } from '../ui/InputField'
-import { useClass }   from '../../hooks/useClass'
 import { useAuth }    from '../../context/AuthContext'
 import styles from './CreateTrilhaModal.module.css'
 

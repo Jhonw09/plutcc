@@ -57,7 +57,7 @@ export function DeleteClassModal({ className, onConfirm, onCancel }) {
           <span className={styles.icon}>🗑️</span>
         </div>
 
-        <h3 id="delete-title" className={styles.title}>Excluir turma</h3>
+        <h3 id="delete-title" className={styles.title}>Excluir trilha</h3>
 
         <p className={styles.message}>
           Você está prestes a excluir{' '}
@@ -100,7 +100,7 @@ export function DeleteClassModal({ className, onConfirm, onCancel }) {
               className={styles.confirmBtn}
               disabled={loading || !password.trim()}
             >
-              {loading ? 'Verificando…' : 'Excluir turma'}
+              {loading ? 'Verificando…' : 'Excluir trilha'}
             </button>
           </div>
         </form>

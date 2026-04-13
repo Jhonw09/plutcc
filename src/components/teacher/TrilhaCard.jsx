@@ -95,7 +95,7 @@ export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nive
             <button
               className={styles.menuBtn}
               onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
-              aria-label="Opções da turma"
+              aria-label="Opções da trilha"
               aria-expanded={menuOpen}
             >
               ⋯
@@ -103,10 +103,10 @@ export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nive
             {menuOpen && (
               <div className={styles.menu} role="menu">
                 <button className={styles.menuItem} onClick={handleEdit} role="menuitem">
-                  <Icon name="pencil" size={13} /> Editar turma
+                  <Icon name="pencil" size={13} /> Editar trilha
                 </button>
                 <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={handleDelete} role="menuitem">
-                  <Icon name="close" size={13} /> Excluir turma
+                  <Icon name="close" size={13} /> Excluir trilha
                 </button>
               </div>
             )}

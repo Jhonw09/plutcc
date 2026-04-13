@@ -21,7 +21,7 @@ export const STUDENT_ROUTES = {
 // ── Teacher routes ───────────────────────────────────────────
 export const TEACHER_ROUTES = {
   home:       '/teacher-dashboard',
-  classes:    '/teacher-dashboard/turmas',
+  trilhas:    '/teacher-dashboard/trilhas',
   students:   '/teacher-dashboard/alunos',
   activities: '/teacher-dashboard/atividades',
   reports:    '/teacher-dashboard/relatorios',

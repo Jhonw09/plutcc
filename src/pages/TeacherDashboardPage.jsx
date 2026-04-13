@@ -213,7 +213,7 @@ export default function TeacherDashboardPage() {
               <div className={styles.classesHeaderTop}>
                 <h3 className={styles.sectionTitle}>Minhas trilhas</h3>
                 <button className={styles.newClassBtn} onClick={() => setClassModalOpen(true)}>
-                  + Nova turma
+                  + Nova trilha
                 </button>
               </div>
 
@@ -247,7 +247,7 @@ export default function TeacherDashboardPage() {
                   className={styles.filterSelect}
                   value={sortBy}
                   onChange={e => setSortBy(e.target.value)}
-                  aria-label="Ordenar turmas"
+                  aria-label="Ordenar trilhas"
                 >
                   {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
@@ -258,8 +258,8 @@ export default function TeacherDashboardPage() {
             {isFiltered && (
               <p className={styles.resultsCount}>
                 {visibleClasses.length === 0
-                  ? 'Nenhuma turma encontrada.'
-                  : `${visibleClasses.length} turma${visibleClasses.length !== 1 ? 's' : ''} encontrada${visibleClasses.length !== 1 ? 's' : ''}.`}
+                  ? 'Nenhuma trilha encontrada.'
+                  : `${visibleClasses.length} trilha${visibleClasses.length !== 1 ? 's' : ''} encontrada${visibleClasses.length !== 1 ? 's' : ''}.`}
               </p>
             )}
 
@@ -278,7 +278,7 @@ export default function TeacherDashboardPage() {
               <div className={styles.emptyFilter}>
                 <span className={styles.emptyFilterIcon}><Icon name="search" size={36} /></span>
                 <p className={styles.emptyFilterText}>
-                  Nenhuma turma corresponde à sua busca.{' '}
+                  Nenhuma trilha corresponde à sua busca.{' '}
                   <button className={styles.clearFiltersBtn} onClick={() => { setSearch(''); setFilterSubj('Todas') }}>
                     Limpar filtros
                   </button>

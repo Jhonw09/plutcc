@@ -4,7 +4,7 @@ import styles from '../dashboard/DashboardSidebar.module.css'
 
 const navItems = [
   { icon: '🏠', label: 'Início',      path: TEACHER_ROUTES.home       },
-  { icon: '🏫', label: 'Turmas',      path: TEACHER_ROUTES.classes    },
+  { icon: '🏫', label: 'Trilhas',      path: TEACHER_ROUTES.trilhas    },
   { icon: '👥', label: 'Alunos',      path: TEACHER_ROUTES.students   },
   { icon: '📝', label: 'Atividades',  path: TEACHER_ROUTES.activities },
   { icon: '📊', label: 'Relatórios',  path: TEACHER_ROUTES.reports    },

@@ -2,7 +2,7 @@
 
 export const teacherStats = [
   { id: 'students',   icon: 'users',     label: 'Total de alunos',       value: '128',  delta: '+4 esta semana',     deltaPositive: true  },
-  { id: 'classes',    icon: 'school',    label: 'Turmas ativas',         value: '6',    delta: '2 turmas noturnas',  deltaPositive: null  },
+  { id: 'classes',    icon: 'school',    label: 'Trilhas ativas',        value: '6',    delta: '2 trilhas noturnas', deltaPositive: null  },
   { id: 'progress',   icon: 'lineChart', label: 'Progresso médio',       value: '74%',  delta: '+3% vs mês passado', deltaPositive: true  },
   { id: 'activities', icon: 'checkCircle', label: 'Atividades concluídas', value: '312', delta: '48 esta semana',    deltaPositive: true  },
 ]
@@ -10,7 +10,7 @@ export const teacherStats = [
 export const quickActions = [
   { id: 'create',   icon: 'plus',      label: 'Criar atividade',  desc: 'Nova tarefa ou prova para uma turma' },
   { id: 'students', icon: 'user',      label: 'Ver alunos',       desc: 'Lista completa com desempenho'       },
-  { id: 'classes',  icon: 'clipboard', label: 'Gerenciar turmas', desc: 'Editar turmas e adicionar alunos'    },
+  { id: 'classes',  icon: 'clipboard', label: 'Gerenciar trilhas', desc: 'Editar trilhas e adicionar alunos'    },
   { id: 'reports',  icon: 'barChart',  label: 'Relatórios',       desc: 'Exportar dados de desempenho'        },
 ]
 

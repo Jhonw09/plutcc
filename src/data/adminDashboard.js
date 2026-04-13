@@ -9,7 +9,7 @@ export const adminStats = [
 
 export const adminActivity = [
   { id: 1, icon: 'school',      student: 'Escola Objetivo',   action: 'renovou contrato anual',              time: 'há 1h',  color: 'var(--success)' },
-  { id: 2, icon: 'user',        student: 'Prof. Carlos Lima', action: 'criou 3 novas turmas',                time: 'há 2h',  color: '#a78bfa'        },
+  { id: 2, icon: 'user',        student: 'Prof. Carlos Lima', action: 'criou 3 novas trilhas',               time: 'há 2h',  color: '#a78bfa'        },
   { id: 3, icon: 'alertCircle', student: 'Sistema',           action: 'erro 500 detectado em /api/progress', time: 'há 3h',  color: 'var(--danger)'  },
   { id: 4, icon: 'dollar',      student: 'Escola Anglo',      action: 'pagamento confirmado — R$3.200',      time: 'ontem',  color: '#86efac'        },
   { id: 5, icon: 'users',       student: '48 novos alunos',   action: 'cadastrados via importação CSV',      time: 'ontem',  color: '#93c5fd'        },

@@ -7,7 +7,7 @@ import TrilhaPage           from './pages/TrilhaPage'
 import ProtectedRoute       from './components/ProtectedRoute'
 import {
   SubjectsPage, ExercisesPage, ExamsPage, ProgressPage, GoalsPage,
-  ClassesPage, StudentsPage, ActivitiesPage, ReportsPage, CalendarPage,
+  TrilhasPage, StudentsPage, ActivitiesPage, ReportsPage, CalendarPage,
   UsersPage, SchoolsPage, FinancePage, TicketsPage, AdminReportsPage,
   SettingsPage, HelpPage,
 } from './pages/placeholders'
@@ -43,7 +43,7 @@ export default function App() {
 
       {/* ── Teacher ── */}
       <Route path="/teacher-dashboard"                    element={<T><TeacherDashboardPage /></T>} />
-      <Route path="/teacher-dashboard/turmas"             element={<T><ClassesPage /></T>} />
+      <Route path="/teacher-dashboard/trilhas"             element={<T><TrilhasPage /></T>} />
       <Route path="/teacher-dashboard/alunos"             element={<T><StudentsPage /></T>} />
       <Route path="/teacher-dashboard/atividades"         element={<T><ActivitiesPage /></T>} />
       <Route path="/teacher-dashboard/relatorios"         element={<T><ReportsPage /></T>} />

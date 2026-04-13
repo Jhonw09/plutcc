@@ -1,5 +1,4 @@
 import React from 'react'
-import './TrilhaPage.module.css'
 
 export default function BlogPage() {
   return (
