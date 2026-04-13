@@ -106,14 +106,22 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
             className={`${styles.roleBtn} ${role === 'student' ? styles.roleBtnActive : ''}`}
             onClick={() => handleRoleChange('student')}
           >
-            🎓 Sou Aluno
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3.33 2 8.67 2 12 0v-5"/>
+            </svg>
+            Sou Aluno
           </button>
           <button
             type="button"
             className={`${styles.roleBtn} ${role === 'teacher' ? styles.roleBtnActive : ''}`}
             onClick={() => handleRoleChange('teacher')}
           >
-            🏫 Sou Professor
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+            Sou Professor
           </button>
         </div>
 

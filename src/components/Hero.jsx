@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCTA } from '../hooks/useCTA'
+import Icon from './ui/Icon'
 import styles from './Hero.module.css'
 
 export default function Hero() {
@@ -60,7 +61,7 @@ export default function Hero() {
 
                 <div className={styles.appHeader}>
                   <div className={styles.appGreeting}>
-                    <span className={styles.appGreetingText}>Olá, <strong>Lucas</strong> 👋</span>
+                    <span className={styles.appGreetingText}>Olá, <strong>Lucas</strong></span>
                     <span className={styles.appDate}>Segunda, 14 Jul</span>
                   </div>
                   <div className={styles.appAvatar}>L</div>
@@ -76,14 +77,14 @@ export default function Hero() {
                     <div className={styles.progressFill} style={{ width: '72%' }} />
                   </div>
                   {/* Slightly casual — "faltam só" instead of a dry count */}
-                  <span className={styles.progressSub}>36 feitas · faltam só 14 pra bater a meta 🎯</span>
+                  <span className={styles.progressSub}>36 feitas · faltam só 14 pra bater a meta</span>
                 </div>
 
                 <div className={styles.appSection}>De onde você parou</div>
 
                 {[
                   {
-                    icon: '📐',
+                    iconName: 'math',
                     name: 'Matemática',
                     topic: 'Funções Quadráticas',
                     pct: 68,
@@ -93,7 +94,7 @@ export default function Hero() {
                     pctColor: '#a78bfa',
                   },
                   {
-                    icon: '⚗️',
+                    iconName: 'flask',
                     name: 'Química',
                     topic: 'Reações Orgânicas',
                     pct: 45,
@@ -103,7 +104,7 @@ export default function Hero() {
                     pctColor: '#86efac',
                   },
                   {
-                    icon: '📖',
+                    iconName: 'book',
                     name: 'Português',
                     topic: 'Interpretação Textual',
                     pct: 91,
@@ -122,7 +123,7 @@ export default function Hero() {
                       className={styles.subjectIcon}
                       style={{ background: s.iconBg }}
                     >
-                      {s.icon}
+                      <Icon name={s.iconName} size={16} />
                     </div>
                     <div className={styles.subjectInfo}>
                       <span className={styles.subjectName}>{s.name}</span>
@@ -139,9 +140,9 @@ export default function Hero() {
 
                 {/* Bottom nav */}
                 <div className={styles.appNav}>
-                  {['🏠', '📚', '📊', '👤'].map((ic, i) => (
+                  {['home', 'bookOpen', 'barChart', 'user'].map((ic, i) => (
                     <div key={i} className={`${styles.appNavBtn} ${i === 0 ? styles.appNavActive : ''}`}>
-                      {ic}
+                      <Icon name={ic} size={18} />
                     </div>
                   ))}
                 </div>
@@ -151,11 +152,10 @@ export default function Hero() {
 
             {/* Single floating card — achievement only */}
             <div className={styles.floatCard}>
-              <span className={styles.floatIcon}>🔥</span>
+              <span className={styles.floatIcon}><Icon name="fire" size={18} /></span>
               <div>
-                {/* Fire emoji + casual phrasing feels earned, not robotic */}
                 <strong>7 dias seguidos!</strong>
-                <p>Você tá voando 🚀</p>
+                <p>Você tá voando</p>
               </div>
             </div>
 

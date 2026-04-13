@@ -1,31 +1,12 @@
 import { useNavigate } from 'react-router-dom'
+import Icon from './ui/Icon'
 import styles from './HowItWorks.module.css'
 
 const steps = [
-  {
-    num: '01',
-    title: 'Crie sua conta',
-    desc: 'Cadastre-se gratuitamente com e-mail ou pelo código da sua escola em menos de 1 minuto.',
-    icon: '👤',
-  },
-  {
-    num: '02',
-    title: 'Escolha o que estudar',
-    desc: 'Navegue pelas disciplinas, acesse videoaulas, exercícios e materiais do seu professor.',
-    icon: '📚',
-  },
-  {
-    num: '03',
-    title: 'Pratique e evolua',
-    desc: 'Resolva questões, faça simulados e acompanhe seu desempenho em tempo real.',
-    icon: '🚀',
-  },
-  {
-    num: '04',
-    title: 'Alcance seus objetivos',
-    desc: 'Passe no ENEM, vestibulares e conquiste a vaga que você sempre sonhou.',
-    icon: '🏆',
-  },
+  { num: '01', title: 'Crie sua conta',        desc: 'Cadastre-se gratuitamente com e-mail ou pelo código da sua escola em menos de 1 minuto.', icon: 'user'          },
+  { num: '02', title: 'Escolha o que estudar',  desc: 'Navegue pelas disciplinas, acesse videoaulas, exercícios e materiais do seu professor.',  icon: 'bookOpen'      },
+  { num: '03', title: 'Pratique e evolua',      desc: 'Resolva questões, faça simulados e acompanhe seu desempenho em tempo real.',              icon: 'lineChart'     },
+  { num: '04', title: 'Alcance seus objetivos', desc: 'Passe no ENEM, vestibulares e conquiste a vaga que você sempre sonhou.',                   icon: 'trophy'        },
 ]
 
 export default function HowItWorks() {
@@ -43,10 +24,10 @@ export default function HowItWorks() {
           {steps.map((s, i) => (
             <div key={i} className={styles.step}>
               <div className={styles.stepNum}>{s.num}</div>
-              <div className={styles.stepIcon}>{s.icon}</div>
+              <div className={styles.stepIcon}><Icon name={s.icon} size={32} /></div>
               <h3>{s.title}</h3>
               <p>{s.desc}</p>
-              {i < steps.length - 1 && <div className={styles.arrow}>→</div>}
+              {i < steps.length - 1 && <div className={styles.arrow}><Icon name="chevronRight" size={20} /></div>}
             </div>
           ))}
         </div>

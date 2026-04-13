@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { typeBadgeStyle } from '../../utils/subjectColors'
+import Icon from '../ui/Icon'
 import styles from './TrilhaCard.module.css'
 
-const LEVEL_EMOJI = { Fundamental: '📗', Médio: '📘', Vestibular: '🎯' }
-export const SUBJECT_EMOJI = {
-  Matemática: '📐', Português: '📖', Química: '⚗️', Biologia: '🧬',
-  Física: '⚡', Geografia: '🌍', História: '📜', Inglês: '🌐',
-  Artes: '🎨', Informática: '💻', Filosofia: '🧠', Sociologia: '⚖️',
+const LEVEL_ICON  = { Fundamental: 'book', Médio: 'bookOpen', Vestibular: 'target' }
+export const SUBJECT_ICON = {
+  Matemática: 'math',    Português: 'book',    Química: 'flask',
+  Biologia: 'dna',       Física: 'zap',        Geografia: 'globe',
+  História: 'scroll',    Inglês: 'globe',       Artes: 'palette',
+  Informática: 'monitor', Filosofia: 'brain',  Sociologia: 'scale',
 }
 
 function formatRelative(iso) {
@@ -24,13 +26,13 @@ function formatRelative(iso) {
  * @param {function} onEdit   - Called with the trilha object to open edit modal
  * @param {function} onDelete - Called with the trilha id to trigger delete confirm
  */
-export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nivel, criadaEm, onEdit, onDelete }) {
+export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nivel, criadaEm, alunoIds = [], onEdit, onDelete }) {
   const navigate   = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef    = useRef(null)
   const isPublic   = tipo === 'PUBLICA'
+  const studentCount = alunoIds.length
 
-  // Close menu on outside click
   useEffect(() => {
     if (!menuOpen) return
     function handler(e) {
@@ -41,7 +43,6 @@ export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nive
   }, [menuOpen])
 
   function handleCardClick(e) {
-    // Don't navigate if the actions menu was clicked
     if (menuRef.current?.contains(e.target)) return
     navigate(`/trilha/${id}`, {
       state: { id, nome, disciplina, descricao, tipo, nivel },
@@ -69,23 +70,27 @@ export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nive
         {/* ── Top row ── */}
         <div className={styles.top}>
           <span className={styles.subjectIcon}>
-            {SUBJECT_EMOJI[disciplina] ?? '📚'}
+            <Icon name={SUBJECT_ICON[disciplina] ?? 'bookOpen'} size={22} />
           </span>
           <div className={styles.meta}>
             <span className={styles.name}>{nome}</span>
             <div className={styles.metaSub}>
               <span className={styles.subject}>{disciplina}</span>
               <span className={styles.dot}>·</span>
-              <span className={styles.level}>{LEVEL_EMOJI[nivel] ?? '📋'} {nivel}</span>
+              <span className={styles.level}>
+                <Icon name={LEVEL_ICON[nivel] ?? 'fileText'} size={12} style={{display:'inline',verticalAlign:'middle',marginRight:3}} />
+                {nivel}
+              </span>
             </div>
           </div>
 
-          {/* Type badge */}
           <span className={styles.typeBadge} style={typeBadgeStyle(tipo)}>
-            {isPublic ? '🌐 Pública' : '🔒 Privada'}
+            {isPublic
+              ? <><Icon name="globe" size={11} style={{display:'inline',verticalAlign:'middle',marginRight:3}} />Pública</>
+              : <><Icon name="lock"  size={11} style={{display:'inline',verticalAlign:'middle',marginRight:3}} />Privada</>
+            }
           </span>
 
-          {/* Actions menu */}
           <div className={styles.menuWrap} ref={menuRef}>
             <button
               className={styles.menuBtn}
@@ -98,29 +103,27 @@ export default function TrilhaCard({ id, nome, disciplina, descricao, tipo, nive
             {menuOpen && (
               <div className={styles.menu} role="menu">
                 <button className={styles.menuItem} onClick={handleEdit} role="menuitem">
-                  ✏️ Editar turma
+                  <Icon name="pencil" size={13} /> Editar turma
                 </button>
                 <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={handleDelete} role="menuitem">
-                  🗑️ Excluir turma
+                  <Icon name="close" size={13} /> Excluir turma
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Description ── */}
         {descricao && <p className={styles.desc}>{descricao}</p>}
 
-        {/* ── Footer row ── */}
         <div className={styles.footer}>
           <div className={styles.stats}>
             <span className={styles.stat}>
-              <span className={styles.statIcon}>👥</span>
+              <span className={styles.statIcon}><Icon name="users" size={13} /></span>
               {studentCount} aluno{studentCount !== 1 ? 's' : ''}
             </span>
             {criadaEm && (
               <span className={styles.stat}>
-                <span className={styles.statIcon}>🕐</span>
+                <span className={styles.statIcon}><Icon name="clock" size={13} /></span>
                 Criada {formatRelative(criadaEm)}
               </span>
             )}

@@ -1,19 +1,17 @@
-// ── Teacher Dashboard mock data ──────────────────────────────────────────────
 // Replace each export with an API call when the backend is ready.
-// e.g. export const fetchStats = () => api.get('/teacher/stats')
 
 export const teacherStats = [
-  { id: 'students',   icon: '👥', label: 'Total de alunos',      value: '128',  delta: '+4 esta semana',  deltaPositive: true  },
-  { id: 'classes',    icon: '🏫', label: 'Turmas ativas',        value: '6',    delta: '2 turmas noturnas', deltaPositive: null  },
-  { id: 'progress',   icon: '📈', label: 'Progresso médio',      value: '74%',  delta: '+3% vs mês passado', deltaPositive: true },
-  { id: 'activities', icon: '✅', label: 'Atividades concluídas', value: '312',  delta: '48 esta semana',  deltaPositive: true  },
+  { id: 'students',   icon: 'users',     label: 'Total de alunos',       value: '128',  delta: '+4 esta semana',     deltaPositive: true  },
+  { id: 'classes',    icon: 'school',    label: 'Turmas ativas',         value: '6',    delta: '2 turmas noturnas',  deltaPositive: null  },
+  { id: 'progress',   icon: 'lineChart', label: 'Progresso médio',       value: '74%',  delta: '+3% vs mês passado', deltaPositive: true  },
+  { id: 'activities', icon: 'checkCircle', label: 'Atividades concluídas', value: '312', delta: '48 esta semana',    deltaPositive: true  },
 ]
 
 export const quickActions = [
-  { id: 'create',  icon: '➕', label: 'Criar atividade',   desc: 'Nova tarefa ou prova para uma turma'  },
-  { id: 'students',icon: '👤', label: 'Ver alunos',        desc: 'Lista completa com desempenho'        },
-  { id: 'classes', icon: '📋', label: 'Gerenciar turmas',  desc: 'Editar turmas e adicionar alunos'     },
-  { id: 'reports', icon: '📊', label: 'Relatórios',        desc: 'Exportar dados de desempenho'         },
+  { id: 'create',   icon: 'plus',      label: 'Criar atividade',  desc: 'Nova tarefa ou prova para uma turma' },
+  { id: 'students', icon: 'user',      label: 'Ver alunos',       desc: 'Lista completa com desempenho'       },
+  { id: 'classes',  icon: 'clipboard', label: 'Gerenciar turmas', desc: 'Editar turmas e adicionar alunos'    },
+  { id: 'reports',  icon: 'barChart',  label: 'Relatórios',       desc: 'Exportar dados de desempenho'        },
 ]
 
 export const students = [
@@ -26,12 +24,11 @@ export const students = [
 ]
 
 export const recentActivity = [
-  { id: 1, icon: '✅', student: 'Ana Souza',      action: 'concluiu "Funções Quadráticas — Parte 2"', time: 'há 15min', color: 'var(--success)'  },
-  { id: 2, icon: '📝', student: 'Bruno Lima',     action: 'enviou a atividade de Química',            time: 'há 1h',    color: '#93c5fd'         },
-  { id: 3, icon: '⚠️', student: 'Diego Ferreira', action: 'não entregou a tarefa de História',        time: 'há 3h',    color: 'var(--danger)'   },
-  { id: 4, icon: '🏆', student: 'Carla Mendes',   action: 'atingiu 100% em Interpretação Textual',    time: 'ontem',    color: '#fbbf24'         },
-  { id: 5, icon: '📋', student: 'Elena Costa',    action: 'iniciou o simulado ENEM — Exatas',         time: 'ontem',    color: '#a78bfa'         },
+  { id: 1, icon: 'checkCircle', student: 'Ana Souza',      action: 'concluiu "Funções Quadráticas — Parte 2"', time: 'há 15min', color: 'var(--success)' },
+  { id: 2, icon: 'pencil',      student: 'Bruno Lima',     action: 'enviou a atividade de Química',            time: 'há 1h',    color: '#93c5fd'        },
+  { id: 3, icon: 'warning',     student: 'Diego Ferreira', action: 'não entregou a tarefa de História',        time: 'há 3h',    color: 'var(--danger)'  },
+  { id: 4, icon: 'trophy',      student: 'Carla Mendes',   action: 'atingiu 100% em Interpretação Textual',    time: 'ontem',    color: '#fbbf24'        },
+  { id: 5, icon: 'clipboard',   student: 'Elena Costa',    action: 'iniciou o simulado ENEM — Exatas',         time: 'ontem',    color: '#a78bfa'        },
 ]
 
-// Students flagged for low performance — drives the alert banner
 export const atRiskStudents = students.filter(s => s.status === 'at-risk')

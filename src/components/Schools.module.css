@@ -150,4 +150,13 @@
   .ctaBox { flex-direction: column; text-align: center; padding: 32px 24px; }
   .ctaActions { justify-content: center; }
   .title { font-size: 26px; }
+  .section { padding: 56px 0; }
+}
+@media (max-width: 480px) {
+  .section { padding: 40px 0; }
+  .ctaBox { padding: 24px 16px; border-radius: 14px; }
+  .ctaContent h3 { font-size: 20px; }
+  .ctaContent p  { font-size: 14px; }
+  .ctaActions { flex-direction: column; width: 100%; }
+  .btnCta, .btnCtaOutline { text-align: center; justify-content: center; }
 }

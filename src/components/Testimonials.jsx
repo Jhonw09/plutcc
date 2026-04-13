@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from './ui/Icon'
 import styles from './Testimonials.module.css'
 
 const testimonials = [
@@ -77,7 +78,13 @@ export default function Testimonials() {
 
           {/* Main card */}
           <div className={styles.card}>
-            <div className={styles.stars}>★★★★★</div>
+            <div className={styles.stars}>
+              {[1,2,3,4,5].map(n => (
+                <svg key={n} width="18" height="18" viewBox="0 0 24 24" fill="#FACC15" stroke="none">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              ))}
+            </div>
             <blockquote className={styles.quote}>
               "{testimonials[active].text}"
             </blockquote>
@@ -94,7 +101,7 @@ export default function Testimonials() {
               <div>
                 <strong className={styles.authorName}>{testimonials[active].name}</strong>
                 <span className={styles.authorRole}>{testimonials[active].role}</span>
-                <span className={styles.authorSchool}>📍 {testimonials[active].school}</span>
+                <span className={styles.authorSchool}><Icon name="pin" size={12} style={{display:'inline',verticalAlign:'middle',marginRight:4}} />{testimonials[active].school}</span>
               </div>
             </div>
           </div>

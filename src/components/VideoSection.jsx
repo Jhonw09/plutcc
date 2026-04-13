@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCTA } from '../hooks/useCTA'
+import Icon from './ui/Icon'
 import styles from './VideoSection.module.css'
 
 const tabs = ['Videoaulas', 'Exercícios', 'Simulados', 'Relatórios']
@@ -10,28 +11,28 @@ const tabContent = {
     desc: 'Assista quando quiser, quantas vezes precisar. Nossas videoaulas são gravadas por professores especialistas e organizadas por série, disciplina e assunto.',
     items: ['Mais de 10.000 videoaulas disponíveis', 'Legendas e transcrições automáticas', 'Velocidade ajustável (0.5x a 2x)', 'Anotações sincronizadas com o vídeo'],
     color: 'var(--surface-3)',
-    icon: '🎬',
+    icon: 'video',
   },
   Exercícios: {
     title: 'Banco com mais de 500 mil questões comentadas',
     desc: 'Pratique com questões de todos os níveis, incluindo provas do ENEM e principais vestibulares do Brasil. Cada questão tem resolução detalhada.',
     items: ['Questões do ENEM, FUVEST, UNICAMP e mais', 'Resolução comentada em vídeo e texto', 'Filtros por assunto, dificuldade e ano', 'Histórico completo de respostas'],
     color: 'var(--surface-3)',
-    icon: '📝',
+    icon: 'pencil',
   },
   Simulados: {
     title: 'Simulados completos no estilo ENEM',
     desc: 'Prepare-se para o dia da prova com simulados cronometrados que reproduzem fielmente o formato do ENEM e dos principais vestibulares.',
     items: ['Simulados cronometrados', 'Gabarito e ranking em tempo real', 'Análise de desempenho por área', 'Simulados personalizados por IA'],
     color: 'var(--surface-3)',
-    icon: '📋',
+    icon: 'clipboard',
   },
   Relatórios: {
     title: 'Acompanhe sua evolução em tempo real',
     desc: 'Visualize seu progresso com gráficos detalhados. Identifique seus pontos fortes e as áreas que precisam de mais atenção.',
     items: ['Gráficos de evolução por disciplina', 'Comparativo com outros alunos', 'Metas semanais e mensais', 'Relatório para pais e professores'],
     color: 'var(--surface-3)',
-    icon: '📊',
+    icon: 'barChart',
   },
 }
 
@@ -64,13 +65,15 @@ export default function VideoSection() {
         {/* Content */}
         <div className={styles.content}>
           <div className={styles.contentLeft}>
-            <div className={styles.contentIcon} style={{ background: c.color }}>{c.icon}</div>
+            <div className={styles.contentIcon} style={{ background: c.color }}><Icon name={c.icon} size={28} /></div>
             <h3 className={styles.contentTitle}>{c.title}</h3>
             <p className={styles.contentDesc}>{c.desc}</p>
             <ul className={styles.contentList}>
               {c.items.map((item, i) => (
                 <li key={i}>
-                  <span className={styles.check}>✓</span>
+                  <span className={styles.check}>
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
                   {item}
                 </li>
               ))}
@@ -90,7 +93,7 @@ export default function VideoSection() {
               </div>
               <div className={styles.mockupBody}>
                 <div className={styles.mockupCenter}>
-                  <span className={styles.mockupBigIcon}>{c.icon}</span>
+                  <span className={styles.mockupBigIcon}><Icon name={c.icon} size={40} /></span>
                   <div className={styles.mockupLines}>
                     <div className={styles.mockupLine} style={{width:'80%'}} />
                     <div className={styles.mockupLine} style={{width:'60%'}} />
@@ -99,7 +102,7 @@ export default function VideoSection() {
                   <div className={styles.mockupCards}>
                     {[1,2,3].map(n => (
                       <div key={n} className={styles.mockupCard}>
-                        <div className={styles.mockupCardIcon} style={{background: c.color}}>{c.icon}</div>
+                        <div className={styles.mockupCardIcon} style={{background: c.color}}><Icon name={c.icon} size={16} /></div>
                         <div className={styles.mockupCardLines}>
                           <div className={styles.mockupLine} style={{width:'90%', height:8}} />
                           <div className={styles.mockupLine} style={{width:'60%', height:6}} />

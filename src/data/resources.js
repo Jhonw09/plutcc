@@ -1,7 +1,7 @@
 export const resources = [
   {
     id: 'videoaulas',
-    icon: '🎬',
+    icon: 'video',
     name: 'Videoaulas Interativas',
     desc: 'Acesse aulas gravadas pelos melhores professores do Brasil',
     features: [
@@ -16,7 +16,7 @@ export const resources = [
   },
   {
     id: 'simulados',
-    icon: '📝',
+    icon: 'pencil',
     name: 'Simulados e Questões',
     desc: 'Pratique com o maior banco de questões do Brasil',
     features: [
@@ -31,7 +31,7 @@ export const resources = [
   },
   {
     id: 'trilhas',
-    icon: '🤖',
+    icon: 'cpu',
     name: 'Trilhas com IA',
     desc: 'Plano de estudos personalizado gerado por inteligência artificial',
     features: [

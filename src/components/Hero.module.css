@@ -125,6 +125,21 @@
   border: 1px solid var(--border);
   color: var(--text-secondary);
   transition: background .15s, border-color .15s, color .15s;
+  position: relative;
+}
+.playBtn::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid rgba(108, 92, 231, 1);
+  animation: playPulse 2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes playPulse {
+  0%   { transform: scale(1);    opacity: .6; }
+  70%  { transform: scale(1.5);  opacity: 0;  }
+  100% { transform: scale(1.5);  opacity: 0;  }
 }
 .ctaSecondary:hover .playBtn {
   background: var(--accent-soft);

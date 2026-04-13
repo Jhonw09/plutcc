@@ -67,11 +67,17 @@
 }
 
 .stepNum {
-  font-size: 48px;
-  font-weight: 900;
-  color: var(--accent-soft);
-  line-height: 1;
-  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  display: inline-block;
+  margin-bottom: 16px;
 }
 
 .stepIcon {
@@ -130,4 +136,10 @@
   .title { font-size: 26px; }
   .section { padding: 56px 0; }
   .header  { margin-bottom: 40px; }
+}
+@media (max-width: 480px) {
+  .section { padding: 40px 0; }
+  .step    { padding: 24px 16px; }
+  .title   { font-size: 22px; }
+  .sub     { font-size: 15px; }
 }

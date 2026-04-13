@@ -6,7 +6,7 @@ const navItems = [
   { label: 'Para Alunos', href: '#alunos' },
   { label: 'Para Escolas', href: '#escolas' },
   { label: 'Conteúdos', href: '#conteudos' },
-  { label: 'Blog', href: '#blog' },
+  { label: 'Sobre', href: '/sobre' },
 ]
 
 export default function Navbar({ onOpenAuth }) {

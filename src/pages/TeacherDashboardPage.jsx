@@ -4,6 +4,7 @@ import TrilhaCard         from '../components/teacher/TrilhaCard'
 import CreateTrilhaModal   from '../components/teacher/CreateTrilhaModal'
 import { ConfirmModal }    from '../components/ui/ConfirmModal'
 import { Toast }           from '../components/ui/Toast'
+import Icon                from '../components/ui/Icon'
 import { useToast }        from '../hooks/useToast'
 import { useAuth }         from '../context/AuthContext'
 import { useTrilhas }      from '../hooks/useTrilhas'
@@ -26,10 +27,10 @@ const SORT_OPTIONS = [
 function buildStats(classes) {
   const publicCount = classes.filter(c => c.tipo === 'PUBLICA').length
   return [
-    { id: 'classes',  icon: '🏫', label: 'Trilhas ativas',   value: classes.length,  delta: null },
-    { id: 'students', icon: '👥', label: 'Total de alunos', value: 'N/A',          delta: null }, // API doesn't provide member counts yet
-    { id: 'public',   icon: '🌐', label: 'Trilhas públicas', value: publicCount,     delta: null },
-    { id: 'private',  icon: '🔒', label: 'Trilhas privadas', value: classes.length - publicCount, delta: null },
+    { id: 'classes',  icon: 'school',  label: 'Trilhas ativas',   value: classes.length,  delta: null },
+    { id: 'students', icon: 'users',   label: 'Total de alunos', value: 'N/A',            delta: null },
+    { id: 'public',   icon: 'globe',   label: 'Trilhas públicas', value: publicCount,      delta: null },
+    { id: 'private',  icon: 'lock',    label: 'Trilhas privadas', value: classes.length - publicCount, delta: null },
   ]
 }
 
@@ -156,7 +157,7 @@ export default function TeacherDashboardPage() {
       {/* ── LOADING STATE ── */}
       {loading && (
         <div className={styles.loading}>
-          <div className={styles.loadingSpinner}>⏳</div>
+          <div className={styles.loadingSpinner}><Icon name="clock" size={32} /></div>
           <p>Carregando trilhas...</p>
         </div>
       )}
@@ -164,7 +165,7 @@ export default function TeacherDashboardPage() {
       {/* ── ERROR STATE ── */}
       {error && !loading && (
         <div className={styles.error}>
-          <span className={styles.errorIcon}>⚠️</span>
+          <span className={styles.errorIcon}><Icon name="warning" size={40} /></span>
           <h3>Erro ao carregar trilhas</h3>
           <p>{error}</p>
           <button
@@ -179,7 +180,7 @@ export default function TeacherDashboardPage() {
       {/* ── CONTENT (only show when loaded and no error) ── */}
       {!loading && !error && (
         <div className={styles.heroEmpty}>
-          <span className={styles.heroEmptyIcon}>🏫</span>
+          <span className={styles.heroEmptyIcon}><Icon name="school" size={48} /></span>
           <h3 className={styles.heroEmptyTitle}>
             Você ainda não criou nenhuma trilha
           </h3>
@@ -199,7 +200,7 @@ export default function TeacherDashboardPage() {
           <div className={styles.statsGrid}>
             {stats.map(s => (
               <div key={s.id} className={styles.statCard}>
-                <span className={styles.statIcon}>{s.icon}</span>
+                <span className={styles.statIcon}><Icon name={s.icon} size={20} /></span>
                 <span className={styles.statValue}>{s.value}</span>
                 <span className={styles.statLabel}>{s.label}</span>
               </div>
@@ -219,7 +220,7 @@ export default function TeacherDashboardPage() {
               {/* Search + filters */}
               <div className={styles.controls}>
                 <div className={styles.searchWrap}>
-                  <span className={styles.searchIcon}>🔍</span>
+                  <span className={styles.searchIcon}><Icon name="search" size={15} /></span>
                   <input
                     className={styles.searchInput}
                     placeholder="Buscar por nome, disciplina ou código…"
@@ -275,7 +276,7 @@ export default function TeacherDashboardPage() {
               </div>
             ) : isFiltered ? (
               <div className={styles.emptyFilter}>
-                <span className={styles.emptyFilterIcon}>🔍</span>
+                <span className={styles.emptyFilterIcon}><Icon name="search" size={36} /></span>
                 <p className={styles.emptyFilterText}>
                   Nenhuma turma corresponde à sua busca.{' '}
                   <button className={styles.clearFiltersBtn} onClick={() => { setSearch(''); setFilterSubj('Todas') }}>

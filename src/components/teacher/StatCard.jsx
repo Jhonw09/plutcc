@@ -1,10 +1,11 @@
+import Icon from '../ui/Icon'
 import styles from './StatCard.module.css'
 
 export default function StatCard({ icon, label, value, delta, deltaPositive }) {
   return (
     <div className={styles.card}>
       <div className={styles.top}>
-        <span className={styles.icon}>{icon}</span>
+        <span className={styles.icon}><Icon name={icon} size={18} /></span>
         <span className={`${styles.delta} ${
           deltaPositive === true  ? styles.deltaUp   :
           deltaPositive === false ? styles.deltaDown : styles.deltaNeutral

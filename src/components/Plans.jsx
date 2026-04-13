@@ -62,7 +62,12 @@ export default function Plans() {
                 <ul className={styles.featureList}>
                   {p.features.map((f, i) => (
                     <li key={i} className={f.ok ? styles.featureOk : styles.featureNo}>
-                      <span className={styles.featureIcon}>{f.ok ? '✓' : '✕'}</span>
+                      <span className={styles.featureIcon}>
+                        {f.ok
+                          ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        }
+                      </span>
                       {f.text}
                     </li>
                   ))}
@@ -83,9 +88,16 @@ export default function Plans() {
           })}
         </div>
 
-        <p className={styles.note}>
-          ✅ Sem taxa de adesão &nbsp;·&nbsp; ✅ Cancele quando quiser &nbsp;·&nbsp; ✅ Pagamento seguro
-        </p>
+        <div className={styles.note}>
+          {['Sem taxa de adesão', 'Cancele quando quiser', 'Pagamento seguro'].map(t => (
+            <span key={t} style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {t}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   )
