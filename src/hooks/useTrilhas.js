@@ -72,11 +72,16 @@ export function useTrilhas() {
     }
   }, [])
 
-  // Delete trilha function
   const deleteTrilhaHandler = useCallback(async (id) => {
-    await apiDeleteTrilha(id, user?.id)
+    const previous = trilhas
     setTrilhas(prev => prev.filter(t => t.id !== id))
-  }, [user?.id])
+    try {
+      await apiDeleteTrilha(id, user?.id)
+    } catch (err) {
+      setTrilhas(previous)
+      throw err
+    }
+  }, [user?.id, trilhas])
 
   // Refresh trilhas from API
   const refreshTrilhas = useCallback(async () => {

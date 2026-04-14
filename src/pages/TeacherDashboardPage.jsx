@@ -93,9 +93,8 @@ export default function TeacherDashboardPage() {
   async function handleCreate(newClass) {
     try {
       const createdClass = await createTrilhaHandler(newClass)
-      await refreshTrilhas()
       toast(`Trilha "${createdClass.nome}" criada com sucesso!`, 'success')
-      navigate(`/trilha/${createdClass.id}`)
+      navigate(`/professor/trilha/${createdClass.id}`, { state: createdClass })
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro ao criar trilha'
       console.error('Erro ao criar trilha:', err)
