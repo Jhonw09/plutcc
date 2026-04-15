@@ -67,8 +67,7 @@ export default function TeacherDashboardPage() {
       const q = search.trim().toLowerCase()
       list = list.filter(c =>
         c.nome.toLowerCase().includes(q) ||
-        (c.descricao && c.descricao.toLowerCase().includes(q)) ||
-        c.codigo.toLowerCase().includes(q)
+        (c.descricao && c.descricao.toLowerCase().includes(q))
       )
     }
 
