@@ -19,14 +19,24 @@
 
 import { API_BASE } from './config'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// API ENDPOINTS
-// ─────────────────────────────────────────────────────────────────────────────
-
 const ENDPOINTS = {
   aulas: `${API_BASE}/aulas`,
   aulasByTrilha: (trilhaId) => `${API_BASE}/aulas/trilha/${trilhaId}`,
   aulaById: (id) => `${API_BASE}/aulas/${id}`,
+}
+
+// Converte blocos do frontend (array flat) → envelope { versao, blocos[] }
+function toEnvelope(blocos) {
+  return {
+    versao: 1,
+    blocos: blocos.map((b, i) => ({ ...b, ordem: i + 1 })),
+  }
+}
+
+// Converte envelope do backend → array flat de blocos (compatível com AulaEditor)
+function fromEnvelope(envelope) {
+  if (!envelope?.blocos) return []
+  return [...envelope.blocos].sort((a, b) => a.ordem - b.ordem)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,55 +49,30 @@ const ENDPOINTS = {
  * @returns {Promise<Object>} Created aula object
  */
 export async function createAula(aulaData) {
-  if (!aulaData.trilhaId) {
-    throw new Error('ID da trilha é obrigatório')
-  }
-
-  if (!aulaData.titulo?.trim()) {
-    throw new Error('Título da aula é obrigatório')
-  }
-
-  if (!aulaData.tipo) {
-    throw new Error('Tipo da aula é obrigatório')
-  }
-
-  if (!aulaData.conteudo?.trim()) {
-    throw new Error('Conteúdo da aula é obrigatório')
-  }
+  if (!aulaData.trilhaId) throw new Error('ID da trilha é obrigatório')
+  if (!aulaData.titulo?.trim()) throw new Error('Título da aula é obrigatório')
 
   const payload = {
     titulo:   aulaData.titulo.trim(),
-    tipo:     aulaData.tipo,
-    conteudo: aulaData.conteudo.trim(),
     trilhaId: aulaData.trilhaId,
+    blocos:   toEnvelope(aulaData.blocos ?? []),
   }
-
-  console.log('[aulaService] Creating aula:', payload)
 
   const response = await fetch(ENDPOINTS.aulas, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
     const errorText = await response.text()
-    console.error('[aulaService] Create failed:', response.status, errorText)
-
-    if (response.status === 400) {
-      throw new Error('Dados da aula inválidos. Verifique os campos obrigatórios.')
-    } else if (response.status === 404) {
-      throw new Error('Trilha não encontrada.')
-    } else {
-      throw new Error(`Erro ao criar aula: ${response.status} ${response.statusText}`)
-    }
+    if (response.status === 400) throw new Error('Dados da aula inválidos: ' + errorText)
+    if (response.status === 404) throw new Error('Trilha não encontrada.')
+    throw new Error(`Erro ao criar aula: ${response.status}`)
   }
 
-  const createdAula = await response.json()
-  console.log('[aulaService] Aula created successfully:', createdAula)
-  return createdAula
+  const created = await response.json()
+  return { ...created, blocos: fromEnvelope(created.blocos) }
 }
 
 /**
@@ -98,25 +83,14 @@ export async function createAula(aulaData) {
 export async function getAulasByTrilha(trilhaId) {
   if (!trilhaId) throw new Error('ID da trilha é obrigatório')
 
-  const url = ENDPOINTS.aulasByTrilha(trilhaId)
-  console.log('[aulaService] Fetching aulas for trilha:', trilhaId)
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    }
+  const response = await fetch(ENDPOINTS.aulasByTrilha(trilhaId), {
+    headers: { 'Content-Type': 'application/json' },
   })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[aulaService] Get aulas failed:', response.status, errorText)
-    throw new Error(`Erro ao carregar aulas: ${response.status} ${response.statusText}`)
-  }
+  if (!response.ok) throw new Error(`Erro ao carregar aulas: ${response.status}`)
 
   const aulas = await response.json()
-  console.log('[aulaService] Aulas loaded:', aulas.length, 'items')
-  return aulas
+  return aulas.map(a => ({ ...a, blocos: fromEnvelope(a.blocos) }))
 }
 
 /**
@@ -127,25 +101,14 @@ export async function getAulasByTrilha(trilhaId) {
 export async function getAulaById(id) {
   if (!id) throw new Error('ID da aula é obrigatório')
 
-  const url = ENDPOINTS.aulaById(id)
-  console.log('[aulaService] Fetching aula:', id)
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    }
+  const response = await fetch(ENDPOINTS.aulaById(id), {
+    headers: { 'Content-Type': 'application/json' },
   })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[aulaService] Get aula failed:', response.status, errorText)
-    throw new Error(`Erro ao carregar aula: ${response.status} ${response.statusText}`)
-  }
+  if (!response.ok) throw new Error(`Erro ao carregar aula: ${response.status}`)
 
   const aula = await response.json()
-  console.log('[aulaService] Aula loaded:', aula)
-  return aula
+  return { ...aula, blocos: fromEnvelope(aula.blocos) }
 }
 
 /**
@@ -158,30 +121,20 @@ export async function updateAula(id, aulaData) {
   if (!id) throw new Error('ID da aula é obrigatório')
 
   const payload = {
-    titulo:   aulaData.titulo?.trim(),
-    tipo:     aulaData.tipo,
-    conteudo: aulaData.conteudo?.trim(),
+    titulo:  aulaData.titulo?.trim(),
+    blocos:  toEnvelope(aulaData.blocos ?? []),
   }
-
-  console.log('[aulaService] Updating aula:', id, payload)
 
   const response = await fetch(ENDPOINTS.aulaById(id), {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[aulaService] Update failed:', response.status, errorText)
-    throw new Error(`Erro ao atualizar aula: ${response.status} ${response.statusText}`)
-  }
+  if (!response.ok) throw new Error(`Erro ao atualizar aula: ${response.status}`)
 
-  const updatedAula = await response.json()
-  console.log('[aulaService] Aula updated successfully:', updatedAula)
-  return updatedAula
+  const updated = await response.json()
+  return { ...updated, blocos: fromEnvelope(updated.blocos) }
 }
 
 /**
@@ -192,15 +145,7 @@ export async function updateAula(id, aulaData) {
 export async function deleteAula(id) {
   if (!id) throw new Error('ID da aula é obrigatório')
 
-  console.log('[aulaService] Deleting aula:', id)
+  const response = await fetch(ENDPOINTS.aulaById(id), { method: 'DELETE' })
 
-  const response = await fetch(ENDPOINTS.aulaById(id), {
-    method: 'DELETE',
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[aulaService] Delete failed:', response.status, errorText)
-    throw new Error(`Erro ao deletar aula: ${response.status} ${response.statusText}`)
-  }
+  if (!response.ok) throw new Error(`Erro ao deletar aula: ${response.status}`)
 }

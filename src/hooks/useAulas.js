@@ -1,128 +1,89 @@
-/**
- * Custom hook: useAulas
- *
- * Provides access to aula operations with loading and error state management.
- * Uses real backend API only (no localStorage fallback).
- *
- * Usage:
- *   const {
- *     aulas,
- *     loading,
- *     error,
- *     createAula,
- *     updateAula,
- *     deleteAula,
- *     refreshAulas
- *   } = useAulas(trilhaId)
- */
-
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import {
+  createAula as apiCreate,
   getAulasByTrilha,
-  createAula as apiCreateAula,
-  updateAula as apiUpdateAula,
-  deleteAula as apiDeleteAula
+  updateAula as apiUpdate,
+  deleteAula as apiDelete,
 } from '../api/services/aulaService'
+
+const USE_API = import.meta.env.VITE_USE_API === 'true'
+
+// ── Mock data (ativo quando VITE_USE_API=false) ───────────────────────────────
+let mockAulas = [
+  {
+    id: 1,
+    titulo: 'Aula 1 — Introdução ao tema',
+    trilhaId: null,
+    blocos: [
+      { id: 1, ordem: 1, tipo: 'explicacao', conteudo: '## Objetivos\nConteúdo de exemplo da primeira aula.' },
+      { id: 2, ordem: 2, tipo: 'questionario', pergunta: 'Qual é o objetivo desta aula?', alternativas: ['Aprender conceitos básicos', 'Fazer exercícios', 'Assistir vídeos', 'Nenhuma das anteriores'], correta: 0 },
+    ],
+  },
+  {
+    id: 2,
+    titulo: 'Aula 2 — Aprofundamento',
+    trilhaId: null,
+    blocos: [
+      { id: 3, ordem: 1, tipo: 'explicacao', conteudo: '## Conteúdo\nAprofundamento dos conceitos vistos na aula anterior.' },
+      { id: 4, ordem: 2, tipo: 'video', conteudo: 'https://youtube.com/watch?v=exemplo' },
+    ],
+  },
+]
+let nextId = 3
+
+async function mockGetAulas() { return [...mockAulas] }
+async function mockCreate(data) {
+  const aula = { ...data, id: nextId++ }
+  mockAulas = [...mockAulas, aula]
+  return aula
+}
+async function mockUpdate(id, data) {
+  mockAulas = mockAulas.map(a => a.id === id ? { ...a, ...data } : a)
+  return mockAulas.find(a => a.id === id)
+}
+async function mockDelete(id) {
+  mockAulas = mockAulas.filter(a => a.id !== id)
+}
 
 export function useAulas(trilhaId) {
   const [aulas, setAulas] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // Load aulas on mount and when trilhaId changes
   const loadAulas = useCallback(async () => {
-    if (!trilhaId) {
-      setAulas([])
-      setLoading(false)
-      return
-    }
-
+    setLoading(true)
     try {
-      setLoading(true)
-      setError(null)
-      const data = await getAulasByTrilha(trilhaId)
+      const data = USE_API
+        ? await getAulasByTrilha(trilhaId)
+        : await mockGetAulas()
       setAulas(data)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao carregar aulas'
-      setError(message)
-      console.error('[useAulas] Load error:', err)
+      setError(err.message)
     } finally {
       setLoading(false)
     }
   }, [trilhaId])
 
-  // Load aulas on mount
-  useEffect(() => {
-    loadAulas()
-  }, [loadAulas])
-
-  // Create aula function
   const createAulaHandler = useCallback(async (aulaData) => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const newAula = await apiCreateAula({ ...aulaData, trilhaId })
-
-      // Add to local state immediately for better UX
-      setAulas(prev => [...prev, newAula])
-
-      return newAula
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao criar aula'
-      setError(message)
-      throw err // Re-throw so caller can handle
-    } finally {
-      setLoading(false)
-    }
+    const newAula = USE_API
+      ? await apiCreate({ ...aulaData, trilhaId })
+      : await mockCreate({ ...aulaData, trilhaId })
+    setAulas(prev => [...prev, newAula])
+    return newAula
   }, [trilhaId])
 
-  // Update aula function
   const updateAulaHandler = useCallback(async (aulaId, aulaData) => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const updatedAula = await apiUpdateAula(aulaId, aulaData)
-
-      // Update local state
-      setAulas(prev => prev.map(aula =>
-        aula.id === aulaId ? updatedAula : aula
-      ))
-
-      return updatedAula
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao atualizar aula'
-      setError(message)
-      throw err // Re-throw so caller can handle
-    } finally {
-      setLoading(false)
-    }
+    const updated = USE_API
+      ? await apiUpdate(aulaId, aulaData)
+      : await mockUpdate(aulaId, aulaData)
+    setAulas(prev => prev.map(a => a.id === aulaId ? updated : a))
+    return updated
   }, [])
 
-  // Delete aula function
   const deleteAulaHandler = useCallback(async (aulaId) => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      await apiDeleteAula(aulaId)
-
-      // Remove from local state
-      setAulas(prev => prev.filter(aula => aula.id !== aulaId))
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao deletar aula'
-      setError(message)
-      throw err // Re-throw so caller can handle
-    } finally {
-      setLoading(false)
-    }
+    USE_API ? await apiDelete(aulaId) : await mockDelete(aulaId)
+    setAulas(prev => prev.filter(a => a.id !== aulaId))
   }, [])
-
-  // Refresh aulas from API
-  const refreshAulas = useCallback(async () => {
-    await loadAulas()
-  }, [loadAulas])
 
   return {
     aulas,
@@ -131,6 +92,6 @@ export function useAulas(trilhaId) {
     createAula: createAulaHandler,
     updateAula: updateAulaHandler,
     deleteAula: deleteAulaHandler,
-    refreshAulas
+    refreshAulas: loadAulas,
   }
 }

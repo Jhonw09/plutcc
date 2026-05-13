@@ -77,7 +77,7 @@ async function signup({ nome, email, senha, tipoUsuario = 'ALUNO' }) {
   return login({ email, senha })
 }
 
-async function updateUser(userId, { nome, email, tipoUsuario }) {
+async function updateUser(userId, { nome, email, tipoUsuario, senha }) {
   if (!userId) {
     console.error('[authService.updateUser] user.id is missing')
     throw new Error('Sessão inválida. Faça login novamente.')
@@ -88,7 +88,7 @@ async function updateUser(userId, { nome, email, tipoUsuario }) {
   const res = await fetch(ENDPOINTS.userById(userId), {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, email, tipoUsuario, ativo: true }),
+    body: JSON.stringify({ nome, email, tipoUsuario, ativo: true, senha }),
   })
 
   console.log('[authService.updateUser] Response status:', res.status)
@@ -99,6 +99,8 @@ async function updateUser(userId, { nome, email, tipoUsuario }) {
       throw new Error('Este e-mail já está em uso.')
     }
     console.error('[authService.updateUser] Server error:', res.status)
+    const errorText = await res.text()
+    console.error('[authService.updateUser] Error response:', errorText)
     throw new Error('Não foi possível salvar as alterações. Tente novamente.')
   }
 
@@ -152,9 +154,26 @@ async function deleteUser(userId) {
     throw new Error('Não foi possível excluir a conta. Tente novamente.')
   }
 
-  const data = await res.json()
-  console.log('[authService.deleteUser] Success')
-  return data
+  // Some backends return 204 No Content on DELETE.
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    console.log('[authService.deleteUser] Success (no content)')
+    return null
+  }
+
+  const text = await res.text()
+  if (!text) {
+    console.log('[authService.deleteUser] Success (empty body)')
+    return null
+  }
+
+  try {
+    const data = JSON.parse(text)
+    console.log('[authService.deleteUser] Success')
+    return data
+  } catch (err) {
+    console.warn('[authService.deleteUser] Response body is not JSON, ignoring body')
+    return null
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

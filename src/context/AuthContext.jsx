@@ -106,11 +106,22 @@ export function AuthProvider({ children }) {
    * Calls authService.updateUser to update the authenticated user's profile.
    * Throws a localised error string on failure.
    */
-  async function updateUser({ nome, email }) {
+  async function updateUser({ nome, email, senha }) {
     console.log('[AuthContext] Updating user:', user?.id)
     validateId(user?.id)
 
-    await authService.updateUser(user.id, { nome, email, tipoUsuario: user.tipoUsuario })
+    try {
+      await authService.login({ email: user.email, senha })
+    } catch {
+      throw new Error('Senha incorreta.')
+    }
+
+    await authService.updateUser(user.id, {
+      nome,
+      email,
+      tipoUsuario: user.tipoUsuario,
+      senha,
+    })
 
     const updated = { ...user, name: nome, avatar: nome.charAt(0).toUpperCase(), email }
     console.log('[AuthContext] User updated successfully')
@@ -122,9 +133,15 @@ export function AuthProvider({ children }) {
    * Calls authService.changePassword to change the password.
    * Throws a localised error string on failure.
    */
-  async function changePassword({ senha }) {
+  async function changePassword({ senhaAtual, senha }) {
     console.log('[AuthContext] Changing password for:', user?.id)
     validateId(user?.id)
+
+    try {
+      await authService.login({ email: user.email, senha: senhaAtual })
+    } catch {
+      throw new Error('Senha atual incorreta.')
+    }
 
     await authService.changePassword(user.id, {
       nome:        user.name,

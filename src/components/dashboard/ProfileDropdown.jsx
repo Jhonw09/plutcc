@@ -14,7 +14,7 @@ export default function ProfileDropdown() {
 
   const [open, setOpen]       = useState(false)
   const [mode, setMode]       = useState(MODE.VIEW)
-  const [form, setForm]       = useState({ name: '', email: '' })
+  const [form, setForm]       = useState({ name: '', email: '', password: '' })
   const [pwForm, setPwForm]   = useState({ current: '', next: '' })
   const [error, setError]     = useState('')
   const [saving, setSaving]   = useState(false)
@@ -32,7 +32,7 @@ export default function ProfileDropdown() {
   }, [])
 
   function openDropdown() {
-    setForm({ name: user?.name ?? '', email: user?.email ?? '' })
+    setForm({ name: user?.name ?? '', email: user?.email ?? '', password: '' })
     setPwForm({ current: '', next: '' })
     setMode(MODE.VIEW)
     setError('')
@@ -44,9 +44,10 @@ export default function ProfileDropdown() {
   async function handleSaveProfile() {
     if (!form.name.trim())  { setError('Nome não pode ser vazio.');   return }
     if (!form.email.trim()) { setError('E-mail não pode ser vazio.'); return }
+    if (!form.password.trim()) { setError('Informe sua senha para confirmar.'); return }
     setSaving(true); setError('')
     try {
-      await updateUser({ nome: form.name.trim(), email: form.email.trim() })
+      await updateUser({ nome: form.name.trim(), email: form.email.trim(), senha: form.password.trim() })
       goTo(MODE.VIEW)
     } catch (err) {
       setError(err.message ?? 'Erro ao salvar.')
@@ -58,7 +59,7 @@ export default function ProfileDropdown() {
     if (pwForm.next.trim().length < 6) { setError('Nova senha: mínimo 6 caracteres.'); return }
     setSaving(true); setError('')
     try {
-      await changePassword({ senha: pwForm.next.trim() })
+      await changePassword({ senhaAtual: pwForm.current.trim(), senha: pwForm.next.trim() })
       setPwForm({ current: '', next: '' })
       goTo(MODE.VIEW)
     } catch (err) {
@@ -129,7 +130,13 @@ export default function ProfileDropdown() {
                 <input className={styles.input} type="email" value={form.email} disabled={saving}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
-              {error && <p className={styles.error} role="alert">{error}</p>}
+              <div className={styles.field}>
+                <label className={styles.label}>Confirme sua senha</label>
+                <input className={styles.input} type="password" value={form.password} disabled={saving}
+                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+                {error === 'Senha incorreta.' && <p className={styles.error} role="alert">{error}</p>}
+              </div>
+              {error && error !== 'Senha incorreta.' && <p className={styles.error} role="alert">{error}</p>}
               <div className={styles.editActions}>
                 <button className={styles.cancelBtn} onClick={() => goTo(MODE.VIEW)} disabled={saving}>Cancelar</button>
                 <button className={styles.saveBtn} onClick={handleSaveProfile} disabled={saving}>
@@ -150,6 +157,7 @@ export default function ProfileDropdown() {
                 <input className={styles.input} type="password" value={pwForm.current} autoFocus
                   disabled={saving} autoComplete="current-password"
                   onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))} />
+                {error === 'Senha atual incorreta.' && <p className={styles.error} role="alert">{error}</p>}
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Nova senha</label>
@@ -158,7 +166,7 @@ export default function ProfileDropdown() {
                   onChange={e => setPwForm(f => ({ ...f, next: e.target.value }))} />
                 <span className={styles.fieldHint}>Mínimo 6 caracteres</span>
               </div>
-              {error && <p className={styles.error} role="alert">{error}</p>}
+              {error && error !== 'Senha atual incorreta.' && <p className={styles.error} role="alert">{error}</p>}
               <div className={styles.editActions}>
                 <button className={styles.cancelBtn} onClick={() => goTo(MODE.PROFILE)} disabled={saving}>Voltar</button>
                 <button className={styles.saveBtn} onClick={handleChangePassword} disabled={saving}>
