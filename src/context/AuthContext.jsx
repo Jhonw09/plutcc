@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 import { authService } from '../api/services/authService'
-import { ROLE_MAP } from '../api/services/config'
+import { ROLE_MAP } from '../api/apiClient'
 import { STORAGE_KEYS } from '../constants/storageKeys'
 
 const AuthContext = createContext(null)
@@ -102,12 +102,8 @@ export function AuthProvider({ children }) {
     return userData
   }
 
-  /**
-   * Calls authService.updateUser to update the authenticated user's profile.
-   * Throws a localised error string on failure.
-   */
+  // BUG 2 FIX: persiste e reflete no estado imediatamente após update
   async function updateUser({ nome, email, senha }) {
-    console.log('[AuthContext] Updating user:', user?.id)
     validateId(user?.id)
 
     try {
@@ -124,9 +120,8 @@ export function AuthProvider({ children }) {
     })
 
     const updated = { ...user, name: nome, avatar: nome.charAt(0).toUpperCase(), email }
-    console.log('[AuthContext] User updated successfully')
     persist(updated)
-    setUser(updated)
+    setUser(updated)   // ← garante re-render imediato com dados novos
   }
 
   /**
@@ -152,27 +147,24 @@ export function AuthProvider({ children }) {
     console.log('[AuthContext] Password changed successfully')
   }
 
-  /**
-   * Calls authService.deleteUser, then clears all local auth state.
-   * Throws a localised error string on failure.
-   */
-  async function deleteUser() {
-    console.log('[AuthContext] Deleting user:', user?.id)
-    validateId(user?.id)
-
-    await authService.deleteUser(user.id)
-
-    console.log('[AuthContext] User deleted. Clearing local state.')
+  // Limpa toda a sessão local — usado por logout e deleteUser
+  function clearSession() {
     localStorage.removeItem(STORAGE_KEYS.user)
     sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
     setUser(null)
   }
 
+  async function deleteUser() {
+    console.log('[AuthContext] deleteUser chamado, user.id:', user?.id)
+    validateId(user?.id)
+    await authService.deleteUser(user.id)
+    console.log('[AuthContext] deleteUser: backend OK, limpando sessão')
+    clearSession()
+    console.log('[AuthContext] deleteUser: clearSession executado, user agora:', null)
+  }
+
   function logout() {
-    console.log('[AuthContext] Logging out user:', user?.id)
-    localStorage.removeItem(STORAGE_KEYS.user)
-    sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
-    setUser(null)
+    clearSession()
   }
 
   return (

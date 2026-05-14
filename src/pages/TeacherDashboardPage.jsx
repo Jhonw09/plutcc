@@ -1,17 +1,16 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate }      from 'react-router-dom'
-import TeacherLayout       from '../components/teacher/TeacherLayout'
-import TrilhaCard         from '../components/teacher/TrilhaCard'
-import CreateTrilhaModal   from '../components/teacher/CreateTrilhaModal'
-import { ConfirmModal }    from '../components/ui/ConfirmModal'
-import { Toast }           from '../components/ui/Toast'
-import Icon                from '../components/ui/Icon'
-import { useToast }        from '../hooks/useToast'
-import { useAuth }         from '../context/AuthContext'
-import { useTrilhas }      from '../hooks/useTrilhas'
+import TeacherLayout        from '../components/teacher/TeacherLayout'
+import TrilhaCard           from '../components/teacher/TrilhaCard'
+import CreateTrilhaModal    from '../components/teacher/CreateTrilhaModal'
+import { ConfirmModal }     from '../components/ui/ConfirmModal'
+import { Toast }            from '../components/ui/Toast'
+import Icon                 from '../components/ui/Icon'
+import { useToast }         from '../hooks/useToast'
+import { useAuth }          from '../context/AuthContext'
+import { useTrilhas }       from '../hooks/useTrilhas'
 import styles from './TeacherDashboardPage.module.css'
 
-// ── Filter options ────────────────────────────────────────────────────────────
 const SUBJECT_FILTERS = [
   'Todas', 'Matemática', 'Português', 'Química', 'Biologia',
   'Física', 'Geografia', 'História', 'Inglês',
@@ -19,128 +18,94 @@ const SUBJECT_FILTERS = [
 ]
 
 const SORT_OPTIONS = [
-  { value: 'recent',   label: 'Mais recentes' },
-  { value: 'name',     label: 'Nome (A–Z)'    },
-  { value: 'students', label: 'Mais alunos'   },
+  { value: 'recent', label: 'Mais recentes' },
+  { value: 'name',   label: 'Nome (A–Z)'    },
 ]
 
-// ── Derived stats from API class list ───────────────────────────────────────
-function buildStats(classes) {
-  const publicCount = classes.filter(c => c.tipo === 'PUBLICA').length
+function buildStats(trilhas) {
+  const publicCount = trilhas.filter(t => t.tipo === 'PUBLICA').length
   return [
-    { id: 'classes',  icon: 'school',  label: 'Trilhas ativas',   value: classes.length,  delta: null },
-    { id: 'students', icon: 'users',   label: 'Total de alunos', value: 'N/A',            delta: null },
-    { id: 'public',   icon: 'globe',   label: 'Trilhas públicas', value: publicCount,      delta: null },
-    { id: 'private',  icon: 'lock',    label: 'Trilhas privadas', value: classes.length - publicCount, delta: null },
+    { id: 'classes',  icon: 'school', label: 'Trilhas ativas',   value: trilhas.length },
+    { id: 'students', icon: 'users',  label: 'Total de alunos',  value: 'N/A'          },
+    { id: 'public',   icon: 'globe',  label: 'Trilhas públicas', value: publicCount    },
+    { id: 'private',  icon: 'lock',   label: 'Trilhas privadas', value: trilhas.length - publicCount },
   ]
 }
 
 export default function TeacherDashboardPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
   const { toasts, toast, dismiss } = useToast()
-  const { trilhas, loading, error, createTrilha: createTrilhaHandler, deleteTrilha: deleteTrilhaHandler, refreshTrilhas } = useTrilhas()
 
-  // ── Class state ──────────────────────────────────────────────────────────────
-  const [classes, setClasses] = useState([])
+  // trilhas vem direto do hook — sem estado intermediário (evita flicker)
+  const { trilhas, loading, error, createTrilha: createTrilhaHandler, deleteTrilha: deleteTrilhaHandler } = useTrilhas()
 
-  // ── Modal state ──────────────────────────────────────────────────────────────
-  const [classModalOpen,    setClassModalOpen]    = useState(false)
-  const [editTarget,        setEditTarget]        = useState(null)   // class object | null
-  const [deleteTarget,      setDeleteTarget]      = useState(null)   // { id, nome } | null
+  const [classModalOpen, setClassModalOpen] = useState(false)
+  const [editTarget,     setEditTarget]     = useState(null)
+  const [deleteTarget,   setDeleteTarget]   = useState(null)
+  const [deletingId,     setDeletingId]     = useState(null) // id da trilha sendo deletada
 
-  // ── Search & filter state ────────────────────────────────────────────────────
   const [search,     setSearch]     = useState('')
   const [filterSubj, setFilterSubj] = useState('Todas')
   const [sortBy,     setSortBy]     = useState('recent')
 
-  // Sync trilhas from hook to local state for filtering
-  useEffect(() => {
-    setClasses(trilhas)
-  }, [trilhas])
-
-  // ── Derived: filtered + sorted classes ───────────────────────────────────────
-  const visibleClasses = useMemo(() => {
-    let list = [...classes]
-
+  const visibleTrilhas = useMemo(() => {
+    let list = [...trilhas]
     if (search.trim()) {
       const q = search.trim().toLowerCase()
-      list = list.filter(c =>
-        c.nome.toLowerCase().includes(q) ||
-        (c.descricao && c.descricao.toLowerCase().includes(q))
+      list = list.filter(t =>
+        t.nome.toLowerCase().includes(q) ||
+        (t.descricao && t.descricao.toLowerCase().includes(q))
       )
     }
-
-    // Note: API doesn't provide disciplina field, so subject filtering is disabled for now
-    // if (filterSubj !== 'Todas') {
-    //   list = list.filter(c => c.disciplina === filterSubj)
-    // }
-
-    if (sortBy === 'name')     list.sort((a, b) => a.nome.localeCompare(b.nome))
-    // Note: API doesn't provide member counts, so student sorting is disabled
-    // if (sortBy === 'students') { ... }
-    if (sortBy === 'recent')   list.sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
-
+    if (filterSubj !== 'Todas') list = list.filter(t => t.disciplina === filterSubj)
+    if (sortBy === 'name')   list.sort((a, b) => a.nome.localeCompare(b.nome))
+    if (sortBy === 'recent') list.sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
     return list
-  }, [classes, search, sortBy])
+  }, [trilhas, search, filterSubj, sortBy])
 
-  const stats    = useMemo(() => buildStats(classes), [classes])
-  const hasClasses = classes.length > 0
+  const stats      = useMemo(() => buildStats(trilhas), [trilhas])
   const isFiltered = search.trim() || filterSubj !== 'Todas'
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
   async function handleCreate(newClass) {
     try {
-      const createdClass = await createTrilhaHandler(newClass)
-      toast(`Trilha "${createdClass.nome}" criada com sucesso!`, 'success')
-      navigate(`/professor/trilha/${createdClass.id}`, { state: createdClass })
+      const created = await createTrilhaHandler(newClass)
+      toast(`Trilha "${created.nome}" criada com sucesso!`, 'success')
+      navigate(`/professor/trilha/${created.id}`, { state: created })
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar trilha'
-      console.error('Erro ao criar trilha:', err)
-      toast(msg, 'error')
+      toast(err instanceof Error ? err.message : 'Erro ao criar trilha', 'error')
       throw err
     }
   }
 
   function handleEdit(updated) {
-    setClasses(prev => prev.map(c => c.id === updated.id ? updated : c))
     toast(`Trilha "${updated.nome}" atualizada.`, 'success')
     setEditTarget(null)
   }
 
   async function handleDeleteConfirm() {
     const { id, nome } = deleteTarget
+    setDeletingId(id)
+    setDeleteTarget(null)
     try {
       await deleteTrilhaHandler(id)
-      toast(`Trilha "${nome}" excluída.`, 'error')
+      toast(`Trilha "${nome}" excluída.`, 'success')
     } catch (err) {
       toast(err.message || 'Erro ao excluir trilha.', 'error')
     } finally {
-      setDeleteTarget(null)
+      setDeletingId(null)
     }
   }
 
-  function openEdit(classObj) {
-    setEditTarget(classObj)
-    setClassModalOpen(true)
-  }
-
-  function openDelete(id, nome) {
-    setDeleteTarget({ id, nome })
-  }
-
-  function closeClassModal() {
-    setClassModalOpen(false)
-    setEditTarget(null)
-  }
+  function openEdit(t)        { setEditTarget(t); setClassModalOpen(true) }
+  function openDelete(id, nome) { setDeleteTarget({ id, nome }) }
+  function closeModal()       { setClassModalOpen(false); setEditTarget(null) }
 
   return (
     <TeacherLayout>
 
-      {/* ── Modals ── */}
       {classModalOpen && (
         <CreateTrilhaModal
-          onClose={closeClassModal}
+          onClose={closeModal}
           onCreate={handleCreate}
           onEdit={handleEdit}
           initialData={editTarget}
@@ -150,17 +115,16 @@ export default function TeacherDashboardPage() {
       {deleteTarget && (
         <ConfirmModal
           title="Excluir trilha"
-          message={`Tem certeza que deseja excluir a trilha "${deleteTarget.nome}"? Esta ação não pode ser desfeita.`}
+          message={`Tem certeza que deseja excluir "${deleteTarget.nome}"? Esta ação não pode ser desfeita.`}
           confirmLabel="Excluir trilha"
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
         />
       )}
 
-      {/* ── Toasts ── */}
       <Toast toasts={toasts} onDismiss={dismiss} />
 
-      {/* ── LOADING STATE ── */}
+      {/* LOADING — fetch ainda em andamento */}
       {loading && (
         <div className={styles.loading}>
           <div className={styles.loadingSpinner}><Icon name="clock" size={32} /></div>
@@ -168,28 +132,23 @@ export default function TeacherDashboardPage() {
         </div>
       )}
 
-      {/* ── ERROR STATE ── */}
+      {/* ERROR */}
       {error && !loading && (
         <div className={styles.error}>
           <span className={styles.errorIcon}><Icon name="warning" size={40} /></span>
           <h3>Erro ao carregar trilhas</h3>
           <p>{error}</p>
-          <button
-            className={styles.retryBtn}
-            onClick={() => window.location.reload()}
-          >
+          <button className={styles.retryBtn} onClick={() => window.location.reload()}>
             Tentar novamente
           </button>
         </div>
       )}
 
-      {/* ── EMPTY STATE (loaded, no error, no classes) ── */}
-      {!loading && !error && !hasClasses && (
+      {/* EMPTY — só exibe após fetch concluir e lista continuar vazia */}
+      {!loading && !error && trilhas.length === 0 && (
         <div className={styles.heroEmpty}>
           <span className={styles.heroEmptyIcon}><Icon name="school" size={48} /></span>
-          <h3 className={styles.heroEmptyTitle}>
-            Está na hora de criar sua primeira trilha
-          </h3>
+          <h3 className={styles.heroEmptyTitle}>Está na hora de criar sua primeira trilha</h3>
           <p className={styles.heroEmptyDesc}>
             Organize seu conteúdo em uma trilha para seus alunos começarem a aprender.
           </p>
@@ -199,10 +158,9 @@ export default function TeacherDashboardPage() {
         </div>
       )}
 
-      {/* ── HAS CLASSES ── */}
-      {hasClasses && (
+      {/* HAS TRILHAS */}
+      {!loading && !error && trilhas.length > 0 && (
         <>
-          {/* Stats row */}
           <div className={styles.statsGrid}>
             {stats.map(s => (
               <div key={s.id} className={styles.statCard}>
@@ -213,7 +171,6 @@ export default function TeacherDashboardPage() {
             ))}
           </div>
 
-          {/* Classes section */}
           <section className={styles.section}>
             <div className={styles.classesHeader}>
               <div className={styles.classesHeaderTop}>
@@ -223,58 +180,45 @@ export default function TeacherDashboardPage() {
                 </button>
               </div>
 
-              {/* Search + filters */}
               <div className={styles.controls}>
                 <div className={styles.searchWrap}>
                   <span className={styles.searchIcon}><Icon name="search" size={15} /></span>
                   <input
                     className={styles.searchInput}
-                    placeholder="Buscar por nome, disciplina ou código…"
+                    placeholder="Buscar por nome ou descrição…"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                   />
                   {search && (
-                    <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Limpar busca">
-                      ✕
-                    </button>
+                    <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Limpar busca">✕</button>
                   )}
                 </div>
 
-                <select
-                  className={styles.filterSelect}
-                  value={filterSubj}
-                  onChange={e => setFilterSubj(e.target.value)}
-                  aria-label="Filtrar por disciplina"
-                >
+                <select className={styles.filterSelect} value={filterSubj} onChange={e => setFilterSubj(e.target.value)}>
                   {SUBJECT_FILTERS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
 
-                <select
-                  className={styles.filterSelect}
-                  value={sortBy}
-                  onChange={e => setSortBy(e.target.value)}
-                  aria-label="Ordenar trilhas"
-                >
+                <select className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
                   {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
             </div>
 
-            {/* Results count when filtering */}
             {isFiltered && (
               <p className={styles.resultsCount}>
-                {visibleClasses.length === 0
+                {visibleTrilhas.length === 0
                   ? 'Nenhuma trilha encontrada.'
-                  : `${visibleClasses.length} trilha${visibleClasses.length !== 1 ? 's' : ''} encontrada${visibleClasses.length !== 1 ? 's' : ''}.`}
+                  : `${visibleTrilhas.length} trilha${visibleTrilhas.length !== 1 ? 's' : ''} encontrada${visibleTrilhas.length !== 1 ? 's' : ''}.`}
               </p>
             )}
 
-            {visibleClasses.length > 0 ? (
+            {visibleTrilhas.length > 0 ? (
               <div className={styles.classesList}>
-                {visibleClasses.map(c => (
+                {visibleTrilhas.map(t => (
                   <TrilhaCard
-                    key={c.id}
-                    {...c}
+                    key={t.id}
+                    {...t}
+                    deleting={deletingId === t.id}
                     onEdit={openEdit}
                     onDelete={openDelete}
                   />

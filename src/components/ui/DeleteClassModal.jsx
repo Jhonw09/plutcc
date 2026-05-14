@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { ENDPOINTS } from '../../api/config'
+import { ENDPOINTS, api } from '../../api/apiClient'
 import styles from './DeleteClassModal.module.css'
 
 /**
@@ -25,21 +25,13 @@ export function DeleteClassModal({ className, onConfirm, onCancel }) {
     setError('')
 
     try {
-      const res = await fetch(ENDPOINTS.login, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email: user.email, senha: password }),
+      await api(ENDPOINTS.login, {
+        method: 'POST',
+        body:   JSON.stringify({ email: user.email, senha: password }),
       })
-
-      if (!res.ok) {
-        setError('Senha incorreta. Tente novamente.')
-        setLoading(false)
-        return
-      }
-
       onConfirm()
-    } catch {
-      setError('Erro de conexão. Tente novamente.')
+    } catch (err) {
+      setError(err.status === 401 ? 'Senha incorreta. Tente novamente.' : 'Erro de conexão. Tente novamente.')
       setLoading(false)
     }
   }

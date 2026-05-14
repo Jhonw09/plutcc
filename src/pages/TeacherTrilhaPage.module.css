@@ -368,3 +368,166 @@
   .aulaCard { grid-template-columns: 44px 1fr auto; }
   .sectionHeader { flex-direction: column; }
 }
+
+/* ── Modal ────────────────────────────────────────────────────────── */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+  animation: fadeUp 180ms ease forwards;
+}
+
+.modalCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.4);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.modalClose {
+  font-size: 16px;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: color .15s, background .15s;
+}
+.modalClose:hover { color: var(--text); background: var(--surface-2); }
+
+.modalBody {
+  overflow-y: auto;
+  padding: 24px;
+  flex: 1;
+}
+
+/* ── Aula card clicável ───────────────────────────────────────────── */
+.aulaCard {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .18s, box-shadow .18s;
+}
+.aulaCard:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 4px 16px rgba(108,92,231,.1);
+}
+
+.aulaCardDeleting {
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* Área principal clicável (editar) */
+.aulaCardMain {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  padding: 16px 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s;
+}
+.aulaCardMain:hover { background: var(--surface-3); }
+.aulaCardMain:disabled { cursor: not-allowed; }
+
+.aulaEditHint {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.aulaCardMain:hover .aulaEditHint { opacity: 1; }
+
+/* Área de delete — separada */
+.aulaDeleteArea {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Confirmação inline de delete */
+.deleteConfirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideDown 160ms ease forwards;
+}
+
+.deleteConfirmText {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+  white-space: nowrap;
+}
+
+.deleteConfirmYes {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--danger);
+  border-radius: 6px;
+  padding: 5px 12px;
+  transition: opacity .15s;
+}
+.deleteConfirmYes:hover { opacity: .85; }
+
+.deleteConfirmNo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-3);
+  border-radius: 6px;
+  padding: 5px 12px;
+  transition: background .15s;
+}
+.deleteConfirmNo:hover { background: var(--border); }
+
+/* ── Skeleton loader ──────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.loadingList { display: flex; flex-direction: column; gap: 12px; }
+
+.skeletonCard {
+  height: 72px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}

@@ -69,10 +69,13 @@ export default function ProfileDropdown() {
 
   async function handleDelete() {
     setDeleting(true); setError('')
+    console.log('[ProfileDropdown] handleDelete iniciado')
     try {
       await deleteUser()
+      console.log('[ProfileDropdown] deleteUser resolveu, navegando para /')
       navigate('/', { replace: true })
     } catch (err) {
+      console.error('[ProfileDropdown] deleteUser falhou:', err.message)
       setError(err.message ?? 'Erro ao excluir conta.')
       setDeleting(false); goTo(MODE.VIEW)
     }

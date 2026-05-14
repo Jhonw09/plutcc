@@ -1,62 +1,71 @@
-import { API_BASE } from './config'
-
-const ENDPOINTS = {
-  cursos:      `${API_BASE}/cursos`,
-  cursoById:   (id) => `${API_BASE}/cursos/${id}`,
-  minhasTrilhas: (professorId) => `${API_BASE}/cursos?professorId=${professorId}`,
-}
+import { ENDPOINTS, api } from '../apiClient'
 
 export async function createTrilha(trilhaData) {
-  if (!trilhaData.professorId) throw new Error('ID do professor é obrigatório')
-  if (!trilhaData.nome?.trim())  throw new Error('Nome da trilha é obrigatório')
-  if (!trilhaData.nivel)         throw new Error('Nível da trilha é obrigatório')
+  if (!trilhaData.professorId)  throw new Error('ID do professor é obrigatório')
+  if (!trilhaData.nome?.trim()) throw new Error('Nome da trilha é obrigatório')
+  if (!trilhaData.nivel)        throw new Error('Nível da trilha é obrigatório')
 
-  const payload = {
-    nome:        trilhaData.nome.trim(),
-    descricao:   trilhaData.descricao?.trim() || '',
-    duracao:     trilhaData.duracao || '',
-    nivel:       trilhaData.nivel,
-    ativo:       true,
-    professor:   { id: trilhaData.professorId },
-  }
-
-  const response = await fetch(ENDPOINTS.cursos, {
+  // Entidade Trilha usa professorId (Long) direto — não usa professor:{ id }
+  return api(ENDPOINTS.trilhas, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      nome:          trilhaData.nome.trim(),
+      descricao:     trilhaData.descricao?.trim() || '',
+      tipo:          trilhaData.tipo || 'PUBLICA',
+      nivel:         trilhaData.nivel,
+      disciplina:    trilhaData.disciplina || '',
+      professorId:   trilhaData.professorId,
+      professorNome: trilhaData.professorNome || '',
+    }),
+  }).catch(err => {
+    if (err.status === 404) throw new Error('Professor não encontrado.')
+    if (err.status === 400) throw new Error('Dados da trilha inválidos.')
+    throw new Error(`Erro ao criar trilha: ${err.status}`)
   })
+}
 
-  if (!response.ok) {
-    if (response.status === 404) throw new Error('Professor não encontrado.')
-    if (response.status === 400) throw new Error('Dados da trilha inválidos.')
-    throw new Error(`Erro ao criar trilha: ${response.status}`)
-  }
-
-  return response.json()
+export async function updateTrilha(id, trilhaData) {
+  if (!id) throw new Error('ID da trilha é obrigatório')
+  return api(ENDPOINTS.trilhaById(id), {
+    method: 'PUT',
+    body: JSON.stringify({
+      nome:       trilhaData.nome?.trim(),
+      descricao:  trilhaData.descricao?.trim() || '',
+      tipo:       trilhaData.tipo,
+      nivel:      trilhaData.nivel,
+      disciplina: trilhaData.disciplina || '',
+    }),
+  }).catch(err => {
+    if (err.status === 404) throw new Error('Trilha não encontrada.')
+    if (err.status === 400) throw new Error('Dados da trilha inválidos.')
+    throw new Error(`Erro ao atualizar trilha: ${err.status}`)
+  })
 }
 
 export async function getTrilhas() {
-  const response = await fetch(ENDPOINTS.cursos)
-  if (!response.ok) throw new Error(`Erro ao carregar trilhas: ${response.status}`)
-  return response.json()
+  return api(ENDPOINTS.trilhas).catch(() => { throw new Error('Erro ao carregar trilhas.') })
 }
 
 export async function getTrilhaById(id) {
   if (!id) throw new Error('ID da trilha é obrigatório')
-  const response = await fetch(ENDPOINTS.cursoById(id))
-  if (!response.ok) throw new Error(`Erro ao carregar trilha: ${response.status}`)
-  return response.json()
+  return api(ENDPOINTS.trilhaById(id)).catch(() => { throw new Error('Erro ao carregar trilha.') })
 }
 
 export async function getMyTrilhas(professorId) {
   if (!professorId) throw new Error('ID do professor é obrigatório')
-  const response = await fetch(ENDPOINTS.minhasTrilhas(professorId))
-  if (!response.ok) throw new Error(`Erro ao carregar suas trilhas: ${response.status}`)
-  return response.json()
+  return api(ENDPOINTS.trilhasByProf(professorId)).catch(() => {
+    throw new Error('Erro ao carregar suas trilhas.')
+  })
+}
+
+export async function getTrilhasPublicas() {
+  const todas = await api(ENDPOINTS.trilhas).catch(() => { throw new Error('Erro ao carregar trilhas.') })
+  return todas.filter(t => t.tipo !== 'PRIVADA')
 }
 
 export async function deleteTrilha(id) {
   if (!id) throw new Error('ID da trilha é obrigatório')
-  const response = await fetch(ENDPOINTS.cursoById(id), { method: 'DELETE' })
-  if (!response.ok) throw new Error(`Erro ao excluir trilha: ${response.status}`)
+  return api(ENDPOINTS.trilhaById(id), { method: 'DELETE' }).catch(() => {
+    throw new Error('Erro ao excluir trilha.')
+  })
 }

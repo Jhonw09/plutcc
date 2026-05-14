@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button }     from '../ui/Button'
 import { InputField } from '../ui/InputField'
 import { useAuth }    from '../../context/AuthContext'
+import { updateTrilha } from '../../api/services/trilhaService'
 import styles from './CreateTrilhaModal.module.css'
 
 const SUBJECTS = [
@@ -50,15 +51,23 @@ export default function CreateTrilhaModal({ onClose, onCreate, onEdit, initialDa
     if (Object.keys(errs).length) { setErrors(errs); return }
 
     if (isEdit) {
-      onEdit({
-        ...initialData,
-        nome:       fields.name.trim(),
-        disciplina: fields.subject,
-        descricao:  fields.description.trim(),
-        tipo:       fields.type,
-        nivel:      fields.level,
-      })
-      onClose()
+      setLoading(true)
+      setApiError('')
+      try {
+        const updated = await updateTrilha(initialData.id, {
+          nome:       fields.name.trim(),
+          disciplina: fields.subject,
+          descricao:  fields.description.trim(),
+          tipo:       fields.type,
+          nivel:      fields.level,
+        })
+        onEdit({ ...initialData, ...updated })
+        onClose()
+      } catch (err) {
+        setApiError(err.message ?? 'Erro ao atualizar trilha.')
+      } finally {
+        setLoading(false)
+      }
     } else {
       setLoading(true)
       setApiError('')

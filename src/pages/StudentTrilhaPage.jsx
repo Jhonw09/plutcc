@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
-import { MOCK_TRILHAS } from '../data/mockTrilhas'
+import { getTrilhaById } from '../api/services/trilhaService'
+import { getAulasByTrilha } from '../api/services/aulaService'
 import styles from './StudentTrilhaPage.module.css'
 
 const SUBJECT_EMOJI = {
@@ -13,39 +14,30 @@ const NIVEL_COLOR = {
   Básico:        { color: '#22c55e', bg: 'rgba(34,197,94,.12)',  border: 'rgba(34,197,94,.3)'  },
   Intermediário: { color: '#f59e0b', bg: 'rgba(245,158,11,.12)', border: 'rgba(245,158,11,.3)' },
   Avançado:      { color: '#ef4444', bg: 'rgba(239,68,68,.12)',  border: 'rgba(239,68,68,.3)'  },
+  BASICO:        { color: '#22c55e', bg: 'rgba(34,197,94,.12)',  border: 'rgba(34,197,94,.3)'  },
+  INTERMEDIARIO: { color: '#f59e0b', bg: 'rgba(245,158,11,.12)', border: 'rgba(245,158,11,.3)' },
+  AVANCADO:      { color: '#ef4444', bg: 'rgba(239,68,68,.12)',  border: 'rgba(239,68,68,.3)'  },
 }
 
 // ── Modal de exercício ────────────────────────────────────────────────────────
+// Recebe um bloco do tipo 'questionario' e renderiza a questão interativa.
 function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo }) {
-  const [selecionada, setSelecionada] = useState(null)   // id da alternativa
-  const [resultado,   setResultado]   = useState(null)   // 'certo' | 'errado' | null
+  const [selecionada, setSelecionada] = useState(null)
+  const [resultado,   setResultado]   = useState(null)
 
-  // Se já concluído, mostra direto o estado de acerto
-  const jaRespondido = isDone
+  const acertou = resultado === 'certo' || isDone
 
   function handleResponder() {
     if (!selecionada) return
     const alt = ex.alternativas.find(a => a.id === selecionada)
-    if (alt?.correta) {
-      setResultado('certo')
-      onConcluir(ex.id)
-    } else {
-      setResultado('errado')
-    }
+    if (alt?.correta) { setResultado('certo'); onConcluir(ex.id) }
+    else setResultado('errado')
   }
-
-  function handleTentarNovamente() {
-    setSelecionada(null)
-    setResultado(null)
-  }
-
-  const acertou = resultado === 'certo' || jaRespondido
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
 
-        {/* ── Cabeçalho ── */}
         <div className={styles.modalHeader}>
           <div>
             <span className={styles.modalTag}>Exercício</span>
@@ -56,19 +48,18 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
 
         <div className={styles.modalBody}>
 
-          {/* ── Explicação ── */}
-          <div className={styles.explicacao}>
-            <p className={styles.explicacaoLabel}>📖 Explicação</p>
-            <p className={styles.explicacaoText}>{ex.explicacao}</p>
-          </div>
+          {ex.explicacao && (
+            <div className={styles.explicacao}>
+              <p className={styles.explicacaoLabel}>📖 Explicação</p>
+              <p className={styles.explicacaoText}>{ex.explicacao}</p>
+            </div>
+          )}
 
-          {/* ── Pergunta ── */}
           <div className={styles.perguntaBox}>
             <p className={styles.perguntaLabel}>❓ Questão</p>
             <p className={styles.perguntaText}>{ex.pergunta}</p>
           </div>
 
-          {/* ── Alternativas ── */}
           {!acertou && (
             <div className={styles.alternativas}>
               {ex.alternativas.map(alt => {
@@ -77,14 +68,11 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
                 return (
                   <button
                     key={alt.id}
-                    className={`${styles.alt}
-                      ${sel        ? styles.altSel    : ''}
-                      ${erradaSel  ? styles.altErrada : ''}
-                    `}
+                    className={`${styles.alt} ${sel ? styles.altSel : ''} ${erradaSel ? styles.altErrada : ''}`}
                     onClick={() => resultado !== 'errado' && setSelecionada(alt.id)}
                     disabled={resultado === 'errado' && !sel}
                   >
-                    <span className={styles.altLetra}>{alt.id.toUpperCase()}</span>
+                    <span className={styles.altLetra}>{String(alt.id).toUpperCase()}</span>
                     <span className={styles.altTexto}>{alt.texto}</span>
                     {sel && <span className={styles.altCheck}>{resultado === 'errado' ? '✕' : '●'}</span>}
                   </button>
@@ -93,15 +81,11 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
             </div>
           )}
 
-          {/* ── Gabarito (após acerto) ── */}
           {acertou && (
             <div className={styles.alternativasGabarito}>
               {ex.alternativas.map(alt => (
-                <div
-                  key={alt.id}
-                  className={`${styles.alt} ${alt.correta ? styles.altCorreta : styles.altNeutral}`}
-                >
-                  <span className={styles.altLetra}>{alt.id.toUpperCase()}</span>
+                <div key={alt.id} className={`${styles.alt} ${alt.correta ? styles.altCorreta : styles.altNeutral}`}>
+                  <span className={styles.altLetra}>{String(alt.id).toUpperCase()}</span>
                   <span className={styles.altTexto}>{alt.texto}</span>
                   {alt.correta && <span className={styles.altCheck}>✓</span>}
                 </div>
@@ -109,7 +93,6 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
             </div>
           )}
 
-          {/* ── Feedback ── */}
           {resultado === 'errado' && (
             <div className={styles.feedbackErrado}>
               <span>✕</span>
@@ -117,7 +100,7 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
                 <p className={styles.feedbackTitle}>Resposta incorreta, tente novamente!</p>
                 <p className={styles.feedbackSub}>Releia a explicação e escolha outra alternativa.</p>
               </div>
-              <button className={styles.btnTentar} onClick={handleTentarNovamente}>
+              <button className={styles.btnTentar} onClick={() => { setSelecionada(null); setResultado(null) }}>
                 Tentar novamente
               </button>
             </div>
@@ -133,28 +116,17 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
             </div>
           )}
 
-          {/* ── Ações ── */}
           <div className={styles.modalActions}>
             {!acertou && resultado !== 'errado' && (
-              <button
-                className={styles.btnResponder}
-                onClick={handleResponder}
-                disabled={!selecionada}
-              >
+              <button className={styles.btnResponder} onClick={handleResponder} disabled={!selecionada}>
                 Responder
               </button>
             )}
-
             {acertou && temProximo && (
-              <button className={styles.btnProximo} onClick={onProximo}>
-                Próximo exercício →
-              </button>
+              <button className={styles.btnProximo} onClick={onProximo}>Próximo exercício →</button>
             )}
-
             {acertou && !temProximo && (
-              <button className={styles.btnProximo} onClick={onClose}>
-                Concluir trilha 🎉
-              </button>
+              <button className={styles.btnProximo} onClick={onClose}>Concluir trilha 🎉</button>
             )}
           </div>
 
@@ -164,75 +136,109 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
   )
 }
 
+// ── Adapta blocos de aula da API → formato de exercício que o modal espera ──
+// Pega o primeiro bloco 'questionario' de cada aula como exercício.
+function aulaToExercicio(aula) {
+  const q = aula.blocos?.find(b => b.tipo === 'questionario')
+  if (!q) return null
+  return {
+    id:           aula.id,
+    titulo:       aula.titulo,
+    explicacao:   aula.blocos?.find(b => b.tipo === 'explicacao')?.conteudo ?? '',
+    pergunta:     q.pergunta ?? '',
+    alternativas: Array.isArray(q.alternativas)
+      ? q.alternativas.map((texto, i) => ({
+          id:     String.fromCharCode(97 + i), // 'a', 'b', 'c'...
+          texto:  typeof texto === 'string' ? texto : texto.texto,
+          correta: i === q.correta || texto?.correta === true,
+        }))
+      : [],
+  }
+}
+
 // ── Página principal ──────────────────────────────────────────────────────────
 export default function StudentTrilhaPage() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const trilha = MOCK_TRILHAS.find(t => t.id === id)
+  const [trilha,     setTrilha]     = useState(null)
+  const [exercicios, setExercicios] = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState(null)
   const [concluidos, setConcluidos] = useState(new Set())
-  const [modalIdx,   setModalIdx]   = useState(null)   // índice do exercício aberto
+  const [modalIdx,   setModalIdx]   = useState(null)
 
-  if (!trilha) {
+  useEffect(() => {
+    async function load() {
+      try {
+        const [trilhaData, aulas] = await Promise.all([
+          getTrilhaById(id),
+          getAulasByTrilha(id),
+        ])
+        setTrilha(trilhaData)
+        setExercicios(aulas.map(aulaToExercicio).filter(Boolean))
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [id])
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className={styles.empty}>
+          <span>⏳</span><p>Carregando trilha...</p>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (error || !trilha) {
     return (
       <DashboardLayout>
         <div className={styles.empty}>
           <span>⚠️</span>
-          <p>Trilha não encontrada.</p>
+          <p>{error ?? 'Trilha não encontrada.'}</p>
           <button className={styles.btnBack} onClick={() => navigate('/dashboard')}>← Voltar</button>
         </div>
       </DashboardLayout>
     )
   }
 
-  const total = trilha.exercicios.length
+  const total = exercicios.length
   const done  = concluidos.size
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100)
   const nivel = NIVEL_COLOR[trilha.nivel] ?? NIVEL_COLOR['Básico']
   const emoji = SUBJECT_EMOJI[trilha.disciplina] ?? '📚'
-
-  function handleConcluir(exId) {
-    setConcluidos(prev => new Set([...prev, exId]))
-  }
-
-  function handleProximo() {
-    const next = modalIdx + 1
-    if (next < total) setModalIdx(next)
-    else setModalIdx(null)
-  }
-
-  const modalEx = modalIdx !== null ? trilha.exercicios[modalIdx] : null
+  const modalEx = modalIdx !== null ? exercicios[modalIdx] : null
 
   return (
     <DashboardLayout>
       <div className={styles.container}>
 
-        {/* ── BACK ── */}
         <button className={styles.btnBack} onClick={() => navigate('/dashboard')}>
           ← Voltar às trilhas
         </button>
 
-        {/* ── HEADER ── */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <span className={styles.headerEmoji}>{emoji}</span>
             <div className={styles.headerInfo}>
               <div className={styles.headerTop}>
                 <h1 className={styles.title}>{trilha.nome}</h1>
-                <span
-                  className={styles.nivelBadge}
-                  style={{ color: nivel.color, background: nivel.bg, borderColor: nivel.border }}
-                >
+                <span className={styles.nivelBadge} style={{ color: nivel.color, background: nivel.bg, borderColor: nivel.border }}>
                   {trilha.nivel}
                 </span>
               </div>
-              <p className={styles.professor}>👨🏫 {trilha.professorNome}</p>
+              {trilha.professorNome && <p className={styles.professor}>👨🏫 {trilha.professorNome}</p>}
               {trilha.descricao && <p className={styles.desc}>{trilha.descricao}</p>}
             </div>
           </div>
         </div>
 
-        {/* ── PROGRESSO ── */}
         <div className={styles.progressCard}>
           <div className={styles.progressRow}>
             <div>
@@ -250,7 +256,6 @@ export default function StudentTrilhaPage() {
           </div>
         </div>
 
-        {/* ── MÓDULO 1 ── */}
         <section className={styles.section}>
           <div className={styles.moduleHeader}>
             <span className={styles.moduleTag}>Módulo 1</span>
@@ -258,48 +263,50 @@ export default function StudentTrilhaPage() {
             <p className={styles.moduleSub}>{total} exercício{total !== 1 ? 's' : ''} neste módulo</p>
           </div>
 
-          <div className={styles.exList}>
-            {trilha.exercicios.map((ex, i) => {
-              const isDone = concluidos.has(ex.id)
-              return (
-                <div key={ex.id} className={`${styles.exCard} ${isDone ? styles.exCardDone : ''}`}>
-                  <div className={styles.exLeft}>
-                    <span className={`${styles.exNum} ${isDone ? styles.exNumDone : ''}`}>
-                      {isDone ? '✓' : i + 1}
-                    </span>
-                    <div>
-                      <p className={styles.exTitle}>{ex.titulo}</p>
-                      {isDone
-                        ? <span className={styles.doneTag}>Concluído</span>
-                        : <span className={styles.pendingTag}>Pendente</span>
-                      }
+          {total === 0 ? (
+            <p style={{ color: 'var(--text-secondary)', padding: '1rem 0' }}>
+              Esta trilha ainda não tem exercícios.
+            </p>
+          ) : (
+            <div className={styles.exList}>
+              {exercicios.map((ex, i) => {
+                const isDone = concluidos.has(ex.id)
+                return (
+                  <div key={ex.id} className={`${styles.exCard} ${isDone ? styles.exCardDone : ''}`}>
+                    <div className={styles.exLeft}>
+                      <span className={`${styles.exNum} ${isDone ? styles.exNumDone : ''}`}>
+                        {isDone ? '✓' : i + 1}
+                      </span>
+                      <div>
+                        <p className={styles.exTitle}>{ex.titulo}</p>
+                        {isDone
+                          ? <span className={styles.doneTag}>Concluído</span>
+                          : <span className={styles.pendingTag}>Pendente</span>}
+                      </div>
                     </div>
+                    <button
+                      className={isDone ? styles.btnReabrir : styles.btnAbrir}
+                      onClick={() => setModalIdx(i)}
+                    >
+                      {isDone ? 'Rever exercício' : 'Abrir exercício →'}
+                    </button>
                   </div>
-                  <button
-                    className={isDone ? styles.btnReabrir : styles.btnAbrir}
-                    onClick={() => setModalIdx(i)}
-                  >
-                    {isDone ? 'Rever exercício' : 'Abrir exercício →'}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </section>
 
       </div>
 
-      {/* ── MODAL ── */}
-      {/* key={modalIdx} força remontagem completa ao trocar de exercício,
-          garantindo que selecionada/resultado sejam resetados */}
       {modalEx && (
         <ExercicioModal
           key={modalIdx}
           ex={modalEx}
           isDone={concluidos.has(modalEx.id)}
-          onConcluir={handleConcluir}
+          onConcluir={id => setConcluidos(prev => new Set([...prev, id]))}
           onClose={() => setModalIdx(null)}
-          onProximo={handleProximo}
+          onProximo={() => { const n = modalIdx + 1; n < total ? setModalIdx(n) : setModalIdx(null) }}
           temProximo={modalIdx + 1 < total}
         />
       )}

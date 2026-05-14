@@ -18,6 +18,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { getMyTrilhas, createTrilha as apiCreateTrilha, deleteTrilha as apiDeleteTrilha } from '../api/services/trilhaService'
 import { useAuth } from '../context/AuthContext'
 
+// BUG 3 FIX: hook só é usado por professores.
+// Passa professorId explicitamente para GET /cursos?professorId=
+// garantindo que cada professor veja apenas as próprias trilhas.
+
 export function useTrilhas() {
   const { user } = useAuth()
   const [trilhas, setTrilhas] = useState([])
