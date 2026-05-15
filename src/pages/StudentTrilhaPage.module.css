@@ -45,10 +45,17 @@
   align-items: flex-start;
 }
 
-.headerEmoji {
-  font-size: 44px;
-  line-height: 1;
+.headerIconWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: var(--accent);
   margin-top: 2px;
 }
 
@@ -84,7 +91,13 @@
   flex-shrink: 0;
 }
 
-.professor { font-size: 13px; color: var(--text-secondary); }
+.professor {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .desc      { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
 
 /* ── Progress card ── */
@@ -210,7 +223,14 @@
   color: #22c55e;
 }
 
-.exTitle { font-size: 14px; font-weight: 600; color: var(--text); }
+.exTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 .doneTag {
   font-size: 11px;
@@ -621,9 +641,9 @@
   gap: 14px;
   padding: 72px 24px;
   text-align: center;
+  color: var(--text-secondary);
 }
-.empty span { font-size: 48px; }
-.empty p    { font-size: 15px; color: var(--text-secondary); }
+.empty p { font-size: 15px; color: var(--text-secondary); }
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
@@ -637,3 +657,79 @@
   .feedbackCerto { flex-wrap: wrap; }
   .btnTentar   { width: 100%; text-align: center; }
 }
+
+/* ── Card clicável (aula como botão) ── */
+.exCardClickable {
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color .2s, background .2s, transform .15s;
+}
+.exCardClickable:hover {
+  border-color: var(--accent-border);
+  transform: translateX(3px);
+}
+.exCardClickable:active { transform: scale(.99); }
+
+/* ── Blocos de conteúdo no modal ── */
+.blocoWrap { display: flex; flex-direction: column; gap: 0; }
+
+.blocoExplicacao {
+  background: rgba(108,92,231,.07);
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blocoTextoLivre {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.blocoVideo {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.blocoLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--accent);
+}
+
+.blocoTexto {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.videoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  width: fit-content;
+  transition: background .15s;
+}
+.videoLink:hover { background: rgba(108,92,231,.18); }

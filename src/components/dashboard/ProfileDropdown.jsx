@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import Icon from '../ui/Icon'
 import styles from './ProfileDropdown.module.css'
 
 const ROLE_LABELS = { student: 'Aluno', teacher: 'Professor', admin: 'Admin' }
@@ -111,12 +112,18 @@ export default function ProfileDropdown() {
               </div>
               <div className={styles.divider} />
               {/* amazonq-ignore-next-line */}
-              <button className={styles.actionBtn} onClick={() => goTo(MODE.PROFILE)}>✏️ Editar perfil</button>
+              <button className={styles.actionBtn} onClick={() => goTo(MODE.PROFILE)}>
+                <Icon name="pencil" size={14} /> Editar perfil
+              </button>
               {/* amazonq-ignore-next-line */}
-              <button className={styles.actionBtn} onClick={() => goTo(MODE.DELETE)}>🗑️ Excluir conta</button>
+              <button className={styles.actionBtn} onClick={() => goTo(MODE.DELETE)}>
+                <Icon name="trash" size={14} /> Excluir conta
+              </button>
               <div className={styles.divider} />
               {/* amazonq-ignore-next-line */}
-              <button className={styles.logoutBtn} onClick={handleLogout}>🚪 Sair da conta</button>
+              <button className={styles.logoutBtn} onClick={handleLogout}>
+                <Icon name="doorOpen" size={14} /> Sair da conta
+              </button>
             </>
           )}
 
@@ -148,7 +155,9 @@ export default function ProfileDropdown() {
               </div>
               <div className={styles.divider} />
               {/* amazonq-ignore-next-line */}
-              <button className={styles.actionBtn} onClick={() => goTo(MODE.PASSWORD)}>🔑 Alterar senha</button>
+              <button className={styles.actionBtn} onClick={() => goTo(MODE.PASSWORD)}>
+                <Icon name="key" size={14} /> Alterar senha
+              </button>
             </>
           )}
 

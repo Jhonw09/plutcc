@@ -8,15 +8,16 @@ export const DEFAULT_ROUTE = '/dashboard'
 
 // ── Student routes ──────────────────────────────────────────
 export const STUDENT_ROUTES = {
-  explore:    '/explorar',
-  home:      '/dashboard',
-  subjects:  '/dashboard/disciplinas',
-  exercises: '/dashboard/exercicios',
-  exams:     '/dashboard/simulados',
-  progress:  '/dashboard/desempenho',
-  goals:     '/dashboard/metas',
-  settings:  '/dashboard/configuracoes',
-  help:      '/dashboard/ajuda',
+  home:        '/dashboard',
+  trilhas:     '/dashboard/trilhas',
+  desempenho:  '/dashboard/desempenho',
+  subjects:    '/dashboard/disciplinas',
+  exercises:   '/dashboard/exercicios',
+  exams:       '/dashboard/simulados',
+  goals:       '/dashboard/metas',
+  settings:    '/dashboard/configuracoes',
+  help:        '/dashboard/ajuda',
+  trilhaDetalhe: (id) => `/dashboard/trilha-detalhe/${id}`,
 }
 
 // ── Teacher routes ───────────────────────────────────────────

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import Icon from '../ui/Icon'
 import styles from './SidebarDrawer.module.css'
 
 /**
@@ -48,7 +49,7 @@ export function SidebarDrawer({ open, onClose, children }) {
           onClick={onClose}
           aria-label="Fechar menu"
         >
-          ✕
+          <Icon name="close" size={16} />
         </button>
 
         {children}

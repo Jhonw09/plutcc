@@ -109,6 +109,9 @@
   border: none;
   cursor: pointer;
   transition: background .15s, color .15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .actionBtn:hover { background: var(--surface-3); color: var(--text); }
 
@@ -124,6 +127,9 @@
   border: none;
   cursor: pointer;
   transition: background .15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .logoutBtn:hover { background: var(--danger-bg); }
 

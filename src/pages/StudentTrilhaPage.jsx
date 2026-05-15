@@ -3,11 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import { getTrilhaById } from '../api/services/trilhaService'
 import { getAulasByTrilha } from '../api/services/aulaService'
+import { useTrilhasAluno } from '../hooks/useTrilhasAluno'
+import { useMatricula } from '../hooks/useMatricula'
+import Icon from '../components/ui/Icon'
 import styles from './StudentTrilhaPage.module.css'
 
-const SUBJECT_EMOJI = {
-  Matemática: '📐', Português: '📖', Química: '⚗️', Biologia: '🧬',
-  Física: '⚡', Geografia: '🌍', História: '📜', Inglês: '🌐',
+const SUBJECT_ICON = {
+  Matemática: 'math', Português: 'book', Química: 'flask', Biologia: 'dna',
+  Física: 'zap', Geografia: 'globe', História: 'scroll', Inglês: 'globe',
+  Artes: 'palette', Informática: 'monitor', Filosofia: 'brain', Sociologia: 'scale',
 }
 
 const NIVEL_COLOR = {
@@ -19,8 +23,85 @@ const NIVEL_COLOR = {
   AVANCADO:      { color: '#ef4444', bg: 'rgba(239,68,68,.12)',  border: 'rgba(239,68,68,.3)'  },
 }
 
+const TIPO_ICON = { video: 'video', texto: 'fileText', questionario: 'clipboard', explicacao: 'book', texto_livre: 'pencil' }
+
+function aulaTipo(aula) {
+  if (aula.blocos?.some(b => b.tipo === 'questionario')) return 'questionario'
+  if (aula.blocos?.some(b => b.tipo === 'video'))        return 'video'
+  return 'texto'
+}
+
+// ── Modal de conteúdo (aulas sem questionário) ────────────────────────────────
+function AulaConteudoModal({ aula, isDone, onConcluir, onClose }) {
+  const blocos = aula.blocos ?? []
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+
+        <div className={styles.modalHeader}>
+          <div>
+            <span className={styles.modalTag}>Aula</span>
+            <h2 className={styles.modalTitle}>{aula.titulo}</h2>
+          </div>
+          <button className={styles.modalClose} onClick={onClose}>
+            <Icon name="close" size={16} />
+          </button>
+        </div>
+
+        <div className={styles.modalBody}>
+          {blocos.length === 0 && (
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+              Esta aula ainda não tem conteúdo.
+            </p>
+          )}
+
+          {blocos.map((bloco, i) => (
+            <div key={i} className={styles.blocoWrap}>
+              {bloco.tipo === 'explicacao' && (
+                <div className={styles.blocoExplicacao}>
+                  <p className={styles.blocoLabel}>Explicação</p>
+                  <p className={styles.blocoTexto}>{bloco.conteudo}</p>
+                </div>
+              )}
+              {bloco.tipo === 'texto_livre' && (
+                <div className={styles.blocoTextoLivre}>
+                  <p className={styles.blocoTexto}>{bloco.conteudo}</p>
+                </div>
+              )}
+              {bloco.tipo === 'video' && bloco.url && (
+                <div className={styles.blocoVideo}>
+                  <p className={styles.blocoLabel}>Vídeo</p>
+                  <a href={bloco.url} target="_blank" rel="noreferrer" className={styles.videoLink}>
+                    Assistir vídeo
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <div className={styles.modalActions}>
+            {!isDone ? (
+              <button className={styles.btnResponder} onClick={() => { onConcluir(); onClose() }}>
+                Marcar como concluída
+              </button>
+            ) : (
+              <div className={styles.feedbackCerto}>
+                <Icon name="checkCircle" size={16} />
+                <div>
+                  <p className={styles.feedbackTitle}>Aula concluída!</p>
+                  <p className={styles.feedbackSub}>Ótimo trabalho. Continue assim.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Modal de exercício ────────────────────────────────────────────────────────
-// Recebe um bloco do tipo 'questionario' e renderiza a questão interativa.
 function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo }) {
   const [selecionada, setSelecionada] = useState(null)
   const [resultado,   setResultado]   = useState(null)
@@ -30,7 +111,7 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
   function handleResponder() {
     if (!selecionada) return
     const alt = ex.alternativas.find(a => a.id === selecionada)
-    if (alt?.correta) { setResultado('certo'); onConcluir(ex.id) }
+    if (alt?.correta) { setResultado('certo'); onConcluir() }
     else setResultado('errado')
   }
 
@@ -43,20 +124,21 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
             <span className={styles.modalTag}>Exercício</span>
             <h2 className={styles.modalTitle}>{ex.titulo}</h2>
           </div>
-          <button className={styles.modalClose} onClick={onClose}>✕</button>
+          <button className={styles.modalClose} onClick={onClose}>
+            <Icon name="close" size={16} />
+          </button>
         </div>
 
         <div className={styles.modalBody}>
-
           {ex.explicacao && (
             <div className={styles.explicacao}>
-              <p className={styles.explicacaoLabel}>📖 Explicação</p>
+              <p className={styles.explicacaoLabel}>Explicação</p>
               <p className={styles.explicacaoText}>{ex.explicacao}</p>
             </div>
           )}
 
           <div className={styles.perguntaBox}>
-            <p className={styles.perguntaLabel}>❓ Questão</p>
+            <p className={styles.perguntaLabel}>Questão</p>
             <p className={styles.perguntaText}>{ex.pergunta}</p>
           </div>
 
@@ -74,7 +156,7 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
                   >
                     <span className={styles.altLetra}>{String(alt.id).toUpperCase()}</span>
                     <span className={styles.altTexto}>{alt.texto}</span>
-                    {sel && <span className={styles.altCheck}>{resultado === 'errado' ? '✕' : '●'}</span>}
+                    {sel && <span className={styles.altCheck}>{resultado === 'errado' ? <Icon name="close" size={13}/> : '●'}</span>}
                   </button>
                 )
               })}
@@ -87,7 +169,7 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
                 <div key={alt.id} className={`${styles.alt} ${alt.correta ? styles.altCorreta : styles.altNeutral}`}>
                   <span className={styles.altLetra}>{String(alt.id).toUpperCase()}</span>
                   <span className={styles.altTexto}>{alt.texto}</span>
-                  {alt.correta && <span className={styles.altCheck}>✓</span>}
+                  {alt.correta && <span className={styles.altCheck}><Icon name="check" size={13}/></span>}
                 </div>
               ))}
             </div>
@@ -95,7 +177,7 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
 
           {resultado === 'errado' && (
             <div className={styles.feedbackErrado}>
-              <span>✕</span>
+              <Icon name="close" size={16} />
               <div>
                 <p className={styles.feedbackTitle}>Resposta incorreta, tente novamente!</p>
                 <p className={styles.feedbackSub}>Releia a explicação e escolha outra alternativa.</p>
@@ -108,7 +190,7 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
 
           {acertou && (
             <div className={styles.feedbackCerto}>
-              <span>✓</span>
+              <Icon name="checkCircle" size={16} />
               <div>
                 <p className={styles.feedbackTitle}>Resposta correta! Exercício concluído.</p>
                 <p className={styles.feedbackSub}>Ótimo trabalho! Continue assim.</p>
@@ -126,18 +208,15 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
               <button className={styles.btnProximo} onClick={onProximo}>Próximo exercício →</button>
             )}
             {acertou && !temProximo && (
-              <button className={styles.btnProximo} onClick={onClose}>Concluir trilha 🎉</button>
+              <button className={styles.btnProximo} onClick={onClose}>Concluir trilha</button>
             )}
           </div>
-
         </div>
       </div>
     </div>
   )
 }
 
-// ── Adapta blocos de aula da API → formato de exercício que o modal espera ──
-// Pega o primeiro bloco 'questionario' de cada aula como exercício.
 function aulaToExercicio(aula) {
   const q = aula.blocos?.find(b => b.tipo === 'questionario')
   if (!q) return null
@@ -148,8 +227,8 @@ function aulaToExercicio(aula) {
     pergunta:     q.pergunta ?? '',
     alternativas: Array.isArray(q.alternativas)
       ? q.alternativas.map((texto, i) => ({
-          id:     String.fromCharCode(97 + i), // 'a', 'b', 'c'...
-          texto:  typeof texto === 'string' ? texto : texto.texto,
+          id:      String.fromCharCode(97 + i),
+          texto:   typeof texto === 'string' ? texto : texto.texto,
           correta: i === q.correta || texto?.correta === true,
         }))
       : [],
@@ -160,37 +239,49 @@ function aulaToExercicio(aula) {
 export default function StudentTrilhaPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { concluirAula, getAulasConcluidas } = useTrilhasAluno()
+  const { matriculado, loadingCheck } = useMatricula(id)
 
-  const [trilha,     setTrilha]     = useState(null)
-  const [exercicios, setExercicios] = useState([])
-  const [loading,    setLoading]    = useState(true)
-  const [error,      setError]      = useState(null)
-  const [concluidos, setConcluidos] = useState(new Set())
-  const [modalIdx,   setModalIdx]   = useState(null)
+  const [trilha,  setTrilha]  = useState(null)
+  const [aulas,   setAulas]   = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState(null)
+
+  // modal: { tipo: 'conteudo' | 'exercicio', aulaIdx: number }
+  const [modal, setModal] = useState(null)
 
   useEffect(() => {
+    // Redireciona para detalhe se não matriculado (após checar)
+    if (!loadingCheck && !matriculado) {
+      navigate(`/dashboard/trilha-detalhe/${id}`, { replace: true })
+      return
+    }
     async function load() {
       try {
-        const [trilhaData, aulas] = await Promise.all([
-          getTrilhaById(id),
-          getAulasByTrilha(id),
-        ])
+        const trilhaData = await getTrilhaById(id)
         setTrilha(trilhaData)
-        setExercicios(aulas.map(aulaToExercicio).filter(Boolean))
+        // não chama mais iniciarTrilha — matrícula é via API
+        try {
+          const aulasData = await getAulasByTrilha(id)
+          setAulas(aulasData)
+        } catch {
+          // aulas falharam — mostra trilha sem aulas
+        }
       } catch (err) {
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
-    load()
-  }, [id])
+    if (!loadingCheck && matriculado) load()
+  }, [id, loadingCheck, matriculado]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className={styles.empty}>
-          <span>⏳</span><p>Carregando trilha...</p>
+          <Icon name="hourglass" size={28} style={{ opacity: .4 }} />
+          <p>Carregando trilha...</p>
         </div>
       </DashboardLayout>
     )
@@ -200,32 +291,53 @@ export default function StudentTrilhaPage() {
     return (
       <DashboardLayout>
         <div className={styles.empty}>
-          <span>⚠️</span>
+          <Icon name="alertCircle" size={28} style={{ opacity: .5 }} />
           <p>{error ?? 'Trilha não encontrada.'}</p>
-          <button className={styles.btnBack} onClick={() => navigate('/dashboard')}>← Voltar</button>
+          <button className={styles.btnBack} onClick={() => navigate('/dashboard')}>Voltar</button>
         </div>
       </DashboardLayout>
     )
   }
 
-  const total = exercicios.length
-  const done  = concluidos.size
-  const pct   = total === 0 ? 0 : Math.round((done / total) * 100)
-  const nivel = NIVEL_COLOR[trilha.nivel] ?? NIVEL_COLOR['Básico']
-  const emoji = SUBJECT_EMOJI[trilha.disciplina] ?? '📚'
-  const modalEx = modalIdx !== null ? exercicios[modalIdx] : null
+  const concluidos   = getAulasConcluidas(Number(id))
+  const total        = aulas.length
+  const done         = aulas.filter(a => concluidos.has(a.id)).length
+  const pct          = total === 0 ? 0 : Math.round((done / total) * 100)
+  const nivel        = NIVEL_COLOR[trilha.nivel] ?? NIVEL_COLOR['BASICO']
+  const iconName = SUBJECT_ICON[trilha.disciplina] ?? 'bookOpen'
+
+  const exercicios   = aulas.map(aulaToExercicio).filter(Boolean)
+
+  // aula aberta no modal
+  const aulaAberta   = modal !== null ? aulas[modal.aulaIdx] : null
+  const exAberto     = modal?.tipo === 'exercicio'
+    ? exercicios.find(e => e.id === aulaAberta?.id)
+    : null
+  const exIdx        = exAberto ? exercicios.indexOf(exAberto) : -1
+
+  function abrirAula(idx) {
+    const aula = aulas[idx]
+    const tipo = aulaTipo(aula)
+    setModal({ tipo: tipo === 'questionario' ? 'exercicio' : 'conteudo', aulaIdx: idx })
+  }
+
+  function handleConcluir(aulaId) {
+    concluirAula(Number(id), aulaId)
+  }
 
   return (
     <DashboardLayout>
       <div className={styles.container}>
 
         <button className={styles.btnBack} onClick={() => navigate('/dashboard')}>
-          ← Voltar às trilhas
+          Voltar às trilhas
         </button>
 
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            <span className={styles.headerEmoji}>{emoji}</span>
+            <span className={styles.headerIconWrap}>
+              <Icon name={iconName} size={22} />
+            </span>
             <div className={styles.headerInfo}>
               <div className={styles.headerTop}>
                 <h1 className={styles.title}>{trilha.nome}</h1>
@@ -233,7 +345,12 @@ export default function StudentTrilhaPage() {
                   {trilha.nivel}
                 </span>
               </div>
-              {trilha.professorNome && <p className={styles.professor}>👨🏫 {trilha.professorNome}</p>}
+              {trilha.professorNome && (
+                <p className={styles.professor}>
+                  <Icon name="user" size={13} style={{ opacity: .6 }} />
+                  {trilha.professorNome}
+                </p>
+              )}
               {trilha.descricao && <p className={styles.desc}>{trilha.descricao}</p>}
             </div>
           </div>
@@ -245,8 +362,10 @@ export default function StudentTrilhaPage() {
               <p className={styles.progressLabel}>Seu progresso</p>
               <p className={styles.progressText}>
                 {pct === 100
-                  ? '🎉 Parabéns! Você concluiu toda a trilha!'
-                  : `Você concluiu ${done} de ${total} exercício${total !== 1 ? 's' : ''}`}
+                  ? 'Parabéns! Você concluiu toda a trilha!'
+                  : total === 0
+                    ? 'Nenhuma aula disponível ainda.'
+                    : `${done} de ${total} aula${total !== 1 ? 's' : ''} concluída${done !== 1 ? 's' : ''}`}
               </p>
             </div>
             <span className={styles.progressPct}>{pct}%</span>
@@ -258,39 +377,44 @@ export default function StudentTrilhaPage() {
 
         <section className={styles.section}>
           <div className={styles.moduleHeader}>
-            <span className={styles.moduleTag}>Módulo 1</span>
-            <h2 className={styles.moduleTitle}>Exercícios</h2>
-            <p className={styles.moduleSub}>{total} exercício{total !== 1 ? 's' : ''} neste módulo</p>
+            <span className={styles.moduleTag}>Conteúdo</span>
+            <h2 className={styles.moduleTitle}>Aulas da trilha</h2>
+            <p className={styles.moduleSub}>{total} aula{total !== 1 ? 's' : ''}</p>
           </div>
 
           {total === 0 ? (
             <p style={{ color: 'var(--text-secondary)', padding: '1rem 0' }}>
-              Esta trilha ainda não tem exercícios.
+              Esta trilha ainda não tem aulas.
             </p>
           ) : (
             <div className={styles.exList}>
-              {exercicios.map((ex, i) => {
-                const isDone = concluidos.has(ex.id)
+              {aulas.map((aula, i) => {
+                const tipo   = aulaTipo(aula)
+                const isDone = concluidos.has(aula.id)
                 return (
-                  <div key={ex.id} className={`${styles.exCard} ${isDone ? styles.exCardDone : ''}`}>
+                  <button
+                    key={aula.id}
+                    className={`${styles.exCard} ${isDone ? styles.exCardDone : ''} ${styles.exCardClickable}`}
+                    onClick={() => abrirAula(i)}
+                  >
                     <div className={styles.exLeft}>
                       <span className={`${styles.exNum} ${isDone ? styles.exNumDone : ''}`}>
-                        {isDone ? '✓' : i + 1}
+                        {isDone ? <Icon name="check" size={13}/> : i + 1}
                       </span>
                       <div>
-                        <p className={styles.exTitle}>{ex.titulo}</p>
-                        {isDone
-                          ? <span className={styles.doneTag}>Concluído</span>
-                          : <span className={styles.pendingTag}>Pendente</span>}
+                        <p className={styles.exTitle}>
+                          <Icon name={TIPO_ICON[tipo] ?? 'fileText'} size={13} style={{ opacity: .7 }} />
+                          {aula.titulo}
+                        </p>
+                        <span className={isDone ? styles.doneTag : styles.pendingTag}>
+                          {isDone ? 'Concluída' : tipo === 'questionario' ? 'Exercício' : 'Aula'}
+                        </span>
                       </div>
                     </div>
-                    <button
-                      className={isDone ? styles.btnReabrir : styles.btnAbrir}
-                      onClick={() => setModalIdx(i)}
-                    >
-                      {isDone ? 'Rever exercício' : 'Abrir exercício →'}
-                    </button>
-                  </div>
+                    <span className={styles.btnAbrir}>
+                      {isDone ? 'Rever →' : 'Abrir →'}
+                    </span>
+                  </button>
                 )
               })}
             </div>
@@ -299,15 +423,35 @@ export default function StudentTrilhaPage() {
 
       </div>
 
-      {modalEx && (
+      {/* Modal de conteúdo (aulas sem questionário) */}
+      {modal?.tipo === 'conteudo' && aulaAberta && (
+        <AulaConteudoModal
+          key={aulaAberta.id}
+          aula={aulaAberta}
+          isDone={concluidos.has(aulaAberta.id)}
+          onConcluir={() => handleConcluir(aulaAberta.id)}
+          onClose={() => setModal(null)}
+        />
+      )}
+
+      {/* Modal de exercício */}
+      {modal?.tipo === 'exercicio' && exAberto && (
         <ExercicioModal
-          key={modalIdx}
-          ex={modalEx}
-          isDone={concluidos.has(modalEx.id)}
-          onConcluir={id => setConcluidos(prev => new Set([...prev, id]))}
-          onClose={() => setModalIdx(null)}
-          onProximo={() => { const n = modalIdx + 1; n < total ? setModalIdx(n) : setModalIdx(null) }}
-          temProximo={modalIdx + 1 < total}
+          key={exAberto.id}
+          ex={exAberto}
+          isDone={concluidos.has(aulaAberta.id)}
+          onConcluir={() => handleConcluir(aulaAberta.id)}
+          onClose={() => setModal(null)}
+          onProximo={() => {
+            const next = exIdx + 1
+            if (next < exercicios.length) {
+              const nextAulaIdx = aulas.findIndex(a => a.id === exercicios[next].id)
+              setModal({ tipo: 'exercicio', aulaIdx: nextAulaIdx })
+            } else {
+              setModal(null)
+            }
+          }}
+          temProximo={exIdx + 1 < exercicios.length}
         />
       )}
     </DashboardLayout>

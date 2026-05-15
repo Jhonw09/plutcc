@@ -8,7 +8,7 @@ import TrilhaPage           from './pages/TrilhaPage'
 import StudentTrilhaPage    from './pages/StudentTrilhaPage'
 import ProtectedRoute       from './components/ProtectedRoute'
 import {
-  SubjectsPage, ExercisesPage, ExamsPage, ProgressPage, GoalsPage,
+  SubjectsPage, ExercisesPage, ExamsPage, GoalsPage,
   TrilhasPage, StudentsPage, ActivitiesPage, ReportsPage, CalendarPage,
   UsersPage, SchoolsPage, FinancePage, TicketsPage, AdminReportsPage,
   SettingsPage, HelpPage,
@@ -16,6 +16,9 @@ import {
 
 import BlogPage             from './pages/BlogPage'
 import ExplorarTrilhas      from './pages/ExplorarTrilhas'
+import MinhasTrilhasPage    from './pages/MinhasTrilhasPage'
+import DesempenhoPage       from './pages/DesempenhoPage'
+import TrilhaDetalhePage    from './pages/TrilhaDetalhePage'
 import './App.css'
 
 function S({ children }) {
@@ -36,14 +39,16 @@ export default function App() {
 
       {/* ── Student ── */}
       <Route path="/dashboard"                  element={<S><DashboardPage /></S>} />
-      <Route path="/dashboard/disciplinas"      element={<S><SubjectsPage /></S>} />
-      <Route path="/dashboard/exercicios"       element={<S><ExercisesPage /></S>} />
-      <Route path="/dashboard/simulados"        element={<S><ExamsPage /></S>} />
-      <Route path="/dashboard/desempenho"       element={<S><ProgressPage /></S>} />
-      <Route path="/dashboard/metas"            element={<S><GoalsPage /></S>} />
-      <Route path="/dashboard/configuracoes"    element={<S><SettingsPage /></S>} />
-      <Route path="/dashboard/ajuda"            element={<S><HelpPage /></S>} />
-      <Route path="/dashboard/trilha/:id"        element={<S><StudentTrilhaPage /></S>} />
+      <Route path="/dashboard/trilhas"           element={<S><MinhasTrilhasPage /></S>} />
+      <Route path="/dashboard/trilha-detalhe/:id" element={<S><TrilhaDetalhePage /></S>} />
+      <Route path="/dashboard/desempenho"        element={<S><DesempenhoPage /></S>} />
+      <Route path="/dashboard/disciplinas"       element={<S><SubjectsPage /></S>} />
+      <Route path="/dashboard/exercicios"        element={<S><ExercisesPage /></S>} />
+      <Route path="/dashboard/simulados"         element={<S><ExamsPage /></S>} />
+      <Route path="/dashboard/metas"             element={<S><GoalsPage /></S>} />
+      <Route path="/dashboard/configuracoes"     element={<S><SettingsPage /></S>} />
+      <Route path="/dashboard/ajuda"             element={<S><HelpPage /></S>} />
+      <Route path="/dashboard/trilha/:id"         element={<S><StudentTrilhaPage /></S>} />
 
       {/* ── Teacher ── */}
       <Route path="/teacher-dashboard"                    element={<T><TeacherDashboardPage /></T>} />

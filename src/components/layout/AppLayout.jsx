@@ -34,7 +34,11 @@ export default function AppLayout({ sidebar: Sidebar, header: Header, themeClass
 
       <div className={styles.main}>
         <Header onMenuOpen={openDrawer} />
-        <div className={styles.content}>{children}</div>
+        <div className={styles.content}>
+          <div className={styles.contentInner}>
+            {children}
+          </div>
+        </div>
       </div>
 
     </div>

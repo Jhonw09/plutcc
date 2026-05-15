@@ -1,20 +1,20 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { STUDENT_ROUTES } from '../../constants/routes'
+import Icon from '../ui/Icon'
 import styles from './DashboardSidebar.module.css'
 
 const navItems = [
-  { icon: '🏠', label: 'Início',      path: STUDENT_ROUTES.home      },
-  { icon: '🔭', label: 'Explorar',    path: STUDENT_ROUTES.explore   },
-  { icon: '📚', label: 'Disciplinas', path: STUDENT_ROUTES.subjects   },
-  { icon: '📝', label: 'Exercícios',  path: STUDENT_ROUTES.exercises  },
-  { icon: '📋', label: 'Simulados',   path: STUDENT_ROUTES.exams      },
-  { icon: '📊', label: 'Desempenho',  path: STUDENT_ROUTES.progress   },
-  { icon: '🎯', label: 'Metas',       path: STUDENT_ROUTES.goals      },
+  { icon: 'home',     label: 'Início',      path: STUDENT_ROUTES.home       },
+  { icon: 'bookOpen', label: 'Trilhas',     path: STUDENT_ROUTES.trilhas    },
+  { icon: 'barChart', label: 'Desempenho',  path: STUDENT_ROUTES.desempenho },
+  { icon: 'pencil',   label: 'Exercícios',  path: STUDENT_ROUTES.exercises  },
+  { icon: 'clipboard',label: 'Simulados',   path: STUDENT_ROUTES.exams      },
+  { icon: 'target',   label: 'Metas',       path: STUDENT_ROUTES.goals      },
 ]
 
 const bottomItems = [
-  { icon: '⚙️', label: 'Configurações', path: STUDENT_ROUTES.settings },
-  { icon: '❓', label: 'Ajuda',          path: STUDENT_ROUTES.help     },
+  { icon: 'cpu',  label: 'Configurações', path: STUDENT_ROUTES.settings },
+  { icon: 'alertCircle', label: 'Ajuda',  path: STUDENT_ROUTES.help     },
 ]
 
 export default function DashboardSidebar() {
@@ -22,7 +22,6 @@ export default function DashboardSidebar() {
   const { pathname } = useLocation()
 
   function isActive(path) {
-    // Exact match for home, prefix match for sub-routes
     return path === STUDENT_ROUTES.home ? pathname === path : pathname.startsWith(path)
   }
 
@@ -34,7 +33,7 @@ export default function DashboardSidebar() {
         className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
         onClick={() => navigate(item.path)}
       >
-        <span className={styles.navIcon}>{item.icon}</span>
+        <span className={styles.navIcon}><Icon name={item.icon} size={17} /></span>
         <span className={styles.navText}>{item.label}</span>
         {active && <span className={styles.activeBar} />}
       </button>

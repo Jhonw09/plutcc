@@ -17,6 +17,14 @@ export const ENDPOINTS = {
   aulas:          `${API_BASE}/aulas`,
   aulasByTrilha:  (trilhaId) => `${API_BASE}/aulas/trilha/${trilhaId}`,
   aulaById:       (id) => `${API_BASE}/aulas/${id}`,
+
+  // Matrículas
+  matriculas:                  `${API_BASE}/matriculas`,
+  matriculasByAluno:           (alunoId)   => `${API_BASE}/matriculas/aluno/${alunoId}`,
+  matriculasByTrilha:          (trilhaId)  => `${API_BASE}/matriculas/trilha/${trilhaId}`,
+  matriculasResumoProfessor:   (profId)    => `${API_BASE}/matriculas/professor/${profId}/resumo`,
+  matriculaDelete:             (trilhaId, alunoId) => `${API_BASE}/matriculas/${trilhaId}/aluno/${alunoId}`,
+  matriculaExiste:             (alunoId, trilhaId) => `${API_BASE}/matriculas/existe?alunoId=${alunoId}&trilhaId=${trilhaId}`,
 }
 
 export const ROLE_MAP = {

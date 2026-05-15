@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate }      from 'react-router-dom'
 import TeacherLayout        from '../components/teacher/TeacherLayout'
 import TrilhaCard           from '../components/teacher/TrilhaCard'
@@ -9,67 +9,47 @@ import Icon                 from '../components/ui/Icon'
 import { useToast }         from '../hooks/useToast'
 import { useAuth }          from '../context/AuthContext'
 import { useTrilhas }       from '../hooks/useTrilhas'
+import { getResumoProfessor } from '../api/services/matriculaService'
 import styles from './TeacherDashboardPage.module.css'
 
-const SUBJECT_FILTERS = [
-  'Todas', 'Matemática', 'Português', 'Química', 'Biologia',
-  'Física', 'Geografia', 'História', 'Inglês',
-  'Artes', 'Informática', 'Filosofia', 'Sociologia',
-]
-
-const SORT_OPTIONS = [
-  { value: 'recent', label: 'Mais recentes' },
-  { value: 'name',   label: 'Nome (A–Z)'    },
-]
-
-function buildStats(trilhas) {
-  const publicCount = trilhas.filter(t => t.tipo === 'PUBLICA').length
-  return [
-    { id: 'classes',  icon: 'school', label: 'Trilhas ativas',   value: trilhas.length },
-    { id: 'students', icon: 'users',  label: 'Total de alunos',  value: 'N/A'          },
-    { id: 'public',   icon: 'globe',  label: 'Trilhas públicas', value: publicCount    },
-    { id: 'private',  icon: 'lock',   label: 'Trilhas privadas', value: trilhas.length - publicCount },
-  ]
+function Sk({ h = 80, r = 14 }) {
+  return <div className={styles.sk} style={{ height: h, borderRadius: r }} />
 }
 
 export default function TeacherDashboardPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { toasts, toast, dismiss } = useToast()
-
-  // trilhas vem direto do hook — sem estado intermediário (evita flicker)
   const { trilhas, loading, error, createTrilha: createTrilhaHandler, deleteTrilha: deleteTrilhaHandler } = useTrilhas()
 
+  const [resumo,       setResumo]       = useState(null)
+  const [loadingResumo, setLoadingResumo] = useState(true)
   const [classModalOpen, setClassModalOpen] = useState(false)
   const [editTarget,     setEditTarget]     = useState(null)
   const [deleteTarget,   setDeleteTarget]   = useState(null)
-  const [deletingId,     setDeletingId]     = useState(null) // id da trilha sendo deletada
+  const [deletingId,     setDeletingId]     = useState(null)
 
-  const [search,     setSearch]     = useState('')
-  const [filterSubj, setFilterSubj] = useState('Todas')
-  const [sortBy,     setSortBy]     = useState('recent')
+  useEffect(() => {
+    if (!user?.id) return
+    getResumoProfessor(user.id)
+      .then(setResumo)
+      .finally(() => setLoadingResumo(false))
+  }, [user?.id])
 
-  const visibleTrilhas = useMemo(() => {
-    let list = [...trilhas]
-    if (search.trim()) {
-      const q = search.trim().toLowerCase()
-      list = list.filter(t =>
-        t.nome.toLowerCase().includes(q) ||
-        (t.descricao && t.descricao.toLowerCase().includes(q))
-      )
-    }
-    if (filterSubj !== 'Todas') list = list.filter(t => t.disciplina === filterSubj)
-    if (sortBy === 'name')   list.sort((a, b) => a.nome.localeCompare(b.nome))
-    if (sortBy === 'recent') list.sort((a, b) => new Date(b.criadaEm) - new Date(a.criadaEm))
-    return list
-  }, [trilhas, search, filterSubj, sortBy])
-
-  const stats      = useMemo(() => buildStats(trilhas), [trilhas])
-  const isFiltered = search.trim() || filterSubj !== 'Todas'
+  const stats = useMemo(() => {
+    const publicCount = trilhas.filter(t => t.tipo === 'PUBLICA').length
+    return [
+      { icon: 'school',    label: 'Trilhas criadas',   value: loading ? '—' : trilhas.length,                       color: 'purple' },
+      { icon: 'users',     label: 'Alunos matriculados', value: loadingResumo ? '—' : (resumo?.totalAlunos ?? 0),   color: 'blue'   },
+      { icon: 'globe',     label: 'Trilhas públicas',  value: loading ? '—' : publicCount,                          color: 'green'  },
+      { icon: 'lock',      label: 'Trilhas privadas',  value: loading ? '—' : trilhas.length - publicCount,         color: 'orange' },
+    ]
+  }, [trilhas, loading, resumo, loadingResumo])
 
   async function handleCreate(newClass) {
     try {
       const created = await createTrilhaHandler(newClass)
-      toast(`Trilha "${created.nome}" criada com sucesso!`, 'success')
+      toast(`Trilha "${created.nome}" criada!`, 'success')
       navigate(`/professor/trilha/${created.id}`, { state: created })
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Erro ao criar trilha', 'error')
@@ -96,13 +76,12 @@ export default function TeacherDashboardPage() {
     }
   }
 
-  function openEdit(t)        { setEditTarget(t); setClassModalOpen(true) }
+  function openEdit(t)          { setEditTarget(t); setClassModalOpen(true) }
   function openDelete(id, nome) { setDeleteTarget({ id, nome }) }
-  function closeModal()       { setClassModalOpen(false); setEditTarget(null) }
+  function closeModal()         { setClassModalOpen(false); setEditTarget(null) }
 
   return (
     <TeacherLayout>
-
       {classModalOpen && (
         <CreateTrilhaModal
           onClose={closeModal}
@@ -111,7 +90,6 @@ export default function TeacherDashboardPage() {
           initialData={editTarget}
         />
       )}
-
       {deleteTarget && (
         <ConfirmModal
           title="Excluir trilha"
@@ -121,124 +99,88 @@ export default function TeacherDashboardPage() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
-
       <Toast toasts={toasts} onDismiss={dismiss} />
 
-      {/* LOADING — fetch ainda em andamento */}
-      {loading && (
-        <div className={styles.loading}>
-          <div className={styles.loadingSpinner}><Icon name="clock" size={32} /></div>
-          <p>Carregando trilhas...</p>
-        </div>
-      )}
+      <div className={styles.page}>
 
-      {/* ERROR */}
-      {error && !loading && (
-        <div className={styles.error}>
-          <span className={styles.errorIcon}><Icon name="warning" size={40} /></span>
-          <h3>Erro ao carregar trilhas</h3>
-          <p>{error}</p>
-          <button className={styles.retryBtn} onClick={() => window.location.reload()}>
-            Tentar novamente
-          </button>
-        </div>
-      )}
-
-      {/* EMPTY — só exibe após fetch concluir e lista continuar vazia */}
-      {!loading && !error && trilhas.length === 0 && (
-        <div className={styles.heroEmpty}>
-          <span className={styles.heroEmptyIcon}><Icon name="school" size={48} /></span>
-          <h3 className={styles.heroEmptyTitle}>Está na hora de criar sua primeira trilha</h3>
-          <p className={styles.heroEmptyDesc}>
-            Organize seu conteúdo em uma trilha para seus alunos começarem a aprender.
-          </p>
-          <button className={styles.heroEmptyBtn} onClick={() => setClassModalOpen(true)}>
-            Criar trilha
-          </button>
-        </div>
-      )}
-
-      {/* HAS TRILHAS */}
-      {!loading && !error && trilhas.length > 0 && (
-        <>
-          <div className={styles.statsGrid}>
-            {stats.map(s => (
-              <div key={s.id} className={styles.statCard}>
-                <span className={styles.statIcon}><Icon name={s.icon} size={20} /></span>
-                <span className={styles.statValue}>{s.value}</span>
-                <span className={styles.statLabel}>{s.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <section className={styles.section}>
-            <div className={styles.classesHeader}>
-              <div className={styles.classesHeaderTop}>
-                <h3 className={styles.sectionTitle}>Minhas trilhas</h3>
-                <button className={styles.newClassBtn} onClick={() => setClassModalOpen(true)}>
-                  + Nova trilha
-                </button>
-              </div>
-
-              <div className={styles.controls}>
-                <div className={styles.searchWrap}>
-                  <span className={styles.searchIcon}><Icon name="search" size={15} /></span>
-                  <input
-                    className={styles.searchInput}
-                    placeholder="Buscar por nome ou descrição…"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
-                  {search && (
-                    <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Limpar busca">✕</button>
-                  )}
-                </div>
-
-                <select className={styles.filterSelect} value={filterSubj} onChange={e => setFilterSubj(e.target.value)}>
-                  {SUBJECT_FILTERS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-
-                <select className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                  {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
+        {/* ── Stats ── */}
+        <div className={styles.statsGrid}>
+          {stats.map((s, i) => (
+            <div key={i} className={styles.statCard}>
+              <span className={styles.statIconWrap} data-color={s.color}>
+                <Icon name={s.icon} size={18} />
+              </span>
+              <div>
+                <p className={styles.statValue}>{s.value}</p>
+                <p className={styles.statLabel}>{s.label}</p>
               </div>
             </div>
+          ))}
+        </div>
 
-            {isFiltered && (
-              <p className={styles.resultsCount}>
-                {visibleTrilhas.length === 0
-                  ? 'Nenhuma trilha encontrada.'
-                  : `${visibleTrilhas.length} trilha${visibleTrilhas.length !== 1 ? 's' : ''} encontrada${visibleTrilhas.length !== 1 ? 's' : ''}.`}
+        {/* ── Trilha destaque (mais alunos) ── */}
+        {!loadingResumo && resumo?.trilhaDestaque && (
+          <div className={styles.destaqueCard}
+            onClick={() => navigate(`/professor/trilha/${resumo.trilhaDestaque.id}`)}>
+            <div className={styles.destaqueLeft}>
+              <span className={styles.destaqueTag}>Trilha em destaque</span>
+              <p className={styles.destaqueName}>{resumo.trilhaDestaque.nome}</p>
+              <p className={styles.destaqueSub}>
+                <Icon name="users" size={13} />
+                {resumo.trilhaDestaque.alunos} aluno{resumo.trilhaDestaque.alunos !== 1 ? 's' : ''} matriculados
               </p>
-            )}
+            </div>
+            <Icon name="chevronRight" size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+          </div>
+        )}
 
-            {visibleTrilhas.length > 0 ? (
-              <div className={styles.classesList}>
-                {visibleTrilhas.map(t => (
-                  <TrilhaCard
-                    key={t.id}
-                    {...t}
-                    deleting={deletingId === t.id}
-                    onEdit={openEdit}
-                    onDelete={openDelete}
-                  />
-                ))}
-              </div>
-            ) : isFiltered ? (
-              <div className={styles.emptyFilter}>
-                <span className={styles.emptyFilterIcon}><Icon name="search" size={36} /></span>
-                <p className={styles.emptyFilterText}>
-                  Nenhuma trilha corresponde à sua busca.{' '}
-                  <button className={styles.clearFiltersBtn} onClick={() => { setSearch(''); setFilterSubj('Todas') }}>
-                    Limpar filtros
-                  </button>
-                </p>
-              </div>
-            ) : null}
-          </section>
-        </>
-      )}
+        {/* ── Minhas trilhas ── */}
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>Minhas trilhas</h2>
+            <button className={styles.btnNew} onClick={() => setClassModalOpen(true)}>
+              <Icon name="plus" size={14} /> Nova trilha
+            </button>
+          </div>
 
+          {loading && (
+            <div className={styles.skGrid}>
+              {[0,1,2].map(i => <Sk key={i} h={90} />)}
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className={styles.errorBanner}>
+              <Icon name="alertCircle" size={15} /> {error}
+            </div>
+          )}
+
+          {!loading && !error && trilhas.length === 0 && (
+            <div className={styles.empty}>
+              <Icon name="school" size={32} style={{ opacity: .3 }} />
+              <p>Nenhuma trilha criada ainda.</p>
+              <button className={styles.btnNew} onClick={() => setClassModalOpen(true)}>
+                Criar primeira trilha
+              </button>
+            </div>
+          )}
+
+          {!loading && trilhas.length > 0 && (
+            <div className={styles.trilhasList}>
+              {trilhas.map(t => (
+                <TrilhaCard
+                  key={t.id}
+                  {...t}
+                  deleting={deletingId === t.id}
+                  onEdit={openEdit}
+                  onDelete={openDelete}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+      </div>
     </TeacherLayout>
   )
 }

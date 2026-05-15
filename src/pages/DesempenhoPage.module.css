@@ -1,0 +1,184 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeUp 280ms ease forwards;
+}
+
+/* ── Header ── */
+.header { display: flex; flex-direction: column; gap: 6px; }
+.title  { font-size: clamp(20px, 2.4vw, 26px); font-weight: 800; color: var(--text); }
+.sub    { font-size: 14px; color: var(--text-secondary); }
+
+/* ── Stat grid ── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: border-color .2s;
+}
+.statCard:hover { border-color: rgba(255,255,255,.12); }
+
+.statIcon  { font-size: 26px; flex-shrink: 0; }
+.statValue { font-size: 22px; font-weight: 900; color: var(--text); line-height: 1; }
+.statLabel { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.statSub   { font-size: 11px; color: var(--text-muted); opacity: .7; margin-top: 1px; }
+
+/* ── Row ── */
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 16px;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: rgba(255,255,255,.11); }
+.cardTitle  { font-size: 15px; font-weight: 700; color: var(--text); }
+
+/* ── Bar chart ── */
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+}
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+.barWrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.bar {
+  width: 100%;
+  background: var(--accent);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height .4s ease;
+  opacity: .85;
+}
+.barEmpty { background: var(--surface-3); opacity: 1; }
+.barLabel { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+.chartStats {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.chartStat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.chartStatDivider { width: 1px; height: 32px; background: var(--border); }
+.chartStatValue   { font-size: 16px; font-weight: 800; color: var(--text); }
+.chartStatLabel   { font-size: 11px; color: var(--text-muted); }
+
+/* ── Goal circle ── */
+.goalCircleWrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+.goalCircle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+.goalSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.goalTrackCircle {
+  fill: none;
+  stroke: rgba(255,255,255,.06);
+  stroke-width: 8;
+}
+.goalFillCircle {
+  fill: none;
+  stroke: url(#goalGrad);
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset .6s ease;
+}
+.goalCircleInner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.goalPct { font-size: 22px; font-weight: 900; color: var(--text); }
+
+.goalText { font-size: 13px; color: var(--text-secondary); text-align: center; }
+.goalHint {
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+/* ── Activity ── */
+.activityList { display: flex; flex-direction: column; }
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.activityItem:last-child { border-bottom: none; }
+.activityDot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.activityText { flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+.activityTime { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .statsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 860px) {
+  .row { grid-template-columns: 1fr; }
+}
+@media (max-width: 540px) {
+  .statsGrid { grid-template-columns: 1fr 1fr; }
+}

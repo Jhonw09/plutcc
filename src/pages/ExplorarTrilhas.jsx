@@ -119,7 +119,7 @@ export default function ExplorarTrilhas() {
                         </div>
                         <button
                           className={styles.verBtn}
-                          onClick={() => navigate(`/trilha/${trilha.id}`, { state: trilha })}
+                          onClick={() => navigate(`/dashboard/trilha/${trilha.id}`)}
                         >
                           Ver trilha →
                         </button>
