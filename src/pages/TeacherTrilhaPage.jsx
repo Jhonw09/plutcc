@@ -9,17 +9,18 @@ import { useToast }  from '../hooks/useToast'
 import { getTrilhaById } from '../api/services/trilhaService'
 import styles from './TeacherTrilhaPage.module.css'
 
-const SUBJECT_EMOJI = {
-  Matemática: '📐', Português: '📖', Química: '⚗️', Biologia: '🧬',
-  Física: '⚡', Geografia: '🌍', História: '📜', Inglês: '🌐',
-  Artes: '🎨', Informática: '💻', Filosofia: '🧠', Sociologia: '⚖️',
+const SUBJECT_ICON = {
+  Matemática: 'math',    Português: 'book',    Química: 'flask',
+  Biologia: 'dna',       Física: 'zap',        Geografia: 'globe',
+  História: 'scroll',    Inglês: 'globe',       Artes: 'palette',
+  Informática: 'monitor', Filosofia: 'brain',  Sociologia: 'scale',
 }
 
 const BLOCK_LABEL = {
-  explicacao:   '📖 Explicação',
-  video:        '🎥 Vídeo',
-  questionario: '❓ Questionário',
-  texto_livre:  '✏️ Texto livre',
+  explicacao:   'Explicação',
+  video:        'Vídeo',
+  questionario: 'Questionário',
+  texto_livre:  'Texto livre',
 }
 
 // ── Modal wrapper ─────────────────────────────────────────────────────────────
@@ -58,14 +59,13 @@ export default function TeacherTrilhaPage() {
   const { aulas, loading, error, createAula, updateAula, deleteAula } = useAulas(id)
 
   // ── Modal state ───────────────────────────────────────────────────────────
-  // mode: null | 'create' | 'edit'
   const [modalMode,  setModalMode]  = useState(null)
   const [editTarget, setEditTarget] = useState(null)
   const [saving,     setSaving]     = useState(false)
 
   // ── Delete confirm state (por card) ───────────────────────────────────────
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null) // id aguardando confirmação
-  const [deletingId,      setDeletingId]      = useState(null) // id sendo deletado
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [deletingId,      setDeletingId]      = useState(null)
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   function openCreate() { setEditTarget(null); setModalMode('create') }
@@ -108,7 +108,7 @@ export default function TeacherTrilhaPage() {
     return (
       <TeacherLayout>
         <div className={styles.centered}>
-          <span>⚠️</span>
+          <Icon name="warning" size={32} style={{ opacity: .4 }} />
           <p>{trilhaError}</p>
           <button className={styles.backBtn} onClick={() => navigate('/teacher-dashboard')}>
             Voltar ao dashboard
@@ -126,7 +126,7 @@ export default function TeacherTrilhaPage() {
     )
   }
 
-  const emoji = SUBJECT_EMOJI[trilha.disciplina] || '📚'
+  const iconName = SUBJECT_ICON[trilha.disciplina] || 'bookOpen'
 
   return (
     <TeacherLayout>
@@ -135,7 +135,7 @@ export default function TeacherTrilhaPage() {
       {/* ── Modal criar / editar aula ── */}
       {modalMode && (
         <AulaModal
-          title={modalMode === 'edit' ? '✏️ Editar aula' : '📝 Nova aula'}
+          title={modalMode === 'edit' ? 'Editar aula' : 'Nova aula'}
           onClose={closeModal}
         >
           <AulaEditor
@@ -155,7 +155,9 @@ export default function TeacherTrilhaPage() {
 
         {/* ── Header da trilha ── */}
         <header className={styles.header}>
-          <span className={styles.emoji}>{emoji}</span>
+          <span className={styles.emoji}>
+            <Icon name={iconName} size={28} />
+          </span>
           <div className={styles.headerInfo}>
             <div className={styles.headerTop}>
               <h1 className={styles.title}>{trilha.nome}</h1>
@@ -164,7 +166,8 @@ export default function TeacherTrilhaPage() {
                 {trilha.nivel      && <span className={styles.badge}>{trilha.nivel}</span>}
                 {trilha.tipo && (
                   <span className={`${styles.badge} ${trilha.tipo === 'PUBLICA' ? styles.badgePublic : styles.badgePrivate}`}>
-                    {trilha.tipo === 'PUBLICA' ? '🌐 Pública' : '🔒 Privada'}
+                    <Icon name={trilha.tipo === 'PUBLICA' ? 'globe' : 'lock'} size={11} style={{display:'inline',verticalAlign:'middle',marginRight:4}} />
+                    {trilha.tipo === 'PUBLICA' ? 'Pública' : 'Privada'}
                   </span>
                 )}
               </div>
@@ -203,7 +206,7 @@ export default function TeacherTrilhaPage() {
           {/* Empty — só após fetch concluir */}
           {!loading && aulas.length === 0 && (
             <div className={styles.empty}>
-              <span className={styles.emptyIcon}>📭</span>
+              <Icon name="inbox" size={32} style={{ opacity: .3 }} />
               <p className={styles.emptyText}>Nenhuma aula ainda. Comece adicionando conteúdo.</p>
               <button className={styles.addBtn} onClick={openCreate}>
                 <Icon name="plus" size={15} /> Adicionar aula
@@ -215,7 +218,7 @@ export default function TeacherTrilhaPage() {
           {!loading && aulas.length > 0 && (
             <div className={styles.aulasList}>
               {aulas.map((aula, index) => {
-                const isDeleting  = deletingId      === aula.id
+                const isDeleting   = deletingId      === aula.id
                 const isConfirming = confirmDeleteId === aula.id
                 return (
                   <div
@@ -241,7 +244,7 @@ export default function TeacherTrilhaPage() {
                         </div>
                       </div>
                       <span className={styles.aulaEditHint}>
-                        {isDeleting ? '⏳' : '✏️ Editar'}
+                        {isDeleting ? <Icon name="hourglass" size={14} /> : <><Icon name="pencil" size={13} /> Editar</>}
                       </span>
                     </button>
 
@@ -271,7 +274,7 @@ export default function TeacherTrilhaPage() {
                           aria-label="Excluir aula"
                           title="Excluir aula"
                         >
-                          {isDeleting ? '⏳' : <Icon name="close" size={14} />}
+                          {isDeleting ? <Icon name="hourglass" size={14} /> : <Icon name="close" size={14} />}
                         </button>
                       )}
                     </div>

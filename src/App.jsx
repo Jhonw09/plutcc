@@ -14,6 +14,7 @@ import {
   SettingsPage, HelpPage,
 } from './pages/placeholders'
 
+import TeacherRelatoriosPage from './pages/TeacherRelatoriosPage'
 import BlogPage             from './pages/BlogPage'
 import ExplorarTrilhas      from './pages/ExplorarTrilhas'
 import MinhasTrilhasPage    from './pages/MinhasTrilhasPage'
@@ -55,7 +56,7 @@ export default function App() {
       <Route path="/teacher-dashboard/trilhas"             element={<T><TrilhasPage /></T>} />
       <Route path="/teacher-dashboard/alunos"             element={<T><StudentsPage /></T>} />
       <Route path="/teacher-dashboard/atividades"         element={<T><ActivitiesPage /></T>} />
-      <Route path="/teacher-dashboard/relatorios"         element={<T><ReportsPage /></T>} />
+      <Route path="/teacher-dashboard/relatorios"         element={<T><TeacherRelatoriosPage /></T>} />
       <Route path="/teacher-dashboard/calendario"         element={<T><CalendarPage /></T>} />
       <Route path="/teacher-dashboard/configuracoes"      element={<T><SettingsPage /></T>} />
       <Route path="/teacher-dashboard/ajuda"              element={<T><HelpPage /></T>} />

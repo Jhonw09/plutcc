@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import { getTrilhasPublicas } from '../api/services/trilhaService'
+import Icon from '../components/ui/Icon'
 import styles from './ExplorarTrilhas.module.css'
 
 const CATEGORIAS = ['Todas', 'Matemática', 'Português', 'Química', 'Biologia', 'Física', 'Geografia', 'História', 'Inglês', 'Informática', 'Filosofia']
@@ -54,7 +55,7 @@ export default function ExplorarTrilhas() {
           <p className={styles.heroSub}>Descubra trilhas de estudo criadas por professores e comece a aprender agora.</p>
 
           <div className={styles.searchWrap}>
-            <span className={styles.searchIcon}>🔍</span>
+            <span className={styles.searchIcon}><Icon name="search" size={14} /></span>
             <input
               className={styles.searchInput}
               placeholder="Buscar por nome, professor ou descrição…"
@@ -62,7 +63,9 @@ export default function ExplorarTrilhas() {
               onChange={e => setSearch(e.target.value)}
             />
             {search && (
-              <button className={styles.searchClear} onClick={() => setSearch('')}>✕</button>
+              <button className={styles.searchClear} onClick={() => setSearch('')}>
+                <Icon name="close" size={11} />
+              </button>
             )}
           </div>
         </div>
@@ -83,7 +86,7 @@ export default function ExplorarTrilhas() {
           <p className={styles.count}>Carregando trilhas...</p>
         ) : error ? (
           <div className={styles.empty}>
-            <span className={styles.emptyIcon}>⚠️</span>
+            <Icon name="warning" size={28} style={{ opacity: .4 }} />
             <p>{error}</p>
           </div>
         ) : (
@@ -114,7 +117,8 @@ export default function ExplorarTrilhas() {
                       <div className={styles.cardFooter}>
                         <div className={styles.cardInfo}>
                           <span className={styles.cardInfoItem}>
-                            👨🏫 {trilha.professor ?? trilha.professorNome ?? 'Professor'}
+                            <Icon name="user" size={13} style={{display:'inline',verticalAlign:'middle',marginRight:4}} />
+                            {trilha.professor ?? trilha.professorNome ?? 'Professor'}
                           </span>
                         </div>
                         <button
@@ -130,7 +134,7 @@ export default function ExplorarTrilhas() {
               </div>
             ) : (
               <div className={styles.empty}>
-                <span className={styles.emptyIcon}>🔎</span>
+                <Icon name="search" size={28} style={{ opacity: .4 }} />
                 <p>Nenhuma trilha corresponde à sua busca.</p>
                 <button className={styles.clearBtn} onClick={() => { setSearch(''); setCategoria('Todas') }}>
                   Limpar filtros

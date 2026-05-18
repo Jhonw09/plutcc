@@ -1,12 +1,12 @@
 import { useState } from 'react'
+import Icon from '../ui/Icon'
 import styles from './AulaEditor.module.css'
 
-// ── Tipos de bloco (futuro enum no backend) ───────────────────────────────────
 const BLOCK_TYPES = [
-  { value: 'explicacao',    label: '📖 Explicação',    hint: 'Conteúdo teórico da aula' },
-  { value: 'video',         label: '🎥 Vídeo',         hint: 'Link de vídeo (YouTube, etc.)' },
-  { value: 'questionario',  label: '❓ Questionário',  hint: 'Perguntas com alternativas' },
-  { value: 'texto_livre',   label: '✏️ Texto livre',   hint: 'Anotações ou instruções extras' },
+  { value: 'explicacao',   icon: 'book',      label: 'Explicação',   hint: 'Conteúdo teórico da aula' },
+  { value: 'video',        icon: 'video',     label: 'Vídeo',        hint: 'Link de vídeo (YouTube, etc.)' },
+  { value: 'questionario', icon: 'clipboard', label: 'Questionário', hint: 'Perguntas com alternativas' },
+  { value: 'texto_livre',  icon: 'pencil',    label: 'Texto livre',  hint: 'Anotações ou instruções extras' },
 ]
 
 function newBlock(type) {
@@ -90,31 +90,42 @@ function BlockQuestionario({ block, onChange, disabled }) {
         placeholder="Ex: Qual é a capital do Brasil?"
         disabled={disabled}
       />
-      <label className={styles.label} style={{ marginTop: 12 }}>Alternativas <span className={styles.labelHint}>(marque a correta)</span></label>
+      <label className={styles.label} style={{ marginTop: 12 }}>
+        Alternativas
+        <span className={styles.labelHint}>— clique no círculo para marcar a correta</span>
+      </label>
       <div className={styles.altList}>
-        {block.alternativas.map((alt, i) => (
-          <div key={i} className={styles.altRow}>
-            <button
-              type="button"
-              className={`${styles.altRadio} ${block.correta === i ? styles.altRadioActive : ''}`}
-              onClick={() => onChange({ ...block, correta: i })}
-              disabled={disabled}
-              title="Marcar como correta"
-            >
-              {block.correta === i ? '✅' : '⬜'}
-            </button>
-            <input
-              className={`${styles.input} ${styles.altInput}`}
-              value={alt}
-              onChange={e => setAlt(i, e.target.value)}
-              placeholder={`Alternativa ${String.fromCharCode(65 + i)}`}
-              disabled={disabled}
-            />
-            {block.alternativas.length > 2 && (
-              <button type="button" className={styles.altRemove} onClick={() => removeAlt(i)} disabled={disabled}>✕</button>
-            )}
-          </div>
-        ))}
+        {block.alternativas.map((alt, i) => {
+          const isCorrect = block.correta === i
+          return (
+            <div key={i} className={`${styles.altRow} ${isCorrect ? styles.altRowCorrect : ''}`}>
+              <button
+                type="button"
+                className={`${styles.altRadio} ${isCorrect ? styles.altRadioActive : ''}`}
+                onClick={() => onChange({ ...block, correta: i })}
+                disabled={disabled}
+                title="Marcar como correta"
+              >
+                {isCorrect
+                  ? <Icon name="checkCircle" size={15} />
+                  : <span className={styles.altLetter}>{String.fromCharCode(65 + i)}</span>}
+              </button>
+              <input
+                className={`${styles.input} ${styles.altInput}`}
+                value={alt}
+                onChange={e => setAlt(i, e.target.value)}
+                placeholder={`Alternativa ${String.fromCharCode(65 + i)}`}
+                disabled={disabled}
+              />
+              {isCorrect && <span className={styles.correctBadge}>Correta</span>}
+              {block.alternativas.length > 2 && (
+                <button type="button" className={styles.altRemove} onClick={() => removeAlt(i)} disabled={disabled}>
+                  <Icon name="close" size={12} />
+                </button>
+              )}
+            </div>
+          )
+        })}
       </div>
       {block.alternativas.length < 6 && (
         <button type="button" className={styles.addAltBtn} onClick={addAlt} disabled={disabled}>
@@ -132,7 +143,6 @@ const BLOCK_COMPONENTS = {
   questionario: BlockQuestionario,
 }
 
-// ── Template padrão ───────────────────────────────────────────────────────────
 const DEFAULT_BLOCKS = [
   { id: 1, tipo: 'explicacao', conteudo: '## Objetivos\nAo final desta aula, o aluno será capaz de:\n- Compreender os conceitos fundamentais\n- Aplicar o conhecimento em situações práticas\n\n## Conteúdo\nEscreva aqui o conteúdo principal...' },
   { id: 2, tipo: 'questionario', pergunta: '', alternativas: ['', '', '', ''], correta: 0 },
@@ -184,7 +194,10 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
   return (
     <div className={styles.editor}>
       <div className={styles.editorHeader}>
-        <h3 className={styles.editorTitle}>{isEdit ? '✏️ Editar aula' : '📝 Nova aula'}</h3>
+        <h3 className={styles.editorTitle}>
+          <Icon name={isEdit ? 'pencil' : 'fileText'} size={16} style={{display:'inline',verticalAlign:'middle',marginRight:6}} />
+          {isEdit ? 'Editar aula' : 'Nova aula'}
+        </h3>
         <span className={styles.editorHint}>Monte a aula adicionando blocos de conteúdo.</span>
       </div>
 
@@ -209,12 +222,21 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
           return (
             <div key={block.id} className={styles.block}>
               <div className={styles.blockHeader}>
-                <span className={styles.blockLabel}>{meta?.label}</span>
+                <span className={styles.blockLabel}>
+                  {meta && <Icon name={meta.icon} size={13} style={{display:'inline',verticalAlign:'middle',marginRight:5}} />}
+                  {meta?.label}
+                </span>
                 <span className={styles.blockHint}>{meta?.hint}</span>
                 <div className={styles.blockControls}>
-                  <button type="button" className={styles.blockCtrlBtn} onClick={() => moveBlock(block.id, -1)} disabled={idx === 0 || saving} title="Mover para cima">↑</button>
-                  <button type="button" className={styles.blockCtrlBtn} onClick={() => moveBlock(block.id, 1)} disabled={idx === blocos.length - 1 || saving} title="Mover para baixo">↓</button>
-                  <button type="button" className={`${styles.blockCtrlBtn} ${styles.blockRemove}`} onClick={() => removeBlock(block.id)} disabled={saving} title="Remover bloco">✕</button>
+                  <button type="button" className={styles.blockCtrlBtn} onClick={() => moveBlock(block.id, -1)} disabled={idx === 0 || saving} title="Mover para cima">
+                    <Icon name="chevronRight" size={13} style={{transform:'rotate(-90deg)'}} />
+                  </button>
+                  <button type="button" className={styles.blockCtrlBtn} onClick={() => moveBlock(block.id, 1)} disabled={idx === blocos.length - 1 || saving} title="Mover para baixo">
+                    <Icon name="chevronRight" size={13} style={{transform:'rotate(90deg)'}} />
+                  </button>
+                  <button type="button" className={`${styles.blockCtrlBtn} ${styles.blockRemove}`} onClick={() => removeBlock(block.id)} disabled={saving} title="Remover bloco">
+                    <Icon name="close" size={13} />
+                  </button>
                 </div>
               </div>
               {BlockComp && <BlockComp block={block} onChange={updated => updateBlock(block.id, updated)} disabled={saving} />}
@@ -229,7 +251,10 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
           <div className={styles.addBlockMenu}>
             {BLOCK_TYPES.map(t => (
               <button key={t.value} type="button" className={styles.addBlockOption} onClick={() => addBlock(t.value)}>
-                <span>{t.label}</span>
+                <span>
+                  <Icon name={t.icon} size={13} style={{display:'inline',verticalAlign:'middle',marginRight:6}} />
+                  {t.label}
+                </span>
                 <span className={styles.addBlockOptionHint}>{t.hint}</span>
               </button>
             ))}

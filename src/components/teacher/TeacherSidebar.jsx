@@ -1,19 +1,20 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { TEACHER_ROUTES } from '../../constants/routes'
+import Icon from '../ui/Icon'
 import styles from '../dashboard/DashboardSidebar.module.css'
 
 const navItems = [
-  { icon: '🏠', label: 'Início',      path: TEACHER_ROUTES.home       },
-  { icon: '🏫', label: 'Trilhas',      path: TEACHER_ROUTES.trilhas    },
-  { icon: '👥', label: 'Alunos',      path: TEACHER_ROUTES.students   },
-  { icon: '📝', label: 'Atividades',  path: TEACHER_ROUTES.activities },
-  { icon: '📊', label: 'Relatórios',  path: TEACHER_ROUTES.reports    },
-  { icon: '📅', label: 'Calendário',  path: TEACHER_ROUTES.calendar   },
+  { icon: 'home',      label: 'Início',      path: TEACHER_ROUTES.home       },
+  { icon: 'school',    label: 'Trilhas',     path: TEACHER_ROUTES.trilhas    },
+  { icon: 'users',     label: 'Alunos',      path: TEACHER_ROUTES.students   },
+  { icon: 'pencil',    label: 'Atividades',  path: TEACHER_ROUTES.activities },
+  { icon: 'barChart',  label: 'Relatórios',  path: TEACHER_ROUTES.reports    },
+  { icon: 'clipboard', label: 'Calendário',  path: TEACHER_ROUTES.calendar   },
 ]
 
 const bottomItems = [
-  { icon: '⚙️', label: 'Configurações', path: TEACHER_ROUTES.settings },
-  { icon: '❓', label: 'Ajuda',          path: TEACHER_ROUTES.help     },
+  { icon: 'cpu',         label: 'Configurações', path: TEACHER_ROUTES.settings },
+  { icon: 'alertCircle', label: 'Ajuda',         path: TEACHER_ROUTES.help     },
 ]
 
 export default function TeacherSidebar() {
@@ -32,7 +33,7 @@ export default function TeacherSidebar() {
         className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
         onClick={() => navigate(item.path)}
       >
-        <span className={styles.navIcon}>{item.icon}</span>
+        <span className={styles.navIcon}><Icon name={item.icon} size={17} /></span>
         <span className={styles.navText}>{item.label}</span>
         {active && <span className={styles.activeBar} />}
       </button>

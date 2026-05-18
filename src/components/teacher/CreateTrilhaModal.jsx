@@ -3,6 +3,7 @@ import { Button }     from '../ui/Button'
 import { InputField } from '../ui/InputField'
 import { useAuth }    from '../../context/AuthContext'
 import { updateTrilha } from '../../api/services/trilhaService'
+import Icon from '../ui/Icon'
 import styles from './CreateTrilhaModal.module.css'
 
 const SUBJECTS = [
@@ -21,12 +22,6 @@ function validate({ name, subject, level }) {
   return e
 }
 
-/**
- * Dual-mode modal: create (no initialData) or edit (initialData provided).
- *
- * Create mode: calls trilhaService.createTrilha directly, returns trilha.
- * Edit mode:   preserves existing id, calls onEdit(updatedObject).
- */
 export default function CreateTrilhaModal({ onClose, onCreate, onEdit, initialData = null }) {
   const { user } = useAuth()
   const isEdit = initialData !== null
@@ -96,10 +91,14 @@ export default function CreateTrilhaModal({ onClose, onCreate, onEdit, initialDa
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.card} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-title">
 
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar" disabled={loading}>✕</button>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar" disabled={loading}>
+          <Icon name="close" size={14} />
+        </button>
 
         <div className={styles.header}>
-          <span className={styles.headerIcon}>{isEdit ? '✏️' : '🏫'}</span>
+          <span className={styles.headerIcon}>
+            <Icon name={isEdit ? 'pencil' : 'school'} size={22} />
+          </span>
           <div>
             <h2 id="modal-title" className={styles.title}>
               {isEdit ? 'Editar trilha' : 'Criar nova trilha'}
@@ -145,8 +144,8 @@ export default function CreateTrilhaModal({ onClose, onCreate, onEdit, initialDa
             <span className={styles.label}>Tipo de trilha</span>
             <div className={styles.typeToggle} role="group" aria-label="Tipo de trilha">
               {[
-                { value: 'PUBLICA',  label: '🌐 Pública',  hint: 'Aparece na comunidade' },
-                { value: 'PRIVADA',  label: '🔒 Privada',  hint: 'Acesso apenas por código' },
+                { value: 'PUBLICA', icon: 'globe', label: 'Pública',  hint: 'Aparece na comunidade' },
+                { value: 'PRIVADA', icon: 'lock',  label: 'Privada',  hint: 'Acesso apenas por código' },
               ].map(opt => (
                 <button
                   key={opt.value}
@@ -155,7 +154,10 @@ export default function CreateTrilhaModal({ onClose, onCreate, onEdit, initialDa
                   onClick={() => set('type', opt.value)}
                   disabled={loading}
                 >
-                  <span className={styles.typeBtnLabel}>{opt.label}</span>
+                  <span className={styles.typeBtnLabel}>
+                    <Icon name={opt.icon} size={13} style={{display:'inline',verticalAlign:'middle',marginRight:5}} />
+                    {opt.label}
+                  </span>
                   <span className={styles.typeBtnHint}>{opt.hint}</span>
                 </button>
               ))}
@@ -186,7 +188,7 @@ export default function CreateTrilhaModal({ onClose, onCreate, onEdit, initialDa
           <div className={styles.actions}>
             <Button variant="outline" type="button" onClick={onClose} disabled={loading}>Cancelar</Button>
             <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? '⏳ Criando...' : (isEdit ? 'Salvar alterações' : 'Criar trilha')}
+              {loading ? 'Criando...' : (isEdit ? 'Salvar alterações' : 'Criar trilha')}
             </Button>
           </div>
 

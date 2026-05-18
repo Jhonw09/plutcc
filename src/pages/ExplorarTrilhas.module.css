@@ -45,8 +45,10 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 14px;
+  color: var(--text-muted);
   pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
 .searchInput {
@@ -233,7 +235,7 @@
   font-size: 15px;
 }
 
-.emptyIcon { font-size: 40px; }
+
 
 .clearBtn {
   font-size: 13px;

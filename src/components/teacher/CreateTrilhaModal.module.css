@@ -65,8 +65,8 @@
 }
 
 .headerIcon {
-  font-size: 32px;
   flex-shrink: 0;
+  color: var(--accent);
   background: var(--accent-soft);
   border: 1px solid var(--accent-border);
   border-radius: 12px;

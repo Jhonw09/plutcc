@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../ui/Button'
+import Icon from '../ui/Icon'
 import styles from './TrilhaCard.module.css'
 
-const SUBJECT_EMOJI = {
-  Matemática: '📐', Português: '📖', Química: '⚗️', Biologia: '🧬',
-  Física: '⚡', Geografia: '🌍', História: '📜', Inglês: '🌐',
-  Artes: '🎨', Informática: '💻', Filosofia: '🧠', Sociologia: '⚖️',
+const SUBJECT_ICON = {
+  Matemática: 'math',    Português: 'book',    Química: 'flask',
+  Biologia: 'dna',       Física: 'zap',        Geografia: 'globe',
+  História: 'scroll',    Inglês: 'globe',       Artes: 'palette',
+  Informática: 'monitor', Filosofia: 'brain',  Sociologia: 'scale',
 }
 
 export default function TrilhaCard({ trilha, started = false, onStart }) {
@@ -23,7 +25,7 @@ export default function TrilhaCard({ trilha, started = false, onStart }) {
     <div className={`${styles.card} ${started ? styles.started : ''}`}>
       <div className={styles.header}>
         <span className={styles.emoji}>
-          {SUBJECT_EMOJI[trilha.disciplina] ?? '📚'}
+          <Icon name={SUBJECT_ICON[trilha.disciplina] ?? 'bookOpen'} size={26} />
         </span>
         <div className={styles.meta}>
           <h3 className={styles.title}>{trilha.nome}</h3>
