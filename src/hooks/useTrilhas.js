@@ -77,15 +77,16 @@ export function useTrilhas() {
   }, [])
 
   const deleteTrilhaHandler = useCallback(async (id) => {
-    const previous = trilhas
+    // Optimistic update: remove da lista imediatamente
     setTrilhas(prev => prev.filter(t => t.id !== id))
     try {
       await apiDeleteTrilha(id)
     } catch (err) {
-      setTrilhas(previous)
+      // Rollback: recarrega do servidor para garantir estado correto
+      await loadTrilhas()
       throw err
     }
-  }, [trilhas])
+  }, [loadTrilhas])  // dependencia estavel — nao recria a cada mudanca de lista
 
   // Refresh trilhas from API
   const refreshTrilhas = useCallback(async () => {

@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from './DashboardLayout'
-import { getTrilhasPublicas } from '../../api/services/trilhaService'
 import { useMinhasTrilhas } from '../../hooks/useMinhasTrilhas'
 import { useTrilhasAluno } from '../../hooks/useTrilhasAluno'
 import { recentActivity, weeklyGoal } from '../../data/studentDashboard'
@@ -28,20 +27,11 @@ function Sk({ h, r = 12 }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { minhasTrilhas, loading: loadingMinhas } = useMinhasTrilhas()
+  // useMinhasTrilhas ja busca getTrilhasPublicas internamente.
+  // todasTrilhas vem do hook para evitar request duplicado.
+  const { minhasTrilhas, todasTrilhas, loading, error: trilhasError } = useMinhasTrilhas()
   const { getProgresso } = useTrilhasAluno()
 
-  const [todasTrilhas, setTodasTrilhas] = useState([])
-  const [loadingTodas, setLoadingTodas] = useState(true)
-
-  useEffect(() => {
-    getTrilhasPublicas()
-      .then(setTodasTrilhas)
-      .catch(() => {})
-      .finally(() => setLoadingTodas(false))
-  }, [])
-
-  const loading            = loadingMinhas || loadingTodas
   const concluidas         = minhasTrilhas.filter(t => getProgresso(t.id, 10) === 100)
   const destaque           = minhasTrilhas.find(t => getProgresso(t.id, 10) < 100) ?? minhasTrilhas[0]
   const destaquePct        = destaque ? getProgresso(destaque.id, 10) : 0

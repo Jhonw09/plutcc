@@ -1,6 +1,10 @@
 /**
- * useMinhasTrilhas — retorna trilhas em que o aluno está matriculado.
- * Busca matrículas da API e faz join com dados completos das trilhas.
+ * useMinhasTrilhas — retorna trilhas em que o aluno está matriculado
+ * e todas as trilhas públicas em uma única chamada ao hook.
+ *
+ * Expõe todasTrilhas para que os componentes consumidores (DashboardPage,
+ * MinhasTrilhasPage) não precisem fazer um segundo fetch de getTrilhasPublicas.
+ * Isso elimina requests duplicados para GET /trilhas.
  */
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
@@ -12,6 +16,7 @@ export function useMinhasTrilhas() {
   const alunoId = user?.id
 
   const [minhasTrilhas, setMinhasTrilhas] = useState([])
+  const [todasTrilhas,  setTodasTrilhas]  = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
 
@@ -20,15 +25,15 @@ export function useMinhasTrilhas() {
     setLoading(true)
     setError(null)
     try {
-      const [matriculas, todasTrilhas] = await Promise.all([
+      const [matriculas, todas] = await Promise.all([
         getMatriculasDoAluno(alunoId),
         getTrilhasPublicas(),
       ])
-      // matriculas pode ser array de objetos { trilhaId, ... } ou array de trilhas completas
       const ids = new Set(
         matriculas.map(m => Number(m.trilhaId ?? m.id ?? m))
       )
-      setMinhasTrilhas(todasTrilhas.filter(t => ids.has(t.id)))
+      setTodasTrilhas(todas)
+      setMinhasTrilhas(todas.filter(t => ids.has(t.id)))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -38,5 +43,5 @@ export function useMinhasTrilhas() {
 
   useEffect(() => { load() }, [load])
 
-  return { minhasTrilhas, loading, error, reload: load }
+  return { minhasTrilhas, todasTrilhas, loading, error, reload: load }
 }

@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
-import { getTrilhasPublicas } from '../api/services/trilhaService'
 import { useMinhasTrilhas } from '../hooks/useMinhasTrilhas'
 import { useTrilhasAluno } from '../hooks/useTrilhasAluno'
 import Icon from '../components/ui/Icon'
@@ -109,23 +108,15 @@ function TrilhaCard({ trilha, progresso, onAcao, labelAcao, ativa }) {
 
 export default function MinhasTrilhasPage() {
   const navigate = useNavigate()
-  const { minhasTrilhas, loading: loadingMinhas } = useMinhasTrilhas()
+  // todasTrilhas vem do mesmo hook — sem fetch duplicado para GET /trilhas
+  const { minhasTrilhas, todasTrilhas, loading: loadingMinhas } = useMinhasTrilhas()
   const { getProgresso } = useTrilhasAluno()
 
-  const [todasTrilhas, setTodasTrilhas] = useState([])
-  const [loadingTodas, setLoadingTodas] = useState(true)
-  const [filtro, setFiltro]             = useState('todas')
-  const [search, setSearch]             = useState('')
-  const [categoria, setCategoria]       = useState('Todas')
+  const [filtro, setFiltro]       = useState('todas')
+  const [search, setSearch]       = useState('')
+  const [categoria, setCategoria] = useState('Todas')
 
-  useEffect(() => {
-    getTrilhasPublicas()
-      .then(setTodasTrilhas)
-      .catch(() => {})
-      .finally(() => setLoadingTodas(false))
-  }, [])
-
-  const isLoading      = loadingMinhas || loadingTodas
+  const isLoading = loadingMinhas
   const matriculadosIds = useMemo(() => new Set(minhasTrilhas.map(t => t.id)), [minhasTrilhas])
   const concluidas      = useMemo(() => minhasTrilhas.filter(t => getProgresso(t.id, 10) === 100), [minhasTrilhas, getProgresso])
   const emAndamento     = useMemo(() => minhasTrilhas.filter(t => getProgresso(t.id, 10) < 100),  [minhasTrilhas, getProgresso])
@@ -233,7 +224,7 @@ export default function MinhasTrilhasPage() {
             ))}
           </div>
 
-          {loadingTodas ? (
+          {isLoading ? (
             <div className={styles.grid}>
               {[0,1,2,3].map(i => <Skeleton key={i} />)}
             </div>
