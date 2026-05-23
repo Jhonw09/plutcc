@@ -1,25 +1,26 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import LandingPage          from './pages/LandingPage'
-import DashboardPage        from './components/dashboard/DashboardPage'
-import TeacherDashboardPage from './pages/TeacherDashboardPage'
-import TeacherTrilhaPage    from './pages/TeacherTrilhaPage'
-import AdminDashboardPage   from './pages/AdminDashboardPage'
-import TrilhaPage           from './pages/TrilhaPage'
-import StudentTrilhaPage    from './pages/StudentTrilhaPage'
-import ProtectedRoute       from './components/ProtectedRoute'
+import LandingPage                from './pages/LandingPage'
+import DashboardPage             from './components/dashboard/DashboardPage'
+import TeacherDashboardPage      from './pages/TeacherDashboardPage'
+import TeacherMinhasTrilhasPage  from './pages/TeacherMinhasTrilhasPage'
+import TeacherTrilhaPage         from './pages/TeacherTrilhaPage'
+import TeacherRelatoriosPage     from './pages/TeacherRelatoriosPage'
+import TeacherConfiguracoesPage  from './pages/TeacherConfiguracoesPage'
+import AdminDashboardPage        from './pages/AdminDashboardPage'
+import TrilhaPage                from './pages/TrilhaPage'
+import StudentTrilhaPage         from './pages/StudentTrilhaPage'
+import ProtectedRoute            from './components/ProtectedRoute'
 import {
   SubjectsPage, ExercisesPage, ExamsPage, GoalsPage,
-  TrilhasPage, StudentsPage, ActivitiesPage, ReportsPage, CalendarPage,
   UsersPage, SchoolsPage, FinancePage, TicketsPage, AdminReportsPage,
   SettingsPage, HelpPage,
 } from './pages/placeholders'
 
-import TeacherRelatoriosPage from './pages/TeacherRelatoriosPage'
-import BlogPage             from './pages/BlogPage'
-import ExplorarTrilhas      from './pages/ExplorarTrilhas'
-import MinhasTrilhasPage    from './pages/MinhasTrilhasPage'
-import DesempenhoPage       from './pages/DesempenhoPage'
-import TrilhaDetalhePage    from './pages/TrilhaDetalhePage'
+import BlogPage          from './pages/BlogPage'
+import ExplorarTrilhas   from './pages/ExplorarTrilhas'
+import MinhasTrilhasPage from './pages/MinhasTrilhasPage'
+import DesempenhoPage    from './pages/DesempenhoPage'
+import TrilhaDetalhePage from './pages/TrilhaDetalhePage'
 import './App.css'
 
 function S({ children }) {
@@ -52,16 +53,11 @@ export default function App() {
       <Route path="/dashboard/trilha/:id"         element={<S><StudentTrilhaPage /></S>} />
 
       {/* ── Teacher ── */}
-      <Route path="/teacher-dashboard"                    element={<T><TeacherDashboardPage /></T>} />
-      <Route path="/teacher-dashboard/trilhas"             element={<T><TrilhasPage /></T>} />
-      <Route path="/teacher-dashboard/alunos"             element={<T><StudentsPage /></T>} />
-      <Route path="/teacher-dashboard/atividades"         element={<T><ActivitiesPage /></T>} />
-      <Route path="/teacher-dashboard/relatorios"         element={<T><TeacherRelatoriosPage /></T>} />
-      <Route path="/teacher-dashboard/calendario"         element={<T><CalendarPage /></T>} />
-      <Route path="/teacher-dashboard/configuracoes"      element={<T><SettingsPage /></T>} />
-      <Route path="/teacher-dashboard/ajuda"              element={<T><HelpPage /></T>} />
-
-      <Route path="/professor/trilha/:id"                    element={<T><TeacherTrilhaPage /></T>} />
+      <Route path="/teacher-dashboard"             element={<T><TeacherDashboardPage /></T>} />
+      <Route path="/teacher-dashboard/trilhas"      element={<T><TeacherMinhasTrilhasPage /></T>} />
+      <Route path="/teacher-dashboard/relatorios"   element={<T><TeacherRelatoriosPage /></T>} />
+      <Route path="/teacher-dashboard/configuracoes" element={<T><TeacherConfiguracoesPage /></T>} />
+      <Route path="/professor/trilha/:id"           element={<T><TeacherTrilhaPage /></T>} />
 
       {/* ── Admin ── */}
       <Route path="/admin"                  element={<A><AdminDashboardPage /></A>} />

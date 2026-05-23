@@ -1,0 +1,140 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeUp 260ms ease forwards;
+  max-width: 720px;
+}
+
+.header { display: flex; flex-direction: column; gap: 4px; }
+.title  { font-size: clamp(20px, 2.2vw, 26px); font-weight: 800; color: var(--text); }
+.sub    { font-size: 14px; color: var(--text-secondary); }
+
+.sections { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cardIconWrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.cardTitle { font-size: 15px; font-weight: 700; color: var(--text); }
+.cardSub   { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Form ── */
+.form { display: flex; flex-direction: column; gap: 14px; }
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.formActions { display: flex; justify-content: flex-end; padding-top: 4px; }
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 10px;
+  padding: 10px 22px;
+  transition: background .15s, transform .15s;
+}
+.btnPrimary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+.btnPrimary:disabled { opacity: .6; cursor: not-allowed; }
+
+.errorMsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+/* ── Danger zone ── */
+.dangerCard { border-color: rgba(239,68,68,.2); }
+
+.dangerIcon {
+  background: rgba(239,68,68,.1) !important;
+  border-color: rgba(239,68,68,.25) !important;
+  color: var(--danger) !important;
+}
+
+.dangerBody {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  background: rgba(239,68,68,.05);
+  border: 1px solid rgba(239,68,68,.15);
+  border-radius: 12px;
+}
+
+.dangerText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  padding: 9px 18px;
+  flex-shrink: 0;
+  transition: background .15s, transform .15s;
+}
+.btnDanger:hover { background: rgba(239,68,68,.18); transform: translateY(-1px); }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .row2 { grid-template-columns: 1fr; }
+  .card { padding: 22px 20px; }
+  .dangerBody { flex-direction: column; align-items: flex-start; }
+}

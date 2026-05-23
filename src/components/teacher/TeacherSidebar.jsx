@@ -4,17 +4,13 @@ import Icon from '../ui/Icon'
 import styles from '../dashboard/DashboardSidebar.module.css'
 
 const navItems = [
-  { icon: 'home',      label: 'Início',      path: TEACHER_ROUTES.home       },
-  { icon: 'school',    label: 'Trilhas',     path: TEACHER_ROUTES.trilhas    },
-  { icon: 'users',     label: 'Alunos',      path: TEACHER_ROUTES.students   },
-  { icon: 'pencil',    label: 'Atividades',  path: TEACHER_ROUTES.activities },
-  { icon: 'barChart',  label: 'Relatórios',  path: TEACHER_ROUTES.reports    },
-  { icon: 'clipboard', label: 'Calendário',  path: TEACHER_ROUTES.calendar   },
+  { icon: 'home',     label: 'Início',        path: TEACHER_ROUTES.home    },
+  { icon: 'bookOpen', label: 'Minhas trilhas', path: TEACHER_ROUTES.trilhas },
+  { icon: 'barChart', label: 'Relatórios',     path: TEACHER_ROUTES.reports },
 ]
 
 const bottomItems = [
-  { icon: 'cpu',         label: 'Configurações', path: TEACHER_ROUTES.settings },
-  { icon: 'alertCircle', label: 'Ajuda',         path: TEACHER_ROUTES.help     },
+  { icon: 'cpu', label: 'Configurações', path: TEACHER_ROUTES.settings },
 ]
 
 export default function TeacherSidebar() {

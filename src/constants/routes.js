@@ -22,14 +22,10 @@ export const STUDENT_ROUTES = {
 
 // ── Teacher routes ───────────────────────────────────────────
 export const TEACHER_ROUTES = {
-  home:       '/teacher-dashboard',
-  trilhas:    '/teacher-dashboard/trilhas',
-  students:   '/teacher-dashboard/alunos',
-  activities: '/teacher-dashboard/atividades',
-  reports:    '/teacher-dashboard/relatorios',
-  calendar:   '/teacher-dashboard/calendario',
-  settings:   '/teacher-dashboard/configuracoes',
-  help:       '/teacher-dashboard/ajuda',
+  home:     '/teacher-dashboard',
+  trilhas:  '/teacher-dashboard/trilhas',
+  reports:  '/teacher-dashboard/relatorios',
+  settings: '/teacher-dashboard/configuracoes',
 }
 
 // ── Admin routes ─────────────────────────────────────────────

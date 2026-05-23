@@ -1,38 +1,361 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate }      from 'react-router-dom'
-import TeacherLayout        from '../components/teacher/TeacherLayout'
-import TrilhaCard           from '../components/teacher/TrilhaCard'
-import CreateTrilhaModal    from '../components/teacher/CreateTrilhaModal'
-import { ConfirmModal }     from '../components/ui/ConfirmModal'
-import { Toast }            from '../components/ui/Toast'
-import Icon                 from '../components/ui/Icon'
-import { useToast }         from '../hooks/useToast'
-import { useAuth }          from '../context/AuthContext'
-import { useTrilhas }       from '../hooks/useTrilhas'
+import { useNavigate }        from 'react-router-dom'
+import TeacherLayout          from '../components/teacher/TeacherLayout'
+import CreateTrilhaModal      from '../components/teacher/CreateTrilhaModal'
+import { ConfirmModal }       from '../components/ui/ConfirmModal'
+import { Toast }              from '../components/ui/Toast'
+import Icon                   from '../components/ui/Icon'
+import { useToast }           from '../hooks/useToast'
+import { useAuth }            from '../context/AuthContext'
+import { useTrilhas }         from '../hooks/useTrilhas'
 import { getResumoProfessor } from '../api/services/matriculaService'
-import { recentActivity, students } from '../data/teacherDashboard'
-import { TEACHER_ROUTES } from '../constants/routes'
+import { TEACHER_ROUTES }     from '../constants/routes'
 import styles from './TeacherDashboardPage.module.css'
 
-function Sk({ h = 80, r = 14 }) {
-  return <div className={styles.sk} style={{ height: h, borderRadius: r }} />
+// ─── Dados mock para a dashboard normal ───────────────────────────────────────
+const WEEK_DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+const WEEK_DATA = [35, 72, 50, 88, 65, 45, 20]
+
+const RECENT_ACTIVITY = [
+  { color: '#4ade80', text: 'Ana Souza',      action: 'concluiu "Funções Quadráticas — Parte 2"', time: 'há 15min' },
+  { color: '#93c5fd', text: 'Bruno Lima',     action: 'comentou em "Equações do 1º Grau"',        time: 'há 1h'    },
+  { color: '#fbbf24', text: 'Carla Mendes',   action: 'atingiu 100% na trilha de Português',      time: 'há 3h'    },
+  { color: '#4ade80', text: 'Diego Ferreira', action: 'concluiu "Introdução à Álgebra"',          time: 'ontem'    },
+]
+
+const TOP_STUDENTS = [
+  { name: 'Diego Ferreira', avatar: 'D', aulas: 28, pct: 85 },
+  { name: 'Felipe Rocha',   avatar: 'F', aulas: 17, pct: 62 },
+  { name: 'Ana Souza',      avatar: 'A', aulas: 14, pct: 51 },
+]
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function onboardingKey(userId) { return `plut_onboarding_done_${userId}` }
+
+function isOnboardingDone(userId) {
+  try { return localStorage.getItem(onboardingKey(userId)) === 'true' } catch { return false }
 }
 
-const WEEK_DAYS  = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
-const WEEK_DATA  = [45, 72, 30, 88, 60, 20, 0]
+function markOnboardingDone(userId) {
+  try { localStorage.setItem(onboardingKey(userId), 'true') } catch {}
+}
 
+function Sk() {
+  return <div className={styles.sk} />
+}
+
+// ─── ONBOARDING VIEW ──────────────────────────────────────────────────────────
+const STEPS = [
+  {
+    icon: 'school',
+    title: 'O que é uma trilha?',
+    desc: 'Uma trilha é um conjunto de aulas organizadas em torno de um tema de estudo. Você define o nome, a disciplina e o nível.',
+    hint: 'Exemplo: "Matemática Básica", "Português para o ENEM", "Introdução à Programação"',
+  },
+  {
+    icon: 'fileText',
+    title: 'Adicione aulas',
+    desc: 'Dentro de cada trilha você cria aulas. Cada aula pode ter blocos de conteúdo: explicações, links de vídeo e exercícios com alternativas.',
+    hint: 'Você monta o conteúdo no próprio painel, sem precisar de ferramentas externas.',
+  },
+  {
+    icon: 'users',
+    title: 'Alunos se matriculam',
+    desc: 'Após publicar, alunos encontram sua trilha, se matriculam e estudam no próprio ritmo.',
+    hint: 'Trilhas públicas aparecem para todos os alunos. Trilhas privadas só para quem você indicar.',
+  },
+  {
+    icon: 'barChart',
+    title: 'Acompanhe pelo painel',
+    desc: 'Na página de Relatórios você vê quantos alunos estão matriculados em cada trilha e quantas aulas foram publicadas.',
+    hint: 'Simples e direto. Sem métricas escolares complexas.',
+  },
+]
+
+function OnboardingView({ firstName, onCreateTrilha }) {
+  const [step, setStep] = useState(-1)
+
+  // step -1 = boas-vindas, 0..3 = tutorial
+  const isWelcome = step === -1
+  const current   = isWelcome ? null : STEPS[step]
+  const isLast    = step === STEPS.length - 1
+  const total     = STEPS.length + 1 // welcome + 4 steps
+  const current0  = step + 1         // 0-based index for progress
+
+  return (
+    <div className={styles.obScreen}>
+
+      {/* Logo */}
+      <div className={styles.obLogo}>
+        <svg width="140" height="22" viewBox="0 0 160 26" fill="none">
+          <text x="0"  y="21" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="22" fill="#FFFFFF">Study</text>
+          <text x="68" y="21" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="22" fill="#6C5CE7">Connect</text>
+        </svg>
+      </div>
+
+      {/* Progress bar */}
+      <div className={styles.obProgressBar}>
+        <div
+          className={styles.obProgressFill}
+          style={{ width: `${(current0 / total) * 100}%` }}
+        />
+      </div>
+
+      {/* Card central */}
+      <div className={styles.obWrap}>
+        <div className={styles.obCard} key={step}>
+
+          <div className={styles.obCardIcon}>
+            <Icon name={isWelcome ? 'sparkles' : current.icon} size={28} />
+          </div>
+
+          <div className={styles.obCardLabel}>
+            {isWelcome ? 'Bem-vindo à plataforma' : `Passo ${step + 1} de ${STEPS.length}`}
+          </div>
+
+          <h2 className={styles.obCardTitle}>
+            {isWelcome
+              ? <>Olá, <span className={styles.obCardAccent}>{firstName}</span> 👋</>
+              : current.title}
+          </h2>
+
+          <p className={styles.obCardDesc}>
+            {isWelcome
+              ? 'Esta é uma plataforma de trilhas de estudo guiadas. Aqui você cria conteúdo, organiza aulas e conecta alunos ao seu conhecimento.'
+              : current.desc}
+          </p>
+
+          <div className={styles.obCardHint}>
+            <Icon name="sparkles" size={12} />
+            <span>
+              {isWelcome
+                ? 'Leva menos de 5 minutos para criar sua primeira trilha.'
+                : current.hint}
+            </span>
+          </div>
+
+          {/* Dots dentro do card */}
+          <div className={styles.obDots}>
+            {Array.from({ length: total }).map((_, i) => (
+              <span
+                key={i}
+                className={`${styles.obDot} ${i === current0 ? styles.obDotActive : i < current0 ? styles.obDotDone : ''}`}
+              />
+            ))}
+          </div>
+
+          {/* Nav dentro do card */}
+          <div className={styles.obNav} style={step === -1 ? { justifyContent: 'center' } : {}}>
+            {step > -1 && (
+              <button className={styles.obBtnBack} onClick={() => setStep(s => s - 1)}>
+                ← Voltar
+              </button>
+            )}
+
+            {isWelcome ? (
+              <button className={styles.obBtnNext} onClick={() => setStep(0)}>
+                Começar →
+              </button>
+            ) : !isLast ? (
+              <button className={styles.obBtnNext} onClick={() => setStep(s => s + 1)}>
+                Próximo →
+              </button>
+            ) : (
+              <button className={styles.obBtnCreate} onClick={onCreateTrilha}>
+                <Icon name="plus" size={14} /> Criar minha primeira trilha
+              </button>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* Step counter */}
+      <p className={styles.obCounter}>
+        {current0} de {total}
+      </p>
+
+    </div>
+  )
+}
+
+// ─── DASHBOARD NORMAL ─────────────────────────────────────────────────────────
+function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate, onOpenCreate }) {
+  const firstName = user?.name?.split(' ')[0] ?? 'Professor'
+  const maxBar    = Math.max(...WEEK_DATA, 1)
+
+  const stats = useMemo(() => [
+    { icon: 'school',   color: 'purple', value: loading       ? '—' : trilhas.length,             label: 'Trilhas criadas',     delta: `${trilhas.length} no total`,      deltaUp: null  },
+    { icon: 'users',    color: 'blue',   value: loadingResumo ? '—' : (resumo?.totalAlunos ?? 0), label: 'Alunos matriculados',  delta: 'em todas as trilhas',             deltaUp: null  },
+    { icon: 'fileText', color: 'green',  value: loadingResumo ? '—' : (resumo?.totalAulas  ?? 0), label: 'Aulas publicadas',    delta: 'conteúdo disponível',             deltaUp: null  },
+    { icon: 'star',     color: 'orange', value: '4.8',                                             label: 'Avaliação média',     delta: 'Baseado em avaliações',           deltaUp: null  },
+  ], [trilhas, loading, resumo, loadingResumo])
+
+  return (
+    <div className={styles.page}>
+
+      {/* Greeting */}
+      <div className={styles.greeting}>
+        <h1 className={styles.greetingTitle}>
+          Olá, <span className={styles.greetingName}>{firstName}</span> 👋
+        </h1>
+        <p className={styles.greetingSub}>Aqui está o resumo da sua atividade.</p>
+      </div>
+
+      {/* Stats */}
+      <div className={styles.statsGrid}>
+        {stats.map((s, i) => (
+          <div key={i} className={styles.statCard}>
+            <span className={styles.statIconWrap} data-color={s.color}>
+              <Icon name={s.icon} size={20} />
+            </span>
+            <div className={styles.statBody}>
+              <p className={styles.statValue}>{s.value}</p>
+              <p className={styles.statLabel}>{s.label}</p>
+              <p className={styles.statDelta}>{s.delta}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Linha 1 */}
+      <div className={styles.row}>
+
+        {/* Desempenho */}
+        <div className={styles.card}>
+          <div className={styles.cardHead}>
+            <span className={styles.cardTitle}>Desempenho das trilhas</span>
+            <span className={styles.cardBadge}>Últimos 7 dias</span>
+          </div>
+          <div className={styles.barChart}>
+            {WEEK_DAYS.map((day, i) => (
+              <div key={day} className={styles.barCol}>
+                <div className={styles.barWrap}>
+                  <div
+                    className={`${styles.bar} ${WEEK_DATA[i] === 0 ? styles.barEmpty : ''}`}
+                    style={{ height: `${(WEEK_DATA[i] / maxBar) * 100}%` }}
+                  />
+                </div>
+                <span className={styles.barLabel}>{day}</span>
+              </div>
+            ))}
+          </div>
+          <div className={styles.barLegend}>
+            <span className={styles.legendDot} />
+            <span className={styles.legendText}>Alunos ativos</span>
+          </div>
+        </div>
+
+        {/* Minhas trilhas */}
+        <div className={styles.card}>
+          <div className={styles.cardHead}>
+            <span className={styles.cardTitle}>Minhas trilhas</span>
+            <button className={styles.cardLink} onClick={() => navigate(TEACHER_ROUTES.trilhas)}>
+              Ver todas →
+            </button>
+          </div>
+          {loading ? (
+            <div className={styles.skList}>{[0,1,2].map(i => <Sk key={i} />)}</div>
+          ) : (
+            <div className={styles.trilhasList}>
+              {trilhas.slice(0, 3).map(t => {
+                const alunos = resumo?.trilhas?.find(r => r.id === t.id)?.totalAlunos ?? 0
+                return (
+                  <div key={t.id} className={styles.trilhaRow}>
+                    <div className={styles.trilhaThumb}><Icon name="school" size={15} /></div>
+                    <div className={styles.trilhaInfo}>
+                      <span className={styles.trilhaNome}>{t.nome}</span>
+                      <span className={styles.trilhaMeta}><Icon name="users" size={10} /> {alunos} aluno{alunos !== 1 ? 's' : ''}</span>
+                    </div>
+                    <button className={styles.trilhaBtn} onClick={() => navigate(`/professor/trilha/${t.id}`, { state: t })}>
+                      Gerenciar <Icon name="chevronRight" size={11} />
+                    </button>
+                  </div>
+                )
+              })}
+              {trilhas.length === 0 && (
+                <div className={styles.emptySmall}>
+                  <p>Nenhuma trilha ainda.</p>
+                  <button className={styles.btnPrimary} onClick={onOpenCreate}>
+                    <Icon name="plus" size={13} /> Criar trilha
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Linha 2 */}
+      <div className={styles.row}>
+
+        {/* Atividade recente */}
+        <div className={styles.card}>
+          <div className={styles.cardHead}>
+            <span className={styles.cardTitle}>Atividade recente</span>
+            <button className={styles.cardLink} onClick={() => navigate(TEACHER_ROUTES.reports)}>Ver tudo →</button>
+          </div>
+          <div className={styles.actList}>
+            {RECENT_ACTIVITY.slice(0, 3).map((item, i) => (
+              <div key={i} className={styles.actItem}>
+                <span className={styles.actDot} style={{ background: item.color }} />
+                <p className={styles.actText}><strong>{item.text}</strong> {item.action}</p>
+                <span className={styles.actTime}>{item.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Alunos mais ativos */}
+        <div className={styles.card}>
+          <div className={styles.cardHead}>
+            <span className={styles.cardTitle}>Alunos mais ativos</span>
+          </div>
+          <div className={styles.studentList}>
+            {TOP_STUDENTS.map((s, i) => (
+              <div key={i} className={styles.studentRow}>
+                <div className={styles.studentAvatar}>{s.avatar}</div>
+                <div className={styles.studentInfo}>
+                  <span className={styles.studentName}>{s.name}</span>
+                  <span className={styles.studentSub}>{s.aulas} aulas concluídas</span>
+                </div>
+                <div className={styles.studentRight}>
+                  <span className={styles.studentPct}>{s.pct}%</span>
+                  <div className={styles.studentTrack}>
+                    <div className={styles.studentFill} style={{ width: `${s.pct}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  )
+}
+
+// ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function TeacherDashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { toasts, toast, dismiss } = useToast()
   const { trilhas, loading, error, createTrilha: createTrilhaHandler, deleteTrilha: deleteTrilhaHandler } = useTrilhas()
 
-  const [resumo,        setResumo]        = useState(null)
-  const [loadingResumo, setLoadingResumo] = useState(true)
+  const [resumo,         setResumo]         = useState(null)
+  const [loadingResumo,  setLoadingResumo]  = useState(true)
   const [classModalOpen, setClassModalOpen] = useState(false)
   const [editTarget,     setEditTarget]     = useState(null)
   const [deleteTarget,   setDeleteTarget]   = useState(null)
   const [deletingId,     setDeletingId]     = useState(null)
+
+  // Onboarding: mostra até o professor concluir OU ter trilhas
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (!user?.id) return false
+    return !isOnboardingDone(user.id)
+  })
 
   useEffect(() => {
     if (!user?.id) return
@@ -41,20 +364,25 @@ export default function TeacherDashboardPage() {
       .finally(() => setLoadingResumo(false))
   }, [user?.id])
 
-  const stats = useMemo(() => {
-    const publicCount = trilhas.filter(t => t.tipo === 'PUBLICA').length
-    return [
-      { icon: 'school',  label: 'Trilhas criadas',    value: loading ? '—' : trilhas.length,                     color: 'purple' },
-      { icon: 'users',   label: 'Alunos matriculados', value: loadingResumo ? '—' : (resumo?.totalAlunos ?? 0),  color: 'blue'   },
-      { icon: 'globe',   label: 'Trilhas públicas',   value: loading ? '—' : publicCount,                        color: 'green'  },
-      { icon: 'lock',    label: 'Trilhas privadas',   value: loading ? '—' : trilhas.length - publicCount,       color: 'orange' },
-    ]
-  }, [trilhas, loading, resumo, loadingResumo])
+  // Se o professor criar uma trilha, onboarding é concluído automaticamente
+  useEffect(() => {
+    if (!loading && trilhas.length > 0 && showOnboarding) {
+      markOnboardingDone(user?.id)
+      setShowOnboarding(false)
+    }
+  }, [loading, trilhas.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function finishOnboarding() {
+    markOnboardingDone(user?.id)
+    setShowOnboarding(false)
+  }
 
   async function handleCreate(newClass) {
     try {
       const created = await createTrilhaHandler(newClass)
       toast(`Trilha "${created.nome}" criada!`, 'success')
+      markOnboardingDone(user?.id)
+      setShowOnboarding(false)
       navigate(`/professor/trilha/${created.id}`, { state: created })
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Erro ao criar trilha', 'error')
@@ -85,225 +413,57 @@ export default function TeacherDashboardPage() {
   function openDelete(id, nome) { setDeleteTarget({ id, nome }) }
   function closeModal()         { setClassModalOpen(false); setEditTarget(null) }
 
-  const maxBar    = Math.max(...WEEK_DATA, 1)
-  const atRisk    = students.filter(s => s.status === 'at-risk')
   const firstName = user?.name?.split(' ')[0] ?? 'Professor'
 
   return (
-    <TeacherLayout>
-      {classModalOpen && (
-        <CreateTrilhaModal
-          onClose={closeModal}
-          onCreate={handleCreate}
-          onEdit={handleEdit}
-          initialData={editTarget}
-        />
-      )}
-      {deleteTarget && (
-        <ConfirmModal
-          title="Excluir trilha"
-          message={`Tem certeza que deseja excluir "${deleteTarget.nome}"? Esta ação não pode ser desfeita.`}
-          confirmLabel="Excluir trilha"
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
+    <>
       <Toast toasts={toasts} onDismiss={dismiss} />
 
-      <div className={styles.page}>
-
-        {/* ── Hero ── */}
-        <div className={styles.hero}>
-          <div className={styles.heroLeft}>
-            <span className={styles.heroTag}>Painel do Professor</span>
-            <h1 className={styles.heroTitle}>Olá, {firstName} 👋</h1>
-            <p className={styles.heroSub}>Gerencie suas trilhas, acompanhe seus alunos e monitore o desempenho da turma.</p>
-            <div className={styles.heroActions}>
-              <button className={styles.btnPrimary} onClick={() => setClassModalOpen(true)}>
-                <Icon name="plus" size={15} /> Nova trilha
-              </button>
-              <button className={styles.btnSecondary} onClick={() => navigate(TEACHER_ROUTES.reports)}>
-                <Icon name="barChart" size={15} /> Ver relatórios
-              </button>
-            </div>
-          </div>
-          <div className={styles.heroRight} aria-hidden>
-            <Icon name="school" size={52} />
-          </div>
-        </div>
-
-        {/* ── Stats ── */}
-        <div className={styles.statsGrid}>
-          {stats.map((s, i) => (
-            <div key={i} className={styles.statCard}>
-              <span className={styles.statIconWrap} data-color={s.color}>
-                <Icon name={s.icon} size={20} />
-              </span>
-              <div>
-                <p className={styles.statValue}>{s.value}</p>
-                <p className={styles.statLabel}>{s.label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Middle row: atividade semanal + alunos em risco ── */}
-        <div className={styles.midRow}>
-
-          {/* Atividade semanal (mock) */}
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              <span className={styles.cardTitle}>Engajamento semanal</span>
-              <button className={styles.linkBtn} onClick={() => navigate(TEACHER_ROUTES.reports)}>
-                Ver relatório →
-              </button>
-            </div>
-            <div className={styles.barChart}>
-              {WEEK_DAYS.map((day, i) => (
-                <div key={day} className={styles.barCol}>
-                  <div className={styles.barWrap}>
-                    <div
-                      className={`${styles.bar} ${WEEK_DATA[i] === 0 ? styles.barEmpty : ''}`}
-                      style={{ height: `${(WEEK_DATA[i] / maxBar) * 100}%` }}
-                    />
-                  </div>
-                  <span className={styles.barLabel}>{day}</span>
-                </div>
-              ))}
-            </div>
-            <div className={styles.barStats}>
-              <div className={styles.barStat}><span className={styles.barStatVal}>5</span><span className={styles.barStatLbl}>Dias ativos</span></div>
-              <div className={styles.barStatDiv} />
-              <div className={styles.barStat}><span className={styles.barStatVal}>88</span><span className={styles.barStatLbl}>Pico (min)</span></div>
-              <div className={styles.barStatDiv} />
-              <div className={styles.barStat}><span className={styles.barStatVal}>45</span><span className={styles.barStatLbl}>Média/dia</span></div>
-            </div>
-          </div>
-
-          {/* Alunos em risco */}
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              <span className={styles.cardTitle}>Alunos em risco</span>
-              <button className={styles.linkBtn} onClick={() => navigate(TEACHER_ROUTES.students)}>
-                Ver todos →
-              </button>
-            </div>
-            <div className={styles.riskList}>
-              {atRisk.map(s => (
-                <div key={s.id} className={styles.riskItem}>
-                  <div className={styles.riskAvatar}>{s.avatar}</div>
-                  <div className={styles.riskInfo}>
-                    <span className={styles.riskName}>{s.name}</span>
-                    <span className={styles.riskClass}>{s.class}</span>
-                  </div>
-                  <div className={styles.riskPctWrap}>
-                    <div className={styles.riskTrack}>
-                      <div className={styles.riskFill} style={{ width: `${s.pct}%` }} />
-                    </div>
-                    <span className={styles.riskPct}>{s.pct}%</span>
-                  </div>
-                </div>
-              ))}
-              {atRisk.length === 0 && (
-                <p className={styles.riskEmpty}>Nenhum aluno em risco no momento.</p>
-              )}
-            </div>
-          </div>
-
-        </div>
-
-        {/* ── Bottom row: atividade recente + trilha destaque ── */}
-        <div className={styles.bottomRow}>
-
-          {/* Atividade recente */}
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              <span className={styles.cardTitle}>Atividade recente</span>
-            </div>
-            <div className={styles.actList}>
-              {recentActivity.slice(0, 5).map((item, i) => (
-                <div key={i} className={styles.actItem}>
-                  <span className={styles.actIcon} style={{ color: item.color }}>
-                    <Icon name={item.icon} size={14} />
-                  </span>
-                  <div className={styles.actBody}>
-                    <span className={styles.actStudent}>{item.student}</span>
-                    <span className={styles.actAction}>{item.action}</span>
-                  </div>
-                  <span className={styles.actTime}>{item.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Trilha destaque */}
-          {!loadingResumo && resumo?.trilhaDestaque && (
-            <div
-              className={styles.destaqueCard}
-              onClick={() => navigate(`/professor/trilha/${resumo.trilhaDestaque.id}`)}
-            >
-              <span className={styles.destaqueTag}>Trilha em destaque</span>
-              <p className={styles.destaqueName}>{resumo.trilhaDestaque.nome}</p>
-              <p className={styles.destaqueSub}>
-                <Icon name="users" size={13} />
-                {resumo.trilhaDestaque.alunos} aluno{resumo.trilhaDestaque.alunos !== 1 ? 's' : ''} matriculados
-              </p>
-              <span className={styles.destaqueArrow}>
-                <Icon name="chevronRight" size={16} />
-              </span>
-            </div>
+      {showOnboarding ? (
+        <>
+          {classModalOpen && (
+            <CreateTrilhaModal
+              onClose={closeModal}
+              onCreate={handleCreate}
+              onEdit={handleEdit}
+              initialData={editTarget}
+            />
           )}
-
-        </div>
-
-        {/* ── Minhas trilhas ── */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Minhas trilhas</h2>
-            <button className={styles.btnPrimary} onClick={() => setClassModalOpen(true)}>
-              <Icon name="plus" size={14} /> Nova trilha
-            </button>
-          </div>
-
-          {loading && (
-            <div className={styles.skGrid}>
-              {[0,1,2].map(i => <Sk key={i} h={90} />)}
-            </div>
+          <OnboardingView
+            firstName={firstName}
+            onCreateTrilha={() => { setEditTarget(null); setClassModalOpen(true) }}
+          />
+        </>
+      ) : (
+        <TeacherLayout>
+          {classModalOpen && (
+            <CreateTrilhaModal
+              onClose={closeModal}
+              onCreate={handleCreate}
+              onEdit={handleEdit}
+              initialData={editTarget}
+            />
           )}
-
-          {error && !loading && (
-            <div className={styles.errorBanner}>
-              <Icon name="alertCircle" size={15} /> {error}
-            </div>
+          {deleteTarget && (
+            <ConfirmModal
+              title="Excluir trilha"
+              message={`Tem certeza que deseja excluir "${deleteTarget.nome}"? Esta ação não pode ser desfeita.`}
+              confirmLabel="Excluir trilha"
+              onConfirm={handleDeleteConfirm}
+              onCancel={() => setDeleteTarget(null)}
+            />
           )}
-
-          {!loading && !error && trilhas.length === 0 && (
-            <div className={styles.empty}>
-              <Icon name="school" size={36} style={{ opacity: .25 }} />
-              <p className={styles.emptyTitle}>Nenhuma trilha criada ainda</p>
-              <p className={styles.emptySub}>Crie sua primeira trilha e comece a engajar seus alunos.</p>
-              <button className={styles.btnPrimary} onClick={() => setClassModalOpen(true)}>
-                <Icon name="plus" size={14} /> Criar primeira trilha
-              </button>
-            </div>
-          )}
-
-          {!loading && trilhas.length > 0 && (
-            <div className={styles.trilhasList}>
-              {trilhas.map(t => (
-                <TrilhaCard
-                  key={t.id}
-                  {...t}
-                  deleting={deletingId === t.id}
-                  onEdit={openEdit}
-                  onDelete={openDelete}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-      </div>
-    </TeacherLayout>
+          <DashboardView
+            user={user}
+            trilhas={trilhas}
+            loading={loading}
+            resumo={resumo}
+            loadingResumo={loadingResumo}
+            navigate={navigate}
+            onOpenCreate={() => { setEditTarget(null); setClassModalOpen(true) }}
+          />
+        </TeacherLayout>
+      )}
+    </>
   )
 }
