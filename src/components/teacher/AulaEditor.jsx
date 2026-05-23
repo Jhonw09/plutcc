@@ -150,7 +150,6 @@ const DEFAULT_BLOCKS = [
 
 export default function AulaEditor({ initialData = null, onSave, onCancel, saving }) {
   const isEdit = initialData !== null
-
   const [titulo,  setTitulo]  = useState(initialData?.titulo  ?? 'Aula 1 — Introdução ao tema')
   const [blocos,  setBlocos]  = useState(initialData?.blocos  ?? DEFAULT_BLOCKS)
   const [error,   setError]   = useState('')
@@ -202,7 +201,7 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
       </div>
 
       {/* Título */}
-      <div className={styles.field}>
+      <div className={styles.field} data-tour="ae-titulo">
         <label className={styles.label}>Título da aula</label>
         <input
           className={styles.input}
@@ -215,7 +214,7 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
       </div>
 
       {/* Blocos */}
-      <div className={styles.blockList}>
+      <div className={styles.blockList} data-tour="ae-blocos">
         {blocos.map((block, idx) => {
           const BlockComp = BLOCK_COMPONENTS[block.tipo]
           const meta = BLOCK_TYPES.find(t => t.value === block.tipo)
@@ -246,7 +245,7 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
       </div>
 
       {/* Adicionar bloco */}
-      <div className={styles.addBlockWrap}>
+      <div className={styles.addBlockWrap} data-tour="ae-add-bloco">
         {addOpen ? (
           <div className={styles.addBlockMenu}>
             {BLOCK_TYPES.map(t => (
@@ -269,7 +268,7 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
 
       {error && <p className={styles.error} role="alert">{error}</p>}
 
-      <div className={styles.actions}>
+      <div className={styles.actions} data-tour="ae-salvar">
         <button className={styles.cancelBtn} onClick={onCancel} disabled={saving} type="button">Cancelar</button>
         <button className={styles.saveBtn} onClick={handleSubmit} disabled={saving} type="button">
           {saving ? 'Salvando...' : isEdit ? 'Salvar alterações' : 'Criar aula'}

@@ -2,12 +2,35 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import TeacherLayout from '../components/teacher/TeacherLayout'
 import AulaEditor    from '../components/teacher/AulaEditor'
+import SpotlightTour from '../components/ui/SpotlightTour'
 import { Toast }     from '../components/ui/Toast'
 import Icon          from '../components/ui/Icon'
 import { useAulas }  from '../hooks/useAulas'
 import { useToast }  from '../hooks/useToast'
+import { useAuth }   from '../context/AuthContext'
 import { getTrilhaById } from '../api/services/trilhaService'
 import styles from './TeacherTrilhaPage.module.css'
+
+const TOUR_KEY = (userId) => `plut_tour_trilha_${userId}`
+
+const TOUR_STEPS = [
+  {
+    target: 'trilha-header',
+    title: 'Sua trilha de estudo',
+    description: 'Aqui ficam as informações da trilha: nome, disciplina, nível e visibilidade. Clique em editar para alterar qualquer dado.',
+  },
+  {
+    target: 'add-aula-btn',
+    title: 'Adicione aulas',
+    description: 'As aulas compõem a trilha. Clique aqui para criar uma nova aula com conteúdo, vídeos e exercícios.',
+    placement: 'bottom',
+  },
+  {
+    target: 'aulas-section',
+    title: 'Lista de aulas',
+    description: 'Suas aulas aparecem aqui em ordem. Clique em qualquer aula para editar o conteúdo ou reordenar os blocos.',
+  },
+]
 
 const SUBJECT_ICON = {
   Matemática: 'math',    Português: 'book',    Química: 'flask',
@@ -43,6 +66,16 @@ export default function TeacherTrilhaPage() {
   const navigate   = useNavigate()
   const { state: trilhaFromNav } = useLocation()
   const { toasts, toast, dismiss } = useToast()
+  const { user } = useAuth()
+
+  // Tour
+  const [tourActive, setTourActive] = useState(() => {
+    try { return localStorage.getItem(TOUR_KEY(user?.id)) !== 'true' } catch { return false }
+  })
+
+  // Tour do editor de aulas — só na primeira aula criada
+  const AULA_TOUR_KEY = 'plut_tour_aula_editor'
+  const [aulaTourActive, setAulaTourActive] = useState(false)
 
   // ── Trilha ────────────────────────────────────────────────────────────────
   const [trilha,      setTrilha]      = useState(trilhaFromNav ?? null)
@@ -68,7 +101,14 @@ export default function TeacherTrilhaPage() {
   const [deletingId,      setDeletingId]      = useState(null)
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  function openCreate() { setEditTarget(null); setModalMode('create') }
+  function openCreate() {
+    setEditTarget(null)
+    setModalMode('create')
+    // Ativa o tour do editor na primeira aula
+    try {
+      if (localStorage.getItem(AULA_TOUR_KEY) !== 'true') setAulaTourActive(true)
+    } catch {}
+  }
   function openEdit(aula) { setEditTarget(aula); setModalMode('edit') }
   function closeModal() { setModalMode(null); setEditTarget(null) }
 
@@ -132,19 +172,44 @@ export default function TeacherTrilhaPage() {
     <TeacherLayout>
       <Toast toasts={toasts} onDismiss={dismiss} />
 
+      <SpotlightTour
+        steps={TOUR_STEPS}
+        active={tourActive && !!trilha}
+        onFinish={() => setTourActive(false)}
+        storageKey={TOUR_KEY(user?.id)}
+      />
+
+      {/* Tour do editor de aulas — fora do modal para evitar conflito de z-index */}
+      <SpotlightTour
+        steps={[
+          { target: 'ae-titulo',    title: 'Título da aula',      description: 'Dê um nome claro. Ex: "Aula 1 — Introdução ao tema".' },
+          { target: 'ae-blocos',    title: 'Blocos de conteúdo',  description: 'Cada aula tem blocos. Explicações, vídeos e questionários no mesmo lugar.' },
+          { target: 'ae-add-bloco', title: 'Adicionar bloco',     description: 'Clique para adicionar mais blocos: explicação, vídeo, questionário ou texto livre.', placement: 'top' },
+          { target: 'ae-salvar',    title: 'Salvar aula',         description: 'Quando terminar, clique em "Criar aula" para salvar na trilha.', placement: 'top' },
+        ]}
+        active={aulaTourActive}
+        onFinish={() => {
+          setAulaTourActive(false)
+          try { localStorage.setItem(AULA_TOUR_KEY, 'true') } catch {}
+        }}
+        storageKey={AULA_TOUR_KEY}
+      />
+
       {/* ── Modal criar / editar aula ── */}
       {modalMode && (
-        <AulaModal
-          title={modalMode === 'edit' ? 'Editar aula' : 'Nova aula'}
-          onClose={closeModal}
-        >
-          <AulaEditor
-            initialData={editTarget}
-            onSave={handleSave}
-            onCancel={closeModal}
-            saving={saving}
-          />
-        </AulaModal>
+        <>
+          <AulaModal
+            title={modalMode === 'edit' ? 'Editar aula' : 'Nova aula'}
+            onClose={closeModal}
+          >
+            <AulaEditor
+              initialData={editTarget}
+              onSave={handleSave}
+              onCancel={closeModal}
+              saving={saving}
+            />
+          </AulaModal>
+        </>
       )}
 
       <div className={styles.page}>
@@ -154,7 +219,7 @@ export default function TeacherTrilhaPage() {
         </button>
 
         {/* ── Header da trilha ── */}
-        <header className={styles.header}>
+        <header className={styles.header} data-tour="trilha-header">
           <span className={styles.emoji}>
             <Icon name={iconName} size={28} />
           </span>
@@ -177,7 +242,7 @@ export default function TeacherTrilhaPage() {
         </header>
 
         {/* ── Seção de aulas ── */}
-        <section className={styles.section}>
+        <section className={styles.section} data-tour="aulas-section">
           <div className={styles.sectionHeader}>
             <div>
               <h2 className={styles.sectionTitle}>Aulas</h2>
@@ -185,7 +250,7 @@ export default function TeacherTrilhaPage() {
                 {loading ? 'Carregando...' : `${aulas.length} aula${aulas.length !== 1 ? 's' : ''}`}
               </p>
             </div>
-            <button className={styles.addBtn} onClick={openCreate}>
+            <button className={styles.addBtn} onClick={openCreate} data-tour="add-aula-btn">
               <Icon name="plus" size={15} /> Adicionar aula
             </button>
           </div>

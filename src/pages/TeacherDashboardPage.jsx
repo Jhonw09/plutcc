@@ -427,6 +427,7 @@ export default function TeacherDashboardPage() {
               onCreate={handleCreate}
               onEdit={handleEdit}
               initialData={editTarget}
+              forceTour
             />
           )}
           <OnboardingView
