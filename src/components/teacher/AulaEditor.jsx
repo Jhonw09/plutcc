@@ -156,30 +156,34 @@ const DEFAULT_BLOCKS = [
 const TOUR_STEPS = [
   {
     ref:      'ref-titulo',
-    title:    'Vamos começar pelo nome 📝',
+    title:    'Vamos começar pelo nome',
     hint:     'Dê um nome claro para esta aula. Ele é o que o aluno vê primeiro ao entrar na trilha.',
     example:  '"Aula 1 — Introdução ao tema" ou "Equações do 1º Grau"',
+    icon:     'pencil',
     optional: false,
   },
   {
     ref:      'ref-bloco0',
-    title:    'Agora escreva o conteúdo ✏️',
+    title:    'Agora escreva o conteúdo',
     hint:     'Este é o bloco de explicação — o coração da aula. Escreva o que o aluno precisa aprender.',
     example:  'Comece pelos objetivos e depois desenvolva o conteúdo principal.',
+    icon:     'fileText',
     optional: false,
   },
   {
     ref:      'ref-add-menu',
-    title:    'Escolha o tipo de bloco 🎥',
+    title:    'Escolha o tipo de bloco',
     hint:     'Selecione um tipo para adicionar à aula: vídeo, questionário, texto livre ou mais explicação.',
     example:  null,
+    icon:     'video',
     optional: false,
   },
   {
     ref:      'ref-salvar',
-    title:    'Pronto! Agora é só salvar 🚀',
-    hint:     'Clique em "Criar aula" para publicar o conteúdo na sua trilha. Os alunos já poderão acessar.',
+    title:    'Publicar ou salvar como rascunho',
+    hint:     'Você pode publicar a aula agora — os alunos já poderão acessar — ou salvar como rascunho para terminar depois. Rascunhos ficam visíveis só para você.',
     example:  null,
+    icon:     'fileText',
     optional: true,
   },
 ]
@@ -226,7 +230,10 @@ function TourOverlay({ tourStep, spotRect, onNext, onSkip, titulo, blocos, addOp
           <button className={styles.tourSkip} onClick={onSkip} type="button">Pular tour</button>
         </div>
 
-        <h4 className={styles.tourTitle}>{step.title}</h4>
+        <h4 className={styles.tourTitle}>
+          <Icon name={step.icon} size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+          {step.title}
+        </h4>
         <p className={styles.tourHint}>{step.hint}</p>
         {step.example && <p className={styles.tourExample}>{step.example}</p>}
 
@@ -247,12 +254,16 @@ function TourOverlay({ tourStep, spotRect, onNext, onSkip, titulo, blocos, addOp
 
 // ── Editor principal ──────────────────────────────────────────────────────────
 export default function AulaEditor({ initialData = null, onSave, onCancel, saving, forceTour = false }) {
-  const isEdit = initialData !== null
+  const isEdit  = initialData !== null
+  const isDraft = initialData?.status === 'RASCUNHO'
 
   const [tourStep, setTourStep] = useState(() => {
     if (isEdit) return -1
+    try {
+      if (localStorage.getItem(AULA_TOUR_KEY) === 'true') return -1
+    } catch {}
     if (forceTour) return 0
-    try { return localStorage.getItem(AULA_TOUR_KEY) !== 'true' ? 0 : -1 } catch { return -1 }
+    return 0
   })
 
   const tourActive  = tourStep >= 0 && tourStep < TOUR_STEPS.length
@@ -262,6 +273,7 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
   const [blocos,  setBlocos]  = useState(initialData?.blocos  ?? DEFAULT_BLOCKS)
   const [error,   setError]   = useState('')
   const [addOpen, setAddOpen] = useState(false)
+  const [saving2, setSaving2] = useState(false) // rascunho saving state separado
 
   // refs para spotlight
   const refTitulo   = useRef(null)
@@ -352,11 +364,12 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
     })
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(status = 'PUBLICADA') {
     if (!titulo.trim()) { setError('O título é obrigatório.'); return }
     if (blocos.length === 0) { setError('Adicione ao menos um bloco de conteúdo.'); return }
     setError('')
-    try { await onSave({ titulo: titulo.trim(), blocos }) }
+    if (tourActive) finishTour()
+    try { await onSave({ titulo: titulo.trim(), blocos, status }) }
     catch (err) { setError(err.message || 'Erro ao salvar aula.') }
   }
 
@@ -378,7 +391,7 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
         <div className={styles.editorHeader}>
           <h3 className={styles.editorTitle}>
             <Icon name={isEdit ? 'pencil' : 'fileText'} size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
-            {isEdit ? 'Editar aula' : tourActive ? 'Vamos criar sua primeira aula! 🎉' : 'Nova aula'}
+            {isEdit ? 'Editar aula' : tourActive ? 'Vamos criar sua primeira aula!' : 'Nova aula'}
           </h3>
           <span className={styles.editorHint}>
             {tourActive
@@ -479,14 +492,24 @@ export default function AulaEditor({ initialData = null, onSave, onCancel, savin
         {error && <p className={styles.error} role="alert">{error}</p>}
 
         <div className={styles.actions} ref={refSalvar}>
-          <button className={styles.cancelBtn} onClick={onCancel} disabled={saving || (tourActive && tourStep < SAVE_STEP)} type="button">Cancelar</button>
+          <button className={styles.cancelBtn} onClick={onCancel} disabled={saving || saving2 || (tourActive && tourStep < SAVE_STEP)} type="button">Cancelar</button>
+          {(!isEdit || isDraft) && (
+            <button
+              className={styles.draftBtn}
+              onClick={() => handleSubmit('RASCUNHO')}
+              disabled={saving || saving2 || (tourActive && tourStep < SAVE_STEP)}
+              type="button"
+            >
+              {saving2 ? 'Salvando...' : isDraft ? 'Manter rascunho' : 'Rascunho'}
+            </button>
+          )}
           <button
             className={styles.saveBtn}
-            onClick={handleSubmit}
-            disabled={saving || (tourActive && tourStep < SAVE_STEP)}
+            onClick={() => handleSubmit('PUBLICADA')}
+            disabled={saving || saving2 || (tourActive && tourStep < SAVE_STEP)}
             type="button"
           >
-            {saving ? 'Salvando...' : isEdit ? 'Salvar alterações' : 'Criar aula'}
+            {saving ? 'Publicando...' : isEdit && !isDraft ? 'Salvar alterações' : 'Publicar aula'}
           </button>
         </div>
       </div>

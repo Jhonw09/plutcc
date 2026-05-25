@@ -471,6 +471,19 @@
 }
 .cancelBtn:hover { color: var(--text); }
 
+.draftBtn {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--surface-3);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 20px;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.draftBtn:hover { color: var(--text); border-color: var(--accent-border); background: var(--accent-soft); }
+.draftBtn:disabled { opacity: .5; cursor: not-allowed; }
+
 .saveBtn {
   font-size: 13px;
   font-weight: 700;

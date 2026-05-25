@@ -4,6 +4,7 @@ import TeacherLayout          from '../components/teacher/TeacherLayout'
 import CreateTrilhaModal      from '../components/teacher/CreateTrilhaModal'
 import { ConfirmModal }       from '../components/ui/ConfirmModal'
 import { Toast }              from '../components/ui/Toast'
+import SpotlightTour          from '../components/ui/SpotlightTour'
 import Icon                   from '../components/ui/Icon'
 import { useToast }           from '../hooks/useToast'
 import { useAuth }            from '../context/AuthContext'
@@ -13,6 +14,37 @@ import { TEACHER_ROUTES }     from '../constants/routes'
 import styles from './TeacherDashboardPage.module.css'
 
 const WEEK_DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+
+const AULA_TOUR_KEY      = 'plut_tour_aula_editor'
+const dashTourKey  = (id) => `plut_tour_dashboard_${id}`
+
+const DASHBOARD_TOUR_STEPS = [
+  {
+    target: 'dash-stats',
+    title: 'Seus números em tempo real',
+    description: 'Aqui você vê o total de trilhas criadas, alunos matriculados, aulas publicadas e trilhas públicas.',
+  },
+  {
+    target: 'dash-desempenho',
+    title: 'Desempenho das trilhas',
+    description: 'Gráfico de atividade dos últimos 7 dias. Quando seus alunos estudarem, os dados aparecerão aqui.',
+  },
+  {
+    target: 'dash-minhas-trilhas',
+    title: 'Suas trilhas',
+    description: 'Lista rápida das suas trilhas com número de alunos. Clique em "Gerenciar" para editar aulas.',
+  },
+  {
+    target: 'dash-atualizacoes',
+    title: 'Últimas atualizações',
+    description: 'Registro das suas ações recentes: trilhas criadas, aulas publicadas e rascunhos pendentes.',
+  },
+  {
+    target: 'dash-duvidas',
+    title: 'Dúvidas não respondidas',
+    description: 'Quando seus alunos enviarem dúvidas nas aulas, elas aparecerão aqui para você responder.',
+  },
+]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function onboardingKey(userId) { return `plut_onboarding_done_${userId}` }
@@ -140,7 +172,7 @@ function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate
         <p className={styles.greetingSub}>Aqui está o resumo da sua atividade.</p>
       </div>
 
-      <div className={styles.statsGrid}>
+      <div className={styles.statsGrid} data-tour="dash-stats">
         {stats.map((s, i) => (
           <div key={i} className={styles.statCard}>
             <span className={styles.statIconWrap} data-color={s.color}>
@@ -159,7 +191,7 @@ function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate
       <div className={styles.row}>
 
         {/* Desempenho */}
-        <div className={styles.card}>
+        <div className={styles.card} data-tour="dash-desempenho">
           <div className={styles.cardHead}>
             <span className={styles.cardTitle}>Desempenho das trilhas</span>
             <span className={styles.cardBadge}>Últimos 7 dias</span>
@@ -188,7 +220,7 @@ function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate
         </div>
 
         {/* Minhas trilhas */}
-        <div className={styles.card}>
+        <div className={styles.card} data-tour="dash-minhas-trilhas">
           <div className={styles.cardHead}>
             <span className={styles.cardTitle}>Minhas trilhas</span>
             <button className={styles.cardLink} onClick={() => navigate(TEACHER_ROUTES.trilhas)}>
@@ -231,34 +263,57 @@ function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate
       {/* Linha 2 */}
       <div className={styles.row}>
 
-        {/* Atividade recente */}
-        <div className={styles.card}>
+        {/* Últimas atualizações */}
+        <div className={styles.card} data-tour="dash-atualizacoes">
           <div className={styles.cardHead}>
-            <span className={styles.cardTitle}>Atividade recente</span>
-            <button className={styles.cardLink} onClick={() => navigate(TEACHER_ROUTES.reports)}>Ver tudo →</button>
+            <span className={styles.cardTitle}>Últimas atualizações</span>
           </div>
-          <div className={styles.emptyChart}>
-            <Icon name="clock" size={24} style={{ opacity: .18 }} />
-            <p>
-              {hasAlunos
-                ? 'Nenhuma atividade recente registrada.'
-                : 'Quando seus alunos interagirem com as aulas, as atividades aparecerão aqui.'}
-            </p>
-          </div>
+          {(() => {
+            const eventos = []
+            if (!loading && trilhas.length > 0) {
+              const ultima = trilhas[0]
+              eventos.push({ icon: 'school',   color: '#a78bfa', bg: 'rgba(108,92,231,.12)', text: <>Trilha <strong>{ultima.nome}</strong> criada</> })
+            }
+            if (!loadingResumo && (resumo?.totalAulas ?? 0) > 0) {
+              eventos.push({ icon: 'fileText', color: '#4ade80', bg: 'rgba(34,197,94,.12)',  text: <><strong>{resumo.totalAulas}</strong> aula{resumo.totalAulas !== 1 ? 's' : ''} publicada{resumo.totalAulas !== 1 ? 's' : ''} no total</> })
+            }
+            if (!loadingResumo && (resumo?.totalRascunhos ?? 0) > 0) {
+              eventos.push({ icon: 'pencil',   color: '#fbbf24', bg: 'rgba(234,179,8,.12)',  text: <><strong>{resumo.totalRascunhos}</strong> rascunho{resumo.totalRascunhos !== 1 ? 's' : ''} pendente{resumo.totalRascunhos !== 1 ? 's' : ''}</> })
+            }
+            if (!loading && trilhas.length > 1) {
+              eventos.push({ icon: 'school',   color: '#a78bfa', bg: 'rgba(108,92,231,.12)', text: <><strong>{trilhas.length}</strong> trilhas criadas no total</> })
+            }
+            if (eventos.length === 0) {
+              return (
+                <div className={styles.emptyChart}>
+                  <Icon name="clock" size={24} style={{ opacity: .18 }} />
+                  <p>Suas ações recentes aparecerão aqui conforme você usar a plataforma.</p>
+                </div>
+              )
+            }
+            return (
+              <div className={styles.actList}>
+                {eventos.map((e, i) => (
+                  <div key={i} className={styles.actItem}>
+                    <span className={styles.actIcon} style={{ background: e.bg, color: e.color }}>
+                      <Icon name={e.icon} size={15} />
+                    </span>
+                    <span className={styles.actText}>{e.text}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
         </div>
 
-        {/* Alunos mais ativos */}
-        <div className={styles.card}>
+        {/* Dúvidas não respondidas */}
+        <div className={styles.card} data-tour="dash-duvidas">
           <div className={styles.cardHead}>
-            <span className={styles.cardTitle}>Alunos mais ativos</span>
+            <span className={styles.cardTitle}>Dúvidas não respondidas</span>
           </div>
           <div className={styles.emptyChart}>
-            <Icon name="users" size={24} style={{ opacity: .18 }} />
-            <p>
-              {hasAlunos
-                ? 'Nenhum dado de atividade ainda.'
-                : 'Seus alunos mais ativos aparecerão aqui assim que se matricularem.'}
-            </p>
+            <Icon name="alertCircle" size={24} style={{ opacity: .18 }} />
+            <p>Quando seus alunos enviarem dúvidas nas aulas, elas aparecerão aqui para você responder.</p>
           </div>
         </div>
 
@@ -285,6 +340,21 @@ export default function TeacherDashboardPage() {
     if (!user?.id) return false
     return !isOnboardingDone(user.id)
   })
+
+  const [showDashTour,    setShowDashTour]    = useState(false)
+  const [showDashWelcome, setShowDashWelcome] = useState(false)
+
+  useEffect(() => {
+    if (!user?.id || showOnboarding) return
+    try {
+      const aulaDone = localStorage.getItem(AULA_TOUR_KEY) === 'true'
+      const dashDone = localStorage.getItem(dashTourKey(user.id)) === 'true'
+      if (aulaDone && !dashDone) {
+        // pequeno delay para o professor ver a página antes do card aparecer
+        setTimeout(() => setShowDashWelcome(true), 600)
+      }
+    } catch {}
+  }, [user?.id, showOnboarding])
 
   useEffect(() => {
     if (!user?.id) return
@@ -374,6 +444,44 @@ export default function TeacherDashboardPage() {
               onConfirm={handleDeleteConfirm}
               onCancel={() => setDeleteTarget(null)}
             />
+          )}
+          <SpotlightTour
+            steps={DASHBOARD_TOUR_STEPS}
+            active={showDashTour}
+            onFinish={() => setShowDashTour(false)}
+            storageKey={dashTourKey(user?.id)}
+          />
+
+          {/* Card de boas-vindas à dashboard */}
+          {showDashWelcome && (
+            <div className={styles.dashWelcomeBackdrop}>
+              <div className={styles.dashWelcomeCard}>
+                <div className={styles.dashWelcomeIcon}>
+                  <Icon name="home" size={28} />
+                </div>
+                <h2 className={styles.dashWelcomeTitle}>Esta é sua dashboard</h2>
+                <p className={styles.dashWelcomeDesc}>
+                  Aqui você acompanha tudo: suas trilhas, alunos matriculados, aulas publicadas e a atividade recente. Vamos fazer um tour rápido?
+                </p>
+                <div className={styles.dashWelcomeActions}>
+                  <button
+                    className={styles.dashWelcomeBtnSecondary}
+                    onClick={() => {
+                      setShowDashWelcome(false)
+                      try { localStorage.setItem(dashTourKey(user?.id), 'true') } catch {}
+                    }}
+                  >
+                    Pular
+                  </button>
+                  <button
+                    className={styles.dashWelcomeBtnPrimary}
+                    onClick={() => { setShowDashWelcome(false); setShowDashTour(true) }}
+                  >
+                    <Icon name="sparkles" size={14} /> Começar tour
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
           <DashboardView
             user={user}

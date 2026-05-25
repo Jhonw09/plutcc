@@ -33,7 +33,8 @@ export async function createAula(aulaData) {
     body: JSON.stringify({
       titulo:   aulaData.titulo.trim(),
       trilhaId: aulaData.trilhaId,
-      conteudo: JSON.stringify(envelope),  // blocos serializados como string
+      conteudo: JSON.stringify(envelope),
+      status:   aulaData.status ?? 'PUBLICADA',
     }),
   }).catch(err => {
     if (err.status === 400) throw new Error('Dados da aula inválidos.')
@@ -46,8 +47,8 @@ export async function createAula(aulaData) {
 
 export async function getAulasByTrilha(trilhaId) {
   if (!trilhaId) throw new Error('ID da trilha é obrigatório')
-  const aulas = await api(ENDPOINTS.aulasByTrilha(trilhaId)).catch(() => {
-    throw new Error('Erro ao carregar aulas.')
+  const aulas = await api(ENDPOINTS.aulasByTrilha(trilhaId)).catch(err => {
+    throw err  // preserva err.status
   })
   return aulas.map(a => ({ ...a, blocos: fromEnvelope(parseConteudo(a.conteudo)) }))
 }
@@ -68,6 +69,7 @@ export async function updateAula(id, aulaData) {
     body: JSON.stringify({
       titulo:   aulaData.titulo?.trim(),
       conteudo: JSON.stringify(envelope),
+      ...(aulaData.status ? { status: aulaData.status } : {}),
     }),
   }).catch(() => {
     throw new Error('Erro ao atualizar aula.')

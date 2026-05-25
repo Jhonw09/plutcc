@@ -18,7 +18,12 @@ export function useAulas(trilhaId) {
     try {
       setAulas(await getAulasByTrilha(trilhaId))
     } catch (err) {
-      setError(err.message)
+      // 404 = trilha nova sem aulas ainda, não é erro real
+      if (err?.status === 404 || err?.message?.includes('404')) {
+        setAulas([])
+      } else {
+        setError(err.message)
+      }
     } finally {
       setLoading(false)
     }

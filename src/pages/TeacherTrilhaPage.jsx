@@ -11,7 +11,8 @@ import { useAuth }   from '../context/AuthContext'
 import { getTrilhaById } from '../api/services/trilhaService'
 import styles from './TeacherTrilhaPage.module.css'
 
-const TRILHA_TOUR_KEY = (userId) => `plut_tour_trilha_${userId}`
+const TRILHA_TOUR_KEY  = (userId) => `plut_tour_trilha_${userId}`
+const DASH_CARD_KEY    = (userId) => `plut_dash_card_${userId}`
 
 const TRILHA_TOUR_STEPS = [
   {
@@ -70,7 +71,8 @@ export default function TeacherTrilhaPage() {
   const [trilhaTourActive, setTrilhaTourActive] = useState(() => {
     try { return localStorage.getItem(TRILHA_TOUR_KEY(user?.id)) !== 'true' } catch { return false }
   })
-  const [showFirstAulaCard, setShowFirstAulaCard] = useState(false)
+  const [showFirstAulaCard,   setShowFirstAulaCard]   = useState(false)
+  const [showDashboardCard,   setShowDashboardCard]   = useState(false)
 
   function handleTrilhaTourFinish() {
     setTrilhaTourActive(false)
@@ -90,6 +92,9 @@ export default function TeacherTrilhaPage() {
 
   // ── Aulas ─────────────────────────────────────────────────────────────────
   const { aulas, loading, error, createAula, updateAula, deleteAula } = useAulas(id)
+
+  const aulasPublicadas = aulas.filter(a => a.status !== 'RASCUNHO')
+  const aulasRascunho   = aulas.filter(a => a.status === 'RASCUNHO')
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [modalMode,  setModalMode]  = useState(null)
@@ -115,10 +120,19 @@ export default function TeacherTrilhaPage() {
     try {
       if (modalMode === 'edit') {
         await updateAula(editTarget.id, { ...formData, trilhaId: Number(id) })
-        toast('Aula atualizada com sucesso!', 'success')
+        const label = formData.status === 'RASCUNHO' ? 'Rascunho salvo!' : 'Aula atualizada com sucesso!'
+        toast(label, 'success')
       } else {
         await createAula({ ...formData, trilhaId: Number(id) })
-        toast('Aula criada com sucesso!', 'success')
+        const label = formData.status === 'RASCUNHO' ? 'Rascunho salvo!' : 'Aula criada com sucesso!'
+        toast(label, 'success')
+        // primeira aula criada (ou rascunho) — mostra card de ir para dashboard
+        try {
+          if (localStorage.getItem(DASH_CARD_KEY(user?.id)) !== 'true') {
+            localStorage.setItem(DASH_CARD_KEY(user?.id), 'true')
+            setShowDashboardCard(true)
+          }
+        } catch {}
       }
       closeModal()
     } catch (err) {
@@ -206,6 +220,35 @@ export default function TeacherTrilhaPage() {
         </div>
       )}
 
+      {/* ── Card de transição: conhecer o restante do site ── */}
+      {showDashboardCard && (
+        <div className={styles.firstAulaBackdrop}>
+          <div className={styles.firstAulaCard}>
+            <div className={styles.firstAulaIcon}>
+              <Icon name="sparkles" size={28} />
+            </div>
+            <h2 className={styles.firstAulaTitle}>Vamos conhecer o restante do site?</h2>
+            <p className={styles.firstAulaDesc}>
+              Sua primeira aula foi criada. Agora veja o painel completo — lá você acompanha seus alunos, trilhas e muito mais.
+            </p>
+            <div className={styles.firstAulaActions}>
+              <button
+                className={styles.firstAulaBtnSecondary}
+                onClick={() => setShowDashboardCard(false)}
+              >
+                Agora não
+              </button>
+              <button
+                className={styles.firstAulaBtnPrimary}
+                onClick={() => navigate('/teacher-dashboard')}
+              >
+                <Icon name="arrow" size={14} /> Vamos lá
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Modal criar / editar aula ── */}
       {modalMode && (
         <>
@@ -259,7 +302,14 @@ export default function TeacherTrilhaPage() {
             <div>
               <h2 className={styles.sectionTitle}>Aulas</h2>
               <p className={styles.sectionSub}>
-                {loading ? 'Carregando...' : `${aulas.length} aula${aulas.length !== 1 ? 's' : ''}`}
+                {loading ? 'Carregando...' : (
+                  <>
+                    {aulasPublicadas.length} publicada{aulasPublicadas.length !== 1 ? 's' : ''}
+                    {aulasRascunho.length > 0 && (
+                      <span className={styles.draftCount}> · {aulasRascunho.length} rascunho{aulasRascunho.length !== 1 ? 's' : ''}</span>
+                    )}
+                  </>
+                )}
               </p>
             </div>
             <button className={styles.addBtn} onClick={openCreate} data-tour="add-aula-btn">
@@ -298,9 +348,8 @@ export default function TeacherTrilhaPage() {
                 const isDeleting   = deletingId      === aula.id
                 const isConfirming = confirmDeleteId === aula.id
                 return (
-                  <div
-                    key={aula.id}
-                    className={`${styles.aulaCard} ${isDeleting ? styles.aulaCardDeleting : ''}`}
+                  <div key={aula.id}
+                    className={`${styles.aulaCard} ${isDeleting ? styles.aulaCardDeleting : ''} ${aula.status === 'RASCUNHO' ? styles.aulaCardDraft : ''}`}
                   >
                     {/* Clique no card abre edição */}
                     <button
@@ -311,7 +360,12 @@ export default function TeacherTrilhaPage() {
                     >
                       <span className={styles.aulaNum}>{index + 1}</span>
                       <div className={styles.aulaBody}>
-                        <span className={styles.aulaTitle}>{aula.titulo}</span>
+                        <div className={styles.aulaTitleRow}>
+                          <span className={styles.aulaTitle}>{aula.titulo}</span>
+                          {aula.status === 'RASCUNHO' && (
+                            <span className={styles.draftBadge}>Rascunho</span>
+                          )}
+                        </div>
                         <div className={styles.aulaBlocos}>
                           {(aula.blocos ?? []).map((b, i) => (
                             <span key={i} className={styles.aulaTipo}>
