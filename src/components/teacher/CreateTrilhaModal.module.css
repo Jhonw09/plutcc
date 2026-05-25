@@ -89,6 +89,21 @@
   color: var(--text-secondary);
 }
 
+/* ── Tour progress bar ── */
+.tourProgressBar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: -8px;
+}
+.tourProgressFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 300ms cubic-bezier(.4,0,.2,1);
+}
+
 /* ── Form ── */
 .form {
   display: flex;
@@ -96,7 +111,6 @@
   gap: 16px;
 }
 
-/* Shared field wrapper — mirrors InputField.module.css structure */
 .fieldWrap {
   display: flex;
   flex-direction: column;
@@ -109,7 +123,6 @@
   color: var(--text-secondary);
 }
 
-/* Native <select> styled to match InputField */
 .select {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -133,7 +146,6 @@
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .select option { background: var(--surface-2); color: var(--text); }
-
 .selectError {
   border-color: var(--danger) !important;
   box-shadow: 0 0 0 3px var(--danger-bg) !important;
@@ -164,28 +176,25 @@
   transition: border-color .15s, background .15s;
   text-align: left;
 }
-.typeBtn:hover:not(.typeBtnActive) {
+.typeBtn:hover:not(.typeBtnActive):not(:disabled) {
   border-color: var(--accent-border);
   background: var(--surface-3);
 }
-
 .typeBtnActive {
   border-color: var(--accent) !important;
   background: var(--accent-soft) !important;
 }
-
 .typeBtnLabel {
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
 }
-
 .typeBtnHint {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-/* ── Actions row ── */
+/* ── Actions ── */
 .actions {
   display: flex;
   gap: 10px;
@@ -193,8 +202,192 @@
   padding-top: 4px;
 }
 
+.apiError {
+  font-size: 13px;
+  color: var(--danger);
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+/* ── Tour overlay (cobre tudo, z-index acima do modal) ── */
+.tourRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.tourOverlaySvg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Borda pulsante ao redor do campo destacado */
+@keyframes spotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(108,92,231,.7), 0 0 0 4px rgba(108,92,231,.15); }
+  50%       { box-shadow: 0 0 0 6px rgba(108,92,231,.2), 0 0 0 10px rgba(108,92,231,.06); }
+}
+
+.tourSpotBorder {
+  position: fixed;
+  border-radius: 14px;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+  animation: spotPulse 2s ease-in-out infinite;
+  transition: top .25s ease, left .25s ease, width .25s ease, height .25s ease;
+  z-index: 10000;
+}
+
+/* Tooltip flutuante */
+.tourTooltip {
+  position: fixed;
+  width: 300px;
+  background: var(--surface);
+  border: 1px solid var(--accent-border);
+  border-radius: 16px;
+  padding: 16px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: all;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.6),
+    0 0 0 1px rgba(108,92,231,.15);
+  animation: tooltipIn 200ms cubic-bezier(.34,1.56,.64,1) forwards;
+  z-index: 10001;
+}
+
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(6px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);   }
+}
+
+.tourTooltipHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tourBadge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.tourOptional {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.tourSkip {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color .15s;
+}
+.tourSkip:hover { color: var(--text); }
+
+.tourTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.tourHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.tourExample {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  border-left: 2px solid var(--accent-border);
+}
+
+.tourNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.tourDots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.tourDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  transition: all .2s;
+}
+.tourDotActive {
+  width: 18px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.tourDotDone {
+  background: var(--accent);
+  opacity: .35;
+}
+
+.tourNextBtn {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 8px;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background .15s, transform .15s, opacity .15s;
+  box-shadow: 0 4px 12px rgba(108,92,231,.4);
+}
+.tourNextBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+.tourNextBtn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Responsive ── */
 @media (max-width: 480px) {
   .card    { padding: 28px 18px 24px; }
   .actions { flex-direction: column-reverse; }
   .actions > * { width: 100%; justify-content: center; }
+  .tourTooltip { width: calc(100vw - 32px); left: 16px !important; }
 }

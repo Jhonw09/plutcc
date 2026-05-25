@@ -88,6 +88,24 @@
   padding: 10px 14px;
 }
 
+.successMsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  animation: fadeUp 200ms ease forwards;
+}
+
+.btnSaved {
+  background: #16a34a !important;
+  pointer-events: none;
+}
+
 /* ── Danger zone ── */
 .dangerCard { border-color: rgba(239,68,68,.2); }
 

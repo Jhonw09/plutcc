@@ -3,7 +3,7 @@ import styles from './SpotlightTour.module.css'
 
 export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
   const [step,    setStep]    = useState(0)
-  const [hl,      setHl]      = useState(null)   // highlight rect
+  const [hl,      setHl]      = useState(null)
   const [visible, setVisible] = useState(false)
 
   const current = steps[step]
@@ -15,7 +15,7 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     setTimeout(() => {
       const r = el.getBoundingClientRect()
-      setHl({ top: r.top - 6, left: r.left - 6, width: r.width + 12, height: r.height + 12 })
+      setHl({ top: r.top - 8, left: r.left - 8, width: r.width + 16, height: r.height + 16 })
       setVisible(true)
     }, delay)
   }, [current?.target])
@@ -57,12 +57,37 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
     onFinish()
   }
 
+  // posiciona o tooltip abaixo do elemento, ou acima se não couber
+  function tooltipStyle() {
+    if (!hl) return { bottom: 28, right: 28 }
+    const TOOLTIP_H = 180
+    const TOOLTIP_W = 300
+    const below = hl.top + hl.height + 14
+    const fitsBelow = below + TOOLTIP_H < window.innerHeight
+    const left = Math.max(16, Math.min(hl.left, window.innerWidth - TOOLTIP_W - 16))
+    return fitsBelow
+      ? { top: below, left }
+      : { top: hl.top - TOOLTIP_H - 14, left }
+  }
+
   return (
     <div className={styles.root}>
-      {/* Overlay escuro — não bloqueia cliques na área do highlight */}
-      <div className={styles.overlay} onClick={finish} />
+      {/* SVG overlay com buraco no elemento */}
+      {hl ? (
+        <svg className={styles.overlaySvg} xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <mask id="spot-mask">
+              <rect width="100%" height="100%" fill="white" />
+              <rect x={hl.left} y={hl.top} width={hl.width} height={hl.height} rx="12" fill="black" />
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="rgba(0,0,0,0.65)" mask="url(#spot-mask)" />
+        </svg>
+      ) : (
+        <div className={styles.overlay} onClick={finish} />
+      )}
 
-      {/* Highlight roxo no elemento */}
+      {/* Borda pulsante ao redor do elemento */}
       {hl && (
         <div
           className={styles.highlight}
@@ -70,9 +95,11 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
         />
       )}
 
-      {/* Tooltip fixo no canto inferior direito */}
-      <div className={`${styles.tooltip} ${visible ? styles.visible : ''}`}>
-
+      {/* Tooltip posicionado perto do elemento */}
+      <div
+        className={`${styles.tooltip} ${visible ? styles.visible : ''}`}
+        style={tooltipStyle()}
+      >
         <div className={styles.head}>
           <span className={styles.badge}>{step + 1} / {steps.length}</span>
           <button className={styles.skip} onClick={finish}>Pular</button>
@@ -98,7 +125,6 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
             />
           ))}
         </div>
-
       </div>
     </div>
   )

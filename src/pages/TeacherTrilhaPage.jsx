@@ -11,24 +11,23 @@ import { useAuth }   from '../context/AuthContext'
 import { getTrilhaById } from '../api/services/trilhaService'
 import styles from './TeacherTrilhaPage.module.css'
 
-const TOUR_KEY = (userId) => `plut_tour_trilha_${userId}`
+const TRILHA_TOUR_KEY = (userId) => `plut_tour_trilha_${userId}`
 
-const TOUR_STEPS = [
+const TRILHA_TOUR_STEPS = [
   {
     target: 'trilha-header',
     title: 'Sua trilha de estudo',
-    description: 'Aqui ficam as informações da trilha: nome, disciplina, nível e visibilidade. Clique em editar para alterar qualquer dado.',
+    description: 'Aqui ficam as informações da trilha: nome, disciplina, nível e visibilidade.',
   },
   {
     target: 'add-aula-btn',
     title: 'Adicione aulas',
-    description: 'As aulas compõem a trilha. Clique aqui para criar uma nova aula com conteúdo, vídeos e exercícios.',
-    placement: 'bottom',
+    description: 'Clique aqui para criar uma nova aula com conteúdo, vídeos e exercícios.',
   },
   {
     target: 'aulas-section',
     title: 'Lista de aulas',
-    description: 'Suas aulas aparecem aqui em ordem. Clique em qualquer aula para editar o conteúdo ou reordenar os blocos.',
+    description: 'Suas aulas aparecem aqui em ordem. Clique em qualquer aula para editar o conteúdo.',
   },
 ]
 
@@ -68,14 +67,15 @@ export default function TeacherTrilhaPage() {
   const { toasts, toast, dismiss } = useToast()
   const { user } = useAuth()
 
-  // Tour
-  const [tourActive, setTourActive] = useState(() => {
-    try { return localStorage.getItem(TOUR_KEY(user?.id)) !== 'true' } catch { return false }
+  const [trilhaTourActive, setTrilhaTourActive] = useState(() => {
+    try { return localStorage.getItem(TRILHA_TOUR_KEY(user?.id)) !== 'true' } catch { return false }
   })
+  const [showFirstAulaCard, setShowFirstAulaCard] = useState(false)
 
-  // Tour do editor de aulas — só na primeira aula criada
-  const AULA_TOUR_KEY = 'plut_tour_aula_editor'
-  const [aulaTourActive, setAulaTourActive] = useState(false)
+  function handleTrilhaTourFinish() {
+    setTrilhaTourActive(false)
+    if (aulas.length === 0) setShowFirstAulaCard(true)
+  }
 
   // ── Trilha ────────────────────────────────────────────────────────────────
   const [trilha,      setTrilha]      = useState(trilhaFromNav ?? null)
@@ -95,19 +95,17 @@ export default function TeacherTrilhaPage() {
   const [modalMode,  setModalMode]  = useState(null)
   const [editTarget, setEditTarget] = useState(null)
   const [saving,     setSaving]     = useState(false)
+  const [forceAulaTour, setForceAulaTour] = useState(false)
 
   // ── Delete confirm state (por card) ───────────────────────────────────────
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [deletingId,      setDeletingId]      = useState(null)
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  function openCreate() {
+  function openCreate(forceTour = false) {
     setEditTarget(null)
     setModalMode('create')
-    // Ativa o tour do editor na primeira aula
-    try {
-      if (localStorage.getItem(AULA_TOUR_KEY) !== 'true') setAulaTourActive(true)
-    } catch {}
+    setForceAulaTour(forceTour)
   }
   function openEdit(aula) { setEditTarget(aula); setModalMode('edit') }
   function closeModal() { setModalMode(null); setEditTarget(null) }
@@ -173,27 +171,40 @@ export default function TeacherTrilhaPage() {
       <Toast toasts={toasts} onDismiss={dismiss} />
 
       <SpotlightTour
-        steps={TOUR_STEPS}
-        active={tourActive && !!trilha}
-        onFinish={() => setTourActive(false)}
-        storageKey={TOUR_KEY(user?.id)}
+        steps={TRILHA_TOUR_STEPS}
+        active={trilhaTourActive && !!trilha}
+        onFinish={handleTrilhaTourFinish}
+        storageKey={TRILHA_TOUR_KEY(user?.id)}
       />
 
-      {/* Tour do editor de aulas — fora do modal para evitar conflito de z-index */}
-      <SpotlightTour
-        steps={[
-          { target: 'ae-titulo',    title: 'Título da aula',      description: 'Dê um nome claro. Ex: "Aula 1 — Introdução ao tema".' },
-          { target: 'ae-blocos',    title: 'Blocos de conteúdo',  description: 'Cada aula tem blocos. Explicações, vídeos e questionários no mesmo lugar.' },
-          { target: 'ae-add-bloco', title: 'Adicionar bloco',     description: 'Clique para adicionar mais blocos: explicação, vídeo, questionário ou texto livre.', placement: 'top' },
-          { target: 'ae-salvar',    title: 'Salvar aula',         description: 'Quando terminar, clique em "Criar aula" para salvar na trilha.', placement: 'top' },
-        ]}
-        active={aulaTourActive}
-        onFinish={() => {
-          setAulaTourActive(false)
-          try { localStorage.setItem(AULA_TOUR_KEY, 'true') } catch {}
-        }}
-        storageKey={AULA_TOUR_KEY}
-      />
+      {/* ── Card de transição: criar primeira aula ── */}
+      {showFirstAulaCard && (
+        <div className={styles.firstAulaBackdrop}>
+          <div className={styles.firstAulaCard}>
+            <div className={styles.firstAulaIcon}>
+              <Icon name="fileText" size={28} />
+            </div>
+            <h2 className={styles.firstAulaTitle}>Vamos criar sua primeira aula?</h2>
+            <p className={styles.firstAulaDesc}>
+              Sua trilha está pronta. Agora adicione conteúdo — cada aula pode ter explicações, vídeos e exercícios.
+            </p>
+            <div className={styles.firstAulaActions}>
+              <button
+                className={styles.firstAulaBtnSecondary}
+                onClick={() => setShowFirstAulaCard(false)}
+              >
+                Agora não
+              </button>
+              <button
+                className={styles.firstAulaBtnPrimary}
+                onClick={() => { setShowFirstAulaCard(false); openCreate(true) }}
+              >
+                <Icon name="plus" size={14} /> Criar primeira aula
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal criar / editar aula ── */}
       {modalMode && (
@@ -207,6 +218,7 @@ export default function TeacherTrilhaPage() {
               onSave={handleSave}
               onCancel={closeModal}
               saving={saving}
+              forceTour={forceAulaTour}
             />
           </AulaModal>
         </>

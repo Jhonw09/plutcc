@@ -18,15 +18,17 @@ export default function TeacherConfiguracoesPage() {
   const [nome,       setNome]       = useState(user?.name  ?? '')
   const [email,      setEmail]      = useState(user?.email ?? '')
   const [senhaConf,  setSenhaConf]  = useState('')
-  const [savingPerfil, setSavingPerfil] = useState(false)
-  const [perfilError,  setPerfilError]  = useState('')
+  const [savingPerfil,  setSavingPerfil]  = useState(false)
+  const [perfilError,   setPerfilError]   = useState('')
+  const [perfilSuccess, setPerfilSuccess] = useState(false)
 
   // ── Senha ──
   const [senhaAtual,  setSenhaAtual]  = useState('')
   const [senhaNova,   setSenhaNova]   = useState('')
   const [senhaRep,    setSenhaRep]    = useState('')
-  const [savingSenha, setSavingSenha] = useState(false)
-  const [senhaError,  setSenhaError]  = useState('')
+  const [savingSenha,  setSavingSenha]  = useState(false)
+  const [senhaError,   setSenhaError]   = useState('')
+  const [senhaSuccess, setSenhaSuccess] = useState(false)
 
   // ── Excluir conta ──
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -41,8 +43,9 @@ export default function TeacherConfiguracoesPage() {
     setSavingPerfil(true)
     try {
       await updateUser({ nome: nome.trim(), email: email.trim(), senha: senhaConf })
-      toast('Perfil atualizado com sucesso!', 'success')
       setSenhaConf('')
+      setPerfilSuccess(true)
+      setTimeout(() => setPerfilSuccess(false), 3000)
     } catch (err) {
       setPerfilError(err.message || 'Erro ao atualizar perfil.')
     } finally {
@@ -59,8 +62,9 @@ export default function TeacherConfiguracoesPage() {
     setSavingSenha(true)
     try {
       await changePassword({ senhaAtual, senha: senhaNova })
-      toast('Senha alterada com sucesso!', 'success')
       setSenhaAtual(''); setSenhaNova(''); setSenhaRep('')
+      setSenhaSuccess(true)
+      setTimeout(() => setSenhaSuccess(false), 3000)
     } catch (err) {
       setSenhaError(err.message || 'Erro ao alterar senha.')
     } finally {
@@ -132,10 +136,11 @@ export default function TeacherConfiguracoesPage() {
                 value={senhaConf} onChange={e => setSenhaConf(e.target.value)}
                 placeholder="••••••••" disabled={savingPerfil}
               />
-              {perfilError && <p className={styles.errorMsg}><Icon name="alertCircle" size={13} /> {perfilError}</p>}
+              {perfilError   && <p className={styles.errorMsg}><Icon name="alertCircle" size={13} /> {perfilError}</p>}
+              {perfilSuccess && <p className={styles.successMsg}><span>✓</span> Perfil atualizado com sucesso.</p>}
               <div className={styles.formActions}>
-                <button type="submit" className={styles.btnPrimary} disabled={savingPerfil}>
-                  {savingPerfil ? 'Salvando...' : 'Salvar alterações'}
+                <button type="submit" className={`${styles.btnPrimary} ${perfilSuccess ? styles.btnSaved : ''}`} disabled={savingPerfil}>
+                  {savingPerfil ? 'Salvando…' : perfilSuccess ? '✓ Salvo' : 'Salvar alterações'}
                 </button>
               </div>
             </form>
@@ -171,10 +176,11 @@ export default function TeacherConfiguracoesPage() {
                   placeholder="••••••••" disabled={savingSenha}
                 />
               </div>
-              {senhaError && <p className={styles.errorMsg}><Icon name="alertCircle" size={13} /> {senhaError}</p>}
+              {senhaError   && <p className={styles.errorMsg}><Icon name="alertCircle" size={13} /> {senhaError}</p>}
+              {senhaSuccess && <p className={styles.successMsg}><span>✓</span> Senha alterada com sucesso.</p>}
               <div className={styles.formActions}>
-                <button type="submit" className={styles.btnPrimary} disabled={savingSenha}>
-                  {savingSenha ? 'Alterando...' : 'Alterar senha'}
+                <button type="submit" className={`${styles.btnPrimary} ${senhaSuccess ? styles.btnSaved : ''}`} disabled={savingSenha}>
+                  {savingSenha ? 'Alterando…' : senhaSuccess ? '✓ Alterada' : 'Alterar senha'}
                 </button>
               </div>
             </form>

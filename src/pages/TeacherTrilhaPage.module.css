@@ -405,6 +405,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 24px 64px rgba(0,0,0,.4);
+  isolation: auto;
 }
 
 .modalHeader {
@@ -542,3 +543,96 @@
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
 }
+
+/* ── Card primeira aula ── */
+.firstAulaBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+  animation: fadeUp 200ms ease forwards;
+}
+
+.firstAulaCard {
+  background: var(--surface);
+  border: 1px solid var(--accent-border);
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(108,92,231,.12);
+  animation: slideDown 240ms cubic-bezier(.34,1.56,.64,1) forwards;
+}
+
+.firstAulaIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.firstAulaTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.firstAulaDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.firstAulaActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.firstAulaBtnSecondary {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 16px;
+  transition: background .15s, color .15s;
+}
+.firstAulaBtnSecondary:hover { background: var(--surface-3); color: var(--text); }
+
+.firstAulaBtnPrimary {
+  flex: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 10px;
+  padding: 11px 16px;
+  transition: background .15s, transform .15s;
+  box-shadow: 0 4px 14px rgba(108,92,231,.35);
+}
+.firstAulaBtnPrimary:hover { background: var(--accent-hover); transform: translateY(-1px); }

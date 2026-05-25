@@ -102,15 +102,8 @@ export function AuthProvider({ children }) {
     return userData
   }
 
-  // BUG 2 FIX: persiste e reflete no estado imediatamente após update
   async function updateUser({ nome, email, senha }) {
     validateId(user?.id)
-
-    try {
-      await authService.login({ email: user.email, senha })
-    } catch {
-      throw new Error('Senha incorreta.')
-    }
 
     await authService.updateUser(user.id, {
       nome,
@@ -121,7 +114,7 @@ export function AuthProvider({ children }) {
 
     const updated = { ...user, name: nome, avatar: nome.charAt(0).toUpperCase(), email }
     persist(updated)
-    setUser(updated)   // ← garante re-render imediato com dados novos
+    setUser(updated)
   }
 
   /**
