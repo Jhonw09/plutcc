@@ -1,24 +1,21 @@
-/**
- * useMinhasTrilhas — retorna trilhas em que o aluno está matriculado
- * e todas as trilhas públicas em uma única chamada ao hook.
- *
- * Expõe todasTrilhas para que os componentes consumidores (DashboardPage,
- * MinhasTrilhasPage) não precisem fazer um segundo fetch de getTrilhasPublicas.
- * Isso elimina requests duplicados para GET /trilhas.
- */
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getMatriculasDoAluno } from '../api/services/matriculaService'
 import { getTrilhasPublicas } from '../api/services/trilhaService'
+import { getAulasByTrilha } from '../api/services/aulaService'
+import { useTrilhasAluno } from './useTrilhasAluno'
 
 export function useMinhasTrilhas() {
   const { user } = useAuth()
   const alunoId = user?.id
+  const { concluidasSet } = useTrilhasAluno()
 
-  const [minhasTrilhas, setMinhasTrilhas] = useState([])
-  const [todasTrilhas,  setTodasTrilhas]  = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const [minhasTrilhas,  setMinhasTrilhas]  = useState([])
+  const [todasTrilhas,   setTodasTrilhas]   = useState([])
+  // Map<trilhaId, aulaId[]> — aulas publicadas de cada trilha matriculada
+  const [aulasMap,       setAulasMap]       = useState({})
+  const [loading,        setLoading]        = useState(true)
+  const [error,          setError]          = useState(null)
 
   const load = useCallback(async () => {
     if (!alunoId) { setLoading(false); return }
@@ -29,11 +26,23 @@ export function useMinhasTrilhas() {
         getMatriculasDoAluno(alunoId),
         getTrilhasPublicas(),
       ])
-      const ids = new Set(
-        matriculas.map(m => Number(m.trilhaId ?? m.id ?? m))
-      )
+      const ids = new Set(matriculas.map(m => Number(m.trilhaId ?? m.id ?? m)))
+      const minhas = todas.filter(t => ids.has(t.id))
       setTodasTrilhas(todas)
-      setMinhasTrilhas(todas.filter(t => ids.has(t.id)))
+      setMinhasTrilhas(minhas)
+
+      // Busca aulas de cada trilha matriculada para calcular progresso real
+      const entries = await Promise.all(
+        minhas.map(async t => {
+          try {
+            const aulas = await getAulasByTrilha(t.id)
+            return [t.id, aulas.map(a => a.id)]
+          } catch {
+            return [t.id, []]
+          }
+        })
+      )
+      setAulasMap(Object.fromEntries(entries))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -43,5 +52,13 @@ export function useMinhasTrilhas() {
 
   useEffect(() => { load() }, [load])
 
-  return { minhasTrilhas, todasTrilhas, loading, error, reload: load }
+  // Progresso real: aulas concluídas / total de aulas da trilha
+  const getProgresso = useCallback((trilhaId) => {
+    const aulaIds = aulasMap[trilhaId]
+    if (!aulaIds || aulaIds.length === 0) return 0
+    const done = aulaIds.filter(id => concluidasSet.has(Number(id))).length
+    return Math.round((done / aulaIds.length) * 100)
+  }, [aulasMap, concluidasSet])
+
+  return { minhasTrilhas, todasTrilhas, aulasMap, loading, error, reload: load, getProgresso }
 }

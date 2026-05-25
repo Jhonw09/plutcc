@@ -1,94 +1,105 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import styles from './SpotlightTour.module.css'
 
-function getScrollParent(el) {
-  if (!el) return window
-  const style = getComputedStyle(el)
-  if (['auto', 'scroll'].includes(style.overflowY) && el.scrollHeight > el.clientHeight) return el
-  return getScrollParent(el.parentElement)
-}
+export default function SpotlightTour({ steps, active, onFinish, storageKey, onStep }) {
+  const [step,      setStep]      = useState(0)
+  const [hl,        setHl]        = useState(null)
+  const [visible,   setVisible]   = useState(false)
+  const [direction, setDirection] = useState('next')
+  const rafRef      = useRef(null)
+  const hlRef       = useRef(null)   // último hl medido, para comparar sem re-render
+  const stepRef     = useRef(step)
 
-export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
-  const [step,    setStep]    = useState(0)
-  const [hl,      setHl]      = useState(null)
-  const [visible, setVisible] = useState(false)
-  const scrollParentRef       = useRef(null)
+  useEffect(() => { stepRef.current = step }, [step])
 
   const current = steps[step]
 
-  const measure = useCallback(() => {
-    if (!current?.target) return
-    const el = document.querySelector(`[data-tour="${current.target}"]`)
-    if (!el) { setHl(null); setVisible(true); return }
+  // ── Bloqueia scroll do body enquanto o tour está ativo ──────────────────
+  useEffect(() => {
+    if (!active) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [active])
 
-    // scroll o elemento pra view
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  // ── rAF loop: re-mede o elemento a cada frame ───────────────────────────
+  const startTracking = useCallback((target) => {
+    cancelAnimationFrame(rafRef.current)
 
-    // guarda o scroll parent pra escutar depois
-    scrollParentRef.current = getScrollParent(el)
+    function tick() {
+      const el = document.querySelector(`[data-tour="${target}"]`)
+      if (!el) { rafRef.current = requestAnimationFrame(tick); return }
 
-    // espera o scroll terminar antes de medir
-    let settled
-    function onScroll() {
-      clearTimeout(settled)
-      settled = setTimeout(snap, 80)
-    }
-    function snap() {
-      scrollParentRef.current?.removeEventListener('scroll', onScroll)
       const r = el.getBoundingClientRect()
-      setHl({ top: r.top - 8, left: r.left - 8, width: r.width + 16, height: r.height + 16 })
-      setVisible(true)
+      const next = { top: r.top - 8, left: r.left - 8, width: r.width + 16, height: r.height + 16 }
+
+      // só atualiza state se mudou (evita re-renders desnecessários)
+      const prev = hlRef.current
+      if (!prev || prev.top !== next.top || prev.left !== next.left ||
+          prev.width !== next.width || prev.height !== next.height) {
+        hlRef.current = next
+        setHl(next)
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
     }
 
-    scrollParentRef.current?.addEventListener('scroll', onScroll, { passive: true })
-    // fallback: se não houver scroll, mede direto após um tick
-    settled = setTimeout(snap, 350)
-  }, [current?.target])
+    rafRef.current = requestAnimationFrame(tick)
+  }, [])
 
+  // ── Ao mudar de step: esconde tooltip, espera DOM, começa tracking ───────
   useEffect(() => {
     if (!active) return
     setVisible(false)
     setHl(null)
-    // pequeno delay inicial pra garantir que o DOM está pintado
-    const t = setTimeout(measure, step === 0 ? 500 : 200)
-    return () => clearTimeout(t)
-  }, [active, step, measure])
+    hlRef.current = null
+    cancelAnimationFrame(rafRef.current)
 
-  // recalcula no resize
-  useEffect(() => {
-    if (!active) return
-    function onResize() { setVisible(false); setHl(null); setTimeout(measure, 100) }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [active, measure])
+    const delay = step === 0 ? 500 : 250
+    const t = setTimeout(() => {
+      if (current?.target) {
+        startTracking(current.target)
+        // mostra tooltip após primeiro frame medido
+        setTimeout(() => setVisible(true), 120)
+      } else {
+        setVisible(true)
+      }
+    }, delay)
+
+    return () => { clearTimeout(t); cancelAnimationFrame(rafRef.current) }
+  }, [active, step]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!active) return null
 
+  function goTo(nextIdx, dir) {
+    setDirection(dir)
+    setVisible(false)
+    setHl(null)
+    hlRef.current = null
+    cancelAnimationFrame(rafRef.current)
+    onStep?.(steps[nextIdx])
+    setTimeout(() => setStep(nextIdx), 200)
+  }
+
   function next() {
-    if (step < steps.length - 1) {
-      setVisible(false)
-      setTimeout(() => setStep(s => s + 1), 150)
-    } else {
-      finish()
-    }
+    if (step < steps.length - 1) goTo(step + 1, 'next')
+    else finish()
   }
 
   function prev() {
-    setVisible(false)
-    setTimeout(() => setStep(s => s - 1), 150)
+    if (step > 0) goTo(step - 1, 'prev')
   }
 
   function finish() {
-    if (storageKey) {
-      try { localStorage.setItem(storageKey, 'true') } catch {}
-    }
+    cancelAnimationFrame(rafRef.current)
+    if (storageKey) { try { localStorage.setItem(storageKey, 'true') } catch {} }
     onFinish()
   }
 
   function tooltipStyle() {
     if (!hl) return { bottom: 28, right: 28 }
-    const TOOLTIP_H = 190
-    const TOOLTIP_W = 300
+    const TOOLTIP_H = 210
+    const TOOLTIP_W = 310
     const below     = hl.top + hl.height + 14
     const fitsBelow = below + TOOLTIP_H < window.innerHeight
     const left      = Math.max(16, Math.min(hl.left, window.innerWidth - TOOLTIP_W - 16))
@@ -97,21 +108,27 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
       : { top: Math.max(8, hl.top - TOOLTIP_H - 14), left }
   }
 
+  const tabLabel = current.tab
+    ? { aulas: 'Aulas', duvidas: 'Dúvidas', estatisticas: 'Estatísticas', configuracoes: 'Configurações' }[current.tab]
+    : null
+
   return (
     <div className={styles.root}>
-      {hl ? (
-        <svg className={styles.overlaySvg} xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <mask id="spot-mask">
-              <rect width="100%" height="100%" fill="white" />
-              <rect x={hl.left} y={hl.top} width={hl.width} height={hl.height} rx="12" fill="black" />
-            </mask>
-          </defs>
-          <rect width="100%" height="100%" fill="rgba(0,0,0,0.65)" mask="url(#spot-mask)" />
-        </svg>
-      ) : (
-        <div className={styles.overlay} onClick={finish} />
-      )}
+      {/* overlay sempre presente — buraco via clip-path animado */}
+      <div
+        className={styles.overlay}
+        style={hl ? {
+          clipPath: `polygon(
+            0% 0%, 100% 0%, 100% 100%, 0% 100%,
+            0% ${hl.top}px,
+            ${hl.left}px ${hl.top}px,
+            ${hl.left}px ${hl.top + hl.height}px,
+            ${hl.left + hl.width}px ${hl.top + hl.height}px,
+            ${hl.left + hl.width}px ${hl.top}px,
+            0% ${hl.top}px
+          )`
+        } : undefined}
+      />
 
       {hl && (
         <div
@@ -121,11 +138,14 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey }) {
       )}
 
       <div
-        className={`${styles.tooltip} ${visible ? styles.visible : ''}`}
+        className={`${styles.tooltip} ${visible ? styles.visible : ''} ${styles[direction]}`}
         style={tooltipStyle()}
       >
         <div className={styles.head}>
-          <span className={styles.badge}>{step + 1} / {steps.length}</span>
+          <div className={styles.headLeft}>
+            {tabLabel && <span className={styles.tabPill}>{tabLabel}</span>}
+            <span className={styles.badge}>{step + 1} / {steps.length}</span>
+          </div>
           <button className={styles.skip} onClick={finish}>Pular</button>
         </div>
 

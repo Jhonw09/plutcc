@@ -1,9 +1,28 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
+import SpotlightTour from '../components/ui/SpotlightTour'
 import { getTrilhasPublicas } from '../api/services/trilhaService'
 import Icon from '../components/ui/Icon'
 import styles from './ExplorarTrilhas.module.css'
+
+const TRILHAS_TOUR_STEPS = [
+  {
+    target: 'trilhas-hero',
+    title: 'Busque o que quiser aprender',
+    description: 'Use a barra de busca para encontrar trilhas por nome, professor ou descrição.',
+  },
+  {
+    target: 'trilhas-filtros',
+    title: 'Filtre por disciplina',
+    description: 'Clique em uma categoria para ver só as trilhas daquela matéria.',
+  },
+  {
+    target: 'trilhas-grid',
+    title: 'Escolha uma trilha',
+    description: 'Cada card mostra o nome, disciplina, nível e professor. Clique em "Ver trilha" para se matricular e começar.',
+  },
+]
 
 const CATEGORIAS = ['Todas', 'Matemática', 'Português', 'Química', 'Biologia', 'Física', 'Geografia', 'História', 'Inglês', 'Informática', 'Filosofia']
 
@@ -18,11 +37,13 @@ const NIVEL_COLOR = {
 
 export default function ExplorarTrilhas() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [trilhas,   setTrilhas]   = useState([])
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState(null)
   const [search,    setSearch]    = useState('')
   const [categoria, setCategoria] = useState('Todas')
+  const [showTour,  setShowTour]  = useState(false)
 
   useEffect(() => {
     getTrilhasPublicas()
@@ -30,6 +51,15 @@ export default function ExplorarTrilhas() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
+
+  // Ativa tour se vier da dashboard com state.startTour
+  useEffect(() => {
+    if (location.state?.startTour) {
+      setTimeout(() => setShowTour(true), 400)
+      // limpa o state para não reativar no F5
+      window.history.replaceState({}, '')
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const visivel = useMemo(() => {
     let list = trilhas
@@ -48,9 +78,14 @@ export default function ExplorarTrilhas() {
 
   return (
     <DashboardLayout>
+      <SpotlightTour
+        steps={TRILHAS_TOUR_STEPS}
+        active={showTour}
+        onFinish={() => setShowTour(false)}
+      />
       <div className={styles.page}>
 
-        <div className={styles.hero}>
+        <div className={styles.hero} data-tour="trilhas-hero">
           <h1 className={styles.heroTitle}>Explorar Trilhas</h1>
           <p className={styles.heroSub}>Descubra trilhas de estudo criadas por professores e comece a aprender agora.</p>
 
@@ -70,7 +105,7 @@ export default function ExplorarTrilhas() {
           </div>
         </div>
 
-        <div className={styles.filters}>
+        <div className={styles.filters} data-tour="trilhas-filtros">
           {CATEGORIAS.map(cat => (
             <button
               key={cat}
@@ -98,7 +133,7 @@ export default function ExplorarTrilhas() {
             </p>
 
             {visivel.length > 0 ? (
-              <div className={styles.grid}>
+              <div className={styles.grid} data-tour="trilhas-grid">
                 {visivel.map(trilha => {
                   const nivel = NIVEL_COLOR[trilha.nivel] ?? NIVEL_COLOR['Médio']
                   return (

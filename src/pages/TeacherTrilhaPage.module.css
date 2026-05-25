@@ -139,16 +139,35 @@
   color: var(--text-muted);
   padding: 6px 14px;
   border-radius: 7px;
-  transition: color .15s, background .15s;
+  transition: color .22s ease, background .22s ease, box-shadow .22s ease,
+              border-color .22s ease, transform .18s ease;
   white-space: nowrap;
 }
-.tab:hover { color: var(--text-secondary); background: var(--surface-2); }
+.tab:hover:not(.tabActive):not(.tabTourActive) {
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+}
 
 .tabActive {
   background: var(--surface-2);
   box-shadow: 0 1px 3px rgba(0,0,0,.2);
   color: var(--text);
   font-weight: 700;
+}
+
+.tabTourActive {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-border) !important;
+  font-weight: 700;
+  box-shadow: 0 0 0 3px rgba(108,92,231,.18);
+  animation: tabPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tabPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(108,92,231,.18); }
+  50%       { box-shadow: 0 0 0 6px rgba(108,92,231,.08); }
 }
 
 .placeholder {

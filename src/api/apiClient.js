@@ -25,6 +25,16 @@ export const ENDPOINTS = {
   matriculasResumoProfessor:   (profId)    => `${API_BASE}/matriculas/professor/${profId}/resumo`,
   matriculaDelete:             (trilhaId, alunoId) => `${API_BASE}/matriculas/${trilhaId}/aluno/${alunoId}`,
   matriculaExiste:             (alunoId, trilhaId) => `${API_BASE}/matriculas/existe?alunoId=${alunoId}&trilhaId=${trilhaId}`,
+
+  // Progresso
+  progressoConcluir:           `${API_BASE}/progresso/concluir`,
+  progressoAluno:              (alunoId)           => `${API_BASE}/progresso/aluno/${alunoId}`,
+  progressoAlunoIds:           (alunoId)           => `${API_BASE}/progresso/aluno/${alunoId}/ids`,
+  progressoTrilhaAluno:        (trilhaId, alunoId) => `${API_BASE}/progresso/trilha/${trilhaId}/aluno/${alunoId}`,
+
+  // Perfil de aprendizado
+  perfilAprendizado:           (alunoId) => `${API_BASE}/perfil-aprendizado/${alunoId}`,
+  perfilAprendizadoCreate:     `${API_BASE}/perfil-aprendizado`,
 }
 
 export const ROLE_MAP = {

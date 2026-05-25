@@ -76,7 +76,7 @@ export default function TrailDuvidas() {
     <div className={styles.container}>
 
       {/* Toolbar integrada: métricas + filtros */}
-      <div className={styles.toolbar}>
+      <div className={styles.toolbar} data-tour="duvidas-toolbar">
         <div className={styles.toolbarStats}>
           <span className={styles.statItem}>
             <span className={styles.statNum}>{pendentes}</span> pendente{pendentes !== 1 ? 's' : ''}

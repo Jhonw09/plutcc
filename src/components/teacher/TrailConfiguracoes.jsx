@@ -42,7 +42,7 @@ export default function TrailConfiguracoes({ trilha, onUpdate, onDelete }) {
     <div className={styles.container}>
 
       {/* Informações gerais */}
-      <div className={styles.section}>
+      <div className={styles.section} data-tour="configuracoes-geral">
         <div className={styles.sectionHead}>
           <div className={styles.sectionIcon}><Icon name="fileText" size={16} /></div>
           <div>

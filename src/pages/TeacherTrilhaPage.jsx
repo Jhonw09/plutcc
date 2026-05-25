@@ -23,16 +23,37 @@ const TRILHA_TOUR_STEPS = [
     target: 'trilha-header',
     title: 'Sua trilha de estudo',
     description: 'Aqui ficam as informações da trilha: nome, disciplina, nível e visibilidade.',
+    tab: 'aulas',
   },
   {
     target: 'add-aula-btn',
     title: 'Adicione aulas',
     description: 'Clique aqui para criar uma nova aula com conteúdo, vídeos e exercícios.',
+    tab: 'aulas',
   },
   {
     target: 'aulas-section',
     title: 'Lista de aulas',
     description: 'Suas aulas aparecem aqui em ordem. Clique em qualquer aula para editar o conteúdo.',
+    tab: 'aulas',
+  },
+  {
+    target: 'duvidas-toolbar',
+    title: 'Dúvidas dos alunos',
+    description: 'Aqui você vê todas as dúvidas enviadas pelos alunos. Filtre por pendentes ou respondidas e responda diretamente nesta tela.',
+    tab: 'duvidas',
+  },
+  {
+    target: 'estatisticas-metrics',
+    title: 'Estatísticas da trilha',
+    description: 'Acompanhe alunos matriculados, aulas concluídas, dúvidas enviadas e taxa de conclusão em tempo real.',
+    tab: 'estatisticas',
+  },
+  {
+    target: 'configuracoes-geral',
+    title: 'Configurações',
+    description: 'Edite o nome, descrição e visibilidade da trilha. Na zona de perigo você pode excluí-la permanentemente.',
+    tab: 'configuracoes',
   },
 ]
 
@@ -77,13 +98,14 @@ export default function TeacherTrilhaPage() {
   const [trilhaTourActive, setTrilhaTourActive] = useState(() => {
     try { return localStorage.getItem(TRILHA_TOUR_KEY(user?.id)) !== 'true' } catch { return false }
   })
-  const [showFirstAulaCard,   setShowFirstAulaCard]   = useState(false)
-  const [showDashboardCard,   setShowDashboardCard]   = useState(false)
+  const [tourTab, setTourTab] = useState(null)
 
-  function handleTrilhaTourFinish() {
-    setTrilhaTourActive(false)
-    if (aulas.length === 0) setShowFirstAulaCard(true)
+  function handleTourStep(step) {
+    if (step.tab) { setActiveTab(step.tab); setTourTab(step.tab) }
   }
+
+  const [showFirstAulaCard, setShowFirstAulaCard] = useState(false)
+  const [showDashboardCard, setShowDashboardCard] = useState(false)
 
   // ── Trilha ────────────────────────────────────────────────────────────────
   const [trilha,      setTrilha]      = useState(trilhaFromNav ?? null)
@@ -101,6 +123,13 @@ export default function TeacherTrilhaPage() {
 
   const aulasPublicadas = aulas.filter(a => a.status !== 'RASCUNHO')
   const aulasRascunho   = aulas.filter(a => a.status === 'RASCUNHO')
+
+  function handleTrilhaTourFinish() {
+    setTrilhaTourActive(false)
+    setTourTab(null)
+    setActiveTab('aulas')
+    if (aulas.length === 0) setShowFirstAulaCard(true)
+  }
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [modalMode,  setModalMode]  = useState(null)
@@ -206,6 +235,7 @@ export default function TeacherTrilhaPage() {
         active={trilhaTourActive && !!trilha}
         onFinish={handleTrilhaTourFinish}
         storageKey={TRILHA_TOUR_KEY(user?.id)}
+        onStep={handleTourStep}
       />
 
       {/* ── Card de transição: criar primeira aula ── */}
@@ -314,12 +344,17 @@ export default function TeacherTrilhaPage() {
         </header>
 
         {/* ── Abas ── */}
-        <nav className={styles.tabs}>
+        <nav className={styles.tabs} data-tour="trilha-tabs">
           {['aulas', 'duvidas', 'estatisticas', 'configuracoes'].map(tab => (
             <button
               key={tab}
-              className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
-              onClick={() => setActiveTab(tab)}
+              data-tour={`tab-${tab}`}
+              className={[
+                styles.tab,
+                activeTab === tab ? styles.tabActive : '',
+                tourTab === tab ? styles.tabTourActive : '',
+              ].join(' ')}
+              onClick={() => { setActiveTab(tab); setTourTab(null) }}
             >
               {{ aulas: 'Aulas', duvidas: 'Dúvidas', estatisticas: 'Estatísticas', configuracoes: 'Configurações' }[tab]}
             </button>

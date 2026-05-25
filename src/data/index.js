@@ -5,6 +5,4 @@ export { resources }                                   from './resources'
 export { stats, logos }                                from './stats'
 export { videoTabs }                                   from './videoTabs'
 export { plans }                                       from './plans'
-export { continueStudying, weekDays, weekActivity,
-         recentActivity, weeklyGoal }                  from './studentDashboard'
 export { adminStats, adminActivity, systemStatus }     from './adminDashboard'

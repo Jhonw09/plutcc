@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import { useMinhasTrilhas } from '../hooks/useMinhasTrilhas'
-import { useTrilhasAluno } from '../hooks/useTrilhasAluno'
 import Icon from '../components/ui/Icon'
 import styles from './MinhasTrilhasPage.module.css'
 
@@ -108,9 +107,7 @@ function TrilhaCard({ trilha, progresso, onAcao, labelAcao, ativa }) {
 
 export default function MinhasTrilhasPage() {
   const navigate = useNavigate()
-  // todasTrilhas vem do mesmo hook — sem fetch duplicado para GET /trilhas
-  const { minhasTrilhas, todasTrilhas, loading: loadingMinhas } = useMinhasTrilhas()
-  const { getProgresso } = useTrilhasAluno()
+  const { minhasTrilhas, todasTrilhas, loading: loadingMinhas, getProgresso } = useMinhasTrilhas()
 
   const [filtro, setFiltro]       = useState('todas')
   const [search, setSearch]       = useState('')
@@ -118,8 +115,8 @@ export default function MinhasTrilhasPage() {
 
   const isLoading = loadingMinhas
   const matriculadosIds = useMemo(() => new Set(minhasTrilhas.map(t => t.id)), [minhasTrilhas])
-  const concluidas      = useMemo(() => minhasTrilhas.filter(t => getProgresso(t.id, 10) === 100), [minhasTrilhas, getProgresso])
-  const emAndamento     = useMemo(() => minhasTrilhas.filter(t => getProgresso(t.id, 10) < 100),  [minhasTrilhas, getProgresso])
+  const concluidas      = useMemo(() => minhasTrilhas.filter(t => getProgresso(t.id) === 100), [minhasTrilhas, getProgresso])
+  const emAndamento     = useMemo(() => minhasTrilhas.filter(t => getProgresso(t.id) < 100),  [minhasTrilhas, getProgresso])
 
   const minhasFiltradas = useMemo(() => {
     if (filtro === 'andamento')  return emAndamento
@@ -181,7 +178,7 @@ export default function MinhasTrilhasPage() {
                 <TrilhaCard
                   key={t.id}
                   trilha={t}
-                  progresso={getProgresso(t.id, 10)}
+                  progresso={getProgresso(t.id)}
                   onAcao={() => navigate(`/dashboard/trilha/${t.id}`)}
                   labelAcao="Continuar"
                   ativa

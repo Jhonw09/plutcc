@@ -1,76 +1,64 @@
-/**
- * useTrilhasAluno — gerencia trilhas iniciadas pelo aluno.
- * Persiste em localStorage. Arquitetura pronta para trocar por API real.
- *
- * Formato no localStorage: { [userId]: { [trilhaId]: { iniciadaEm, aulasConcluidas: [] } } }
- *
- * Para migrar para backend: substituir as funções read/write por chamadas à API
- * nos endpoints sugeridos abaixo:
- *   POST   /api/v1/progresso          { alunoId, trilhaId }
- *   GET    /api/v1/progresso?alunoId= → lista de trilhas iniciadas com progresso
- *   PATCH  /api/v1/progresso/:id/aula { aulaId }  → marca aula concluída
- */
-
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
-
-const KEY = 'sc_trilhas_aluno'
-
-function readAll() {
-  try { return JSON.parse(localStorage.getItem(KEY) ?? '{}') } catch { return {} }
-}
-
-function writeAll(data) {
-  localStorage.setItem(KEY, JSON.stringify(data))
-}
+import { concluirAula as apiConcluirAula, getAulasConcluidasAluno } from '../api/services/progressoService'
 
 export function useTrilhasAluno() {
   const { user } = useAuth()
-  const uid = String(user?.id ?? 'guest')
+  const alunoId = user?.id ?? null
 
-  const [, forceUpdate] = useState(0)
-  const rerender = () => forceUpdate(n => n + 1)
+  // Set de aulaIds concluídas — fonte única de verdade
+  const [concluidasSet, setConcluidasSet] = useState(new Set())
+  const [loading, setLoading] = useState(false)
+  const loadedRef = useRef(false)
 
-  function getUserData() {
-    return readAll()[uid] ?? {}
-  }
+  useEffect(() => {
+    if (!alunoId) { setConcluidasSet(new Set()); loadedRef.current = false; return }
+    if (loadedRef.current) return
+    loadedRef.current = true
+    setLoading(true)
+    getAulasConcluidasAluno(alunoId)
+      .then(ids => setConcluidasSet(new Set(ids.map(Number))))
+      .finally(() => setLoading(false))
+  }, [alunoId])
 
-  const trilhasIniciadas = getUserData()
-
-  const iniciarTrilha = useCallback((trilhaId) => {
-    const all = readAll()
-    if (!all[uid]) all[uid] = {}
-    if (!all[uid][trilhaId]) {
-      all[uid][trilhaId] = { iniciadaEm: new Date().toISOString(), aulasConcluidas: [] }
-      writeAll(all)
-      rerender()
+  const concluirAula = useCallback(async (_trilhaId, aulaId) => {
+    if (!alunoId || !aulaId) return
+    // Optimistic update
+    setConcluidasSet(prev => new Set([...prev, Number(aulaId)]))
+    try {
+      await apiConcluirAula(alunoId, aulaId)
+    } catch {
+      // Reverte se falhar
+      setConcluidasSet(prev => {
+        const next = new Set(prev)
+        next.delete(Number(aulaId))
+        return next
+      })
     }
-  }, [uid]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const concluirAula = useCallback((trilhaId, aulaId) => {
-    const all = readAll()
-    if (!all[uid]?.[trilhaId]) return
-    const ids = all[uid][trilhaId].aulasConcluidas
-    if (!ids.includes(aulaId)) {
-      all[uid][trilhaId].aulasConcluidas = [...ids, aulaId]
-      writeAll(all)
-      rerender()
-    }
-  }, [uid]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const getProgresso = useCallback((trilhaId, totalAulas) => {
-    const dados = getUserData()[trilhaId]
-    if (!dados || totalAulas === 0) return 0
-    return Math.round((dados.aulasConcluidas.length / totalAulas) * 100)
-  }, [uid]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [alunoId])
 
   const getAulasConcluidas = useCallback((trilhaId) => {
-    return new Set(getUserData()[trilhaId]?.aulasConcluidas ?? [])
-  }, [uid]) // eslint-disable-line react-hooks/exhaustive-deps
+    // trilhaId ignorado — filtragem por trilha é feita pelo chamador via lista de aulas
+    return concluidasSet
+  }, [concluidasSet])
 
-  const foiIniciada = useCallback((trilhaId) => {
-    return !!getUserData()[trilhaId]
-  }, [uid]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Calcula progresso dado o array de aulas da trilha
+  const getProgresso = useCallback((trilhaId, aulas) => {
+    if (!aulas || aulas.length === 0) return 0
+    const total = Array.isArray(aulas) ? aulas.length : aulas
+    if (typeof aulas === 'number') {
+      // fallback legado: não temos como calcular sem a lista real
+      return 0
+    }
+    const done = aulas.filter(a => concluidasSet.has(Number(a.id))).length
+    return Math.round((done / total) * 100)
+  }, [concluidasSet])
 
-  return { trilhasIniciadas, iniciarTrilha, concluirAula, getProgresso, getAulasConcluidas, foiIniciada }
+  const getProgressoByIds = useCallback((aulaIds) => {
+    if (!aulaIds || aulaIds.length === 0) return 0
+    const done = aulaIds.filter(id => concluidasSet.has(Number(id))).length
+    return Math.round((done / aulaIds.length) * 100)
+  }, [concluidasSet])
+
+  return { concluirAula, getAulasConcluidas, getProgresso, getProgressoByIds, concluidasSet, loading }
 }

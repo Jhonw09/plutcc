@@ -21,7 +21,7 @@ export default function TrailEstatisticas() {
     <div className={styles.container}>
 
       {/* Cards métricos */}
-      <div className={styles.metricsGrid}>
+      <div className={styles.metricsGrid} data-tour="estatisticas-metrics">
         {METRICS.map((m, i) => (
           <div key={i} className={styles.metricCard}>
             <div className={styles.metricIcon}>

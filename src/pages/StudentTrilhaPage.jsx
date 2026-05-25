@@ -239,7 +239,7 @@ function aulaToExercicio(aula) {
 export default function StudentTrilhaPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { concluirAula, getAulasConcluidas } = useTrilhasAluno()
+  const { concluirAula, concluidasSet } = useTrilhasAluno()
   const { matriculado, loadingCheck } = useMatricula(id)
 
   const [trilha,  setTrilha]  = useState(null)
@@ -247,11 +247,9 @@ export default function StudentTrilhaPage() {
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
 
-  // modal: { tipo: 'conteudo' | 'exercicio', aulaIdx: number }
   const [modal, setModal] = useState(null)
 
   useEffect(() => {
-    // Redireciona para detalhe se não matriculado (após checar)
     if (!loadingCheck && !matriculado) {
       navigate(`/dashboard/trilha-detalhe/${id}`, { replace: true })
       return
@@ -260,7 +258,6 @@ export default function StudentTrilhaPage() {
       try {
         const trilhaData = await getTrilhaById(id)
         setTrilha(trilhaData)
-        // não chama mais iniciarTrilha — matrícula é via API
         try {
           const aulasData = await getAulasByTrilha(id)
           setAulas(aulasData)
@@ -299,21 +296,19 @@ export default function StudentTrilhaPage() {
     )
   }
 
-  const concluidos   = getAulasConcluidas(Number(id))
-  const total        = aulas.length
-  const done         = aulas.filter(a => concluidos.has(a.id)).length
-  const pct          = total === 0 ? 0 : Math.round((done / total) * 100)
-  const nivel        = NIVEL_COLOR[trilha.nivel] ?? NIVEL_COLOR['BASICO']
+  const total    = aulas.length
+  const done     = aulas.filter(a => concluidasSet.has(Number(a.id))).length
+  const pct      = total === 0 ? 0 : Math.round((done / total) * 100)
+  const nivel    = NIVEL_COLOR[trilha.nivel] ?? NIVEL_COLOR['BASICO']
   const iconName = SUBJECT_ICON[trilha.disciplina] ?? 'bookOpen'
 
-  const exercicios   = aulas.map(aulaToExercicio).filter(Boolean)
+  const exercicios = aulas.map(aulaToExercicio).filter(Boolean)
 
-  // aula aberta no modal
-  const aulaAberta   = modal !== null ? aulas[modal.aulaIdx] : null
-  const exAberto     = modal?.tipo === 'exercicio'
+  const aulaAberta = modal !== null ? aulas[modal.aulaIdx] : null
+  const exAberto   = modal?.tipo === 'exercicio'
     ? exercicios.find(e => e.id === aulaAberta?.id)
     : null
-  const exIdx        = exAberto ? exercicios.indexOf(exAberto) : -1
+  const exIdx = exAberto ? exercicios.indexOf(exAberto) : -1
 
   function abrirAula(idx) {
     const aula = aulas[idx]
@@ -322,7 +317,7 @@ export default function StudentTrilhaPage() {
   }
 
   function handleConcluir(aulaId) {
-    concluirAula(Number(id), aulaId)
+    concluirAula(Number(id), Number(aulaId))
   }
 
   return (
@@ -390,7 +385,7 @@ export default function StudentTrilhaPage() {
             <div className={styles.exList}>
               {aulas.map((aula, i) => {
                 const tipo   = aulaTipo(aula)
-                const isDone = concluidos.has(aula.id)
+                const isDone = concluidasSet.has(Number(aula.id))
                 return (
                   <button
                     key={aula.id}
@@ -423,23 +418,21 @@ export default function StudentTrilhaPage() {
 
       </div>
 
-      {/* Modal de conteúdo (aulas sem questionário) */}
       {modal?.tipo === 'conteudo' && aulaAberta && (
         <AulaConteudoModal
           key={aulaAberta.id}
           aula={aulaAberta}
-          isDone={concluidos.has(aulaAberta.id)}
+          isDone={concluidasSet.has(Number(aulaAberta.id))}
           onConcluir={() => handleConcluir(aulaAberta.id)}
           onClose={() => setModal(null)}
         />
       )}
 
-      {/* Modal de exercício */}
       {modal?.tipo === 'exercicio' && exAberto && (
         <ExercicioModal
           key={exAberto.id}
           ex={exAberto}
-          isDone={concluidos.has(aulaAberta.id)}
+          isDone={concluidasSet.has(Number(aulaAberta.id))}
           onConcluir={() => handleConcluir(aulaAberta.id)}
           onClose={() => setModal(null)}
           onProximo={() => {
