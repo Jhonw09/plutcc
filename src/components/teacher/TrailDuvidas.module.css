@@ -1,0 +1,346 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeUp 220ms ease forwards;
+}
+
+/* ── Toolbar integrada ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbarStats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.statNum {
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.statNumGreen { color: #16a34a; }
+
+.statDot {
+  color: var(--border);
+  font-size: 14px;
+  line-height: 1;
+  user-select: none;
+}
+
+.toolbarFilters {
+  display: flex;
+  gap: 2px;
+}
+
+.filterBtn {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 12px;
+  transition: color .15s, background .15s, border-color .15s;
+}
+.filterBtn:hover { color: var(--text-secondary); background: var(--surface-2); }
+
+.filterActive {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+/* ── Empty ── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ── Lista ── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background .15s;
+}
+.card:hover { background: var(--surface-2); }
+
+.cardRespondida { background: var(--surface); opacity: .85; }
+.cardRespondida:hover { background: var(--surface-2); opacity: 1; }
+
+/* ── Cabeçalho ── */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.alunoInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.alunoNome {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aulaRef {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.time {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Badges ── */
+.badgePendente {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(234,179,8,.08);
+  color: #a16207;
+  border: 1px solid rgba(234,179,8,.18);
+  white-space: nowrap;
+}
+
+.badgeRespondida {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(34,197,94,.08);
+  color: #16a34a;
+  border: 1px solid rgba(34,197,94,.18);
+  white-space: nowrap;
+}
+
+/* ── Mensagem ── */
+.mensagem {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding-left: 40px;
+  padding-right: 4px;
+}
+
+/* ── Resposta existente ── */
+.respostaBox {
+  margin-left: 40px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-left: 2px solid var(--accent-border);
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.respostaLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  opacity: .7;
+}
+
+.respostaText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+/* ── Formulário de resposta ── */
+.replyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 40px;
+  animation: fadeUp 160ms ease forwards;
+}
+
+.replyInput {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: var(--font);
+  resize: vertical;
+  outline: none;
+  transition: border-color .15s;
+}
+.replyInput::placeholder { color: var(--text-muted); }
+.replyInput:focus { border-color: var(--accent-border); }
+
+.replyActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* ── Ações ── */
+.cardActions {
+  display: flex;
+  gap: 6px;
+  padding-left: 40px;
+}
+
+.btnResponder {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  padding: 5px 11px;
+  transition: background .15s;
+}
+.btnResponder:hover { background: rgba(108,92,231,.18); }
+
+.btnResolver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(34,197,94,.08);
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius: 6px;
+  padding: 5px 11px;
+  transition: background .15s;
+}
+.btnResolver:hover { background: rgba(34,197,94,.14); }
+
+.cancelBtn {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  transition: color .15s, background .15s;
+}
+.cancelBtn:hover { color: var(--text); background: var(--surface-2); }
+
+.sendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 6px;
+  padding: 5px 12px;
+  transition: opacity .15s;
+}
+.sendBtn:hover:not(:disabled) { opacity: .85; }
+.sendBtn:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ── Responsivo ── */
+@media (max-width: 600px) {
+  .cardHeader  { flex-wrap: wrap; }
+  .mensagem,
+  .respostaBox,
+  .replyForm,
+  .cardActions { padding-left: 0; margin-left: 0; }
+  .toolbar     { flex-direction: column; align-items: flex-start; gap: 8px; }
+}

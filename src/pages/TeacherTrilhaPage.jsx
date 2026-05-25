@@ -9,6 +9,10 @@ import { useAulas }  from '../hooks/useAulas'
 import { useToast }  from '../hooks/useToast'
 import { useAuth }   from '../context/AuthContext'
 import { getTrilhaById } from '../api/services/trilhaService'
+import TrailDuvidas        from '../components/teacher/TrailDuvidas'
+import TrailEstatisticas   from '../components/teacher/TrailEstatisticas'
+import TrailConfiguracoes  from '../components/teacher/TrailConfiguracoes'
+import { updateTrilha, deleteTrilha } from '../api/services/trilhaService'
 import styles from './TeacherTrilhaPage.module.css'
 
 const TRILHA_TOUR_KEY  = (userId) => `plut_tour_trilha_${userId}`
@@ -67,6 +71,8 @@ export default function TeacherTrilhaPage() {
   const { state: trilhaFromNav } = useLocation()
   const { toasts, toast, dismiss } = useToast()
   const { user } = useAuth()
+
+  const [activeTab, setActiveTab] = useState('aulas')
 
   const [trilhaTourActive, setTrilhaTourActive] = useState(() => {
     try { return localStorage.getItem(TRILHA_TOUR_KEY(user?.id)) !== 'true' } catch { return false }
@@ -140,6 +146,17 @@ export default function TeacherTrilhaPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  // ── Handlers de configurações da trilha ─────────────────────────────────
+  async function handleUpdateTrilha(data) {
+    const updated = await updateTrilha(id, { ...trilha, ...data })
+    setTrilha(updated)
+  }
+
+  async function handleDeleteTrilha() {
+    await deleteTrilha(id)
+    navigate('/teacher-dashboard')
   }
 
   async function handleDeleteConfirm(aulaId) {
@@ -296,8 +313,32 @@ export default function TeacherTrilhaPage() {
           </div>
         </header>
 
+        {/* ── Abas ── */}
+        <nav className={styles.tabs}>
+          {['aulas', 'duvidas', 'estatisticas', 'configuracoes'].map(tab => (
+            <button
+              key={tab}
+              className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {{ aulas: 'Aulas', duvidas: 'Dúvidas', estatisticas: 'Estatísticas', configuracoes: 'Configurações' }[tab]}
+            </button>
+          ))}
+        </nav>
+
+        {/* ── Conteúdo das abas ── */}
+        {activeTab === 'duvidas'       && <TrailDuvidas />}
+        {activeTab === 'estatisticas'  && <TrailEstatisticas />}
+        {activeTab === 'configuracoes' && (
+          <TrailConfiguracoes
+            trilha={trilha}
+            onUpdate={handleUpdateTrilha}
+            onDelete={handleDeleteTrilha}
+          />
+        )}
+
         {/* ── Seção de aulas ── */}
-        <section className={styles.section} data-tour="aulas-section">
+        {activeTab === 'aulas' && <section className={styles.section} data-tour="aulas-section">
           <div className={styles.sectionHeader}>
             <div>
               <h2 className={styles.sectionTitle}>Aulas</h2>
@@ -347,25 +388,29 @@ export default function TeacherTrilhaPage() {
               {aulas.map((aula, index) => {
                 const isDeleting   = deletingId      === aula.id
                 const isConfirming = confirmDeleteId === aula.id
+                const isDraft      = aula.status === 'RASCUNHO'
                 return (
-                  <div key={aula.id}
-                    className={`${styles.aulaCard} ${isDeleting ? styles.aulaCardDeleting : ''} ${aula.status === 'RASCUNHO' ? styles.aulaCardDraft : ''}`}
+                  <div
+                    key={aula.id}
+                    className={`${styles.aulaCard} ${isDeleting ? styles.aulaCardDeleting : ''} ${isDraft ? styles.aulaCardDraft : ''}`}
                   >
-                    {/* Clique no card abre edição */}
+                    {/* Número */}
+                    <div className={styles.aulaIndex}>{index + 1}</div>
+
+                    {/* Info principal — clicável para editar */}
                     <button
                       className={styles.aulaCardMain}
                       onClick={() => !isDeleting && !isConfirming && openEdit(aula)}
                       disabled={isDeleting}
                       aria-label={`Editar aula ${aula.titulo}`}
                     >
-                      <span className={styles.aulaNum}>{index + 1}</span>
-                      <div className={styles.aulaBody}>
-                        <div className={styles.aulaTitleRow}>
-                          <span className={styles.aulaTitle}>{aula.titulo}</span>
-                          {aula.status === 'RASCUNHO' && (
-                            <span className={styles.draftBadge}>Rascunho</span>
-                          )}
-                        </div>
+                      <div className={styles.aulaTitleRow}>
+                        <span className={styles.aulaTitle}>{aula.titulo}</span>
+                        <span className={isDraft ? styles.statusDraft : styles.statusPublished}>
+                          {isDraft ? 'Rascunho' : 'Publicada'}
+                        </span>
+                      </div>
+                      {(aula.blocos ?? []).length > 0 && (
                         <div className={styles.aulaBlocos}>
                           {(aula.blocos ?? []).map((b, i) => (
                             <span key={i} className={styles.aulaTipo}>
@@ -373,40 +418,36 @@ export default function TeacherTrilhaPage() {
                             </span>
                           ))}
                         </div>
-                      </div>
-                      <span className={styles.aulaEditHint}>
-                        {isDeleting ? <Icon name="hourglass" size={14} /> : <><Icon name="pencil" size={13} /> Editar</>}
-                      </span>
+                      )}
                     </button>
 
-                    {/* Área de delete — separada do clique de edição */}
-                    <div className={styles.aulaDeleteArea}>
+                    {/* Ações */}
+                    <div className={styles.aulaActions}>
                       {isConfirming ? (
                         <div className={styles.deleteConfirm}>
-                          <span className={styles.deleteConfirmText}>Excluir esta aula?</span>
-                          <button
-                            className={styles.deleteConfirmYes}
-                            onClick={() => handleDeleteConfirm(aula.id)}
-                          >
-                            Excluir
-                          </button>
-                          <button
-                            className={styles.deleteConfirmNo}
-                            onClick={() => setConfirmDeleteId(null)}
-                          >
-                            Cancelar
-                          </button>
+                          <span className={styles.deleteConfirmText}>Excluir?</span>
+                          <button className={styles.deleteConfirmYes} onClick={() => handleDeleteConfirm(aula.id)}>Sim</button>
+                          <button className={styles.deleteConfirmNo}  onClick={() => setConfirmDeleteId(null)}>Não</button>
                         </div>
                       ) : (
-                        <button
-                          className={styles.deleteBtn}
-                          onClick={() => setConfirmDeleteId(aula.id)}
-                          disabled={isDeleting}
-                          aria-label="Excluir aula"
-                          title="Excluir aula"
-                        >
-                          {isDeleting ? <Icon name="hourglass" size={14} /> : <Icon name="close" size={14} />}
-                        </button>
+                        <>
+                          <button
+                            className={styles.manageBtn}
+                            onClick={() => !isDeleting && openEdit(aula)}
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? <Icon name="hourglass" size={13} /> : <><Icon name="pencil" size={13} /> Gerenciar</>}
+                          </button>
+                          <button
+                            className={styles.deleteBtn}
+                            onClick={() => setConfirmDeleteId(aula.id)}
+                            disabled={isDeleting}
+                            aria-label="Excluir aula"
+                            title="Excluir aula"
+                          >
+                            <Icon name="close" size={13} />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -414,7 +455,7 @@ export default function TeacherTrilhaPage() {
               })}
             </div>
           )}
-        </section>
+        </section>}
 
       </div>
     </TeacherLayout>
