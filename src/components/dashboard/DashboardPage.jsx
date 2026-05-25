@@ -7,6 +7,7 @@ import { usePerfilAprendizado } from '../../hooks/usePerfilAprendizado'
 import OnboardingPerfilPage from '../../pages/OnboardingPerfilPage'
 import SpotlightTour from '../ui/SpotlightTour'
 import { STUDENT_ROUTES } from '../../constants/routes'
+import { api, ENDPOINTS } from '../../api/apiClient'
 import Icon from '../ui/Icon'
 import styles from './DashboardPage.module.css'
 
@@ -157,6 +158,14 @@ export default function DashboardPage() {
   const concluidas  = minhasTrilhas.filter(t => getProgresso(t.id) === 100)
   const destaque    = minhasTrilhas.find(t => getProgresso(t.id) < 100) ?? minhasTrilhas[0]
   const destaquePct = destaque ? getProgresso(destaque.id) : 0
+
+  const [duvidasRespondidas, setDuvidasRespondidas] = useState([])
+  useEffect(() => {
+    if (!user?.id) return
+    api(`${ENDPOINTS.duvidas}?alunoId=${user.id}`)
+      .then(data => setDuvidasRespondidas((data ?? []).filter(d => d.resposta).slice(0, 3)))
+      .catch(() => {})
+  }, [user?.id])
 
   // Onboarding de perfil: mostra se perfil ainda não existe (após carregar)
   const [showPerfilOnboarding, setShowPerfilOnboarding] = useState(false)
@@ -354,7 +363,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* ── 3 + 4. Meta semanal + Atividade recente ── */}
+        {/* ── 3 + 4. Meta semanal + Dúvidas respondidas ── */}
         <div className={styles.bottomRow} data-tour="dash-bottom">
 
           <div className={styles.card}>
@@ -400,49 +409,38 @@ export default function DashboardPage() {
 
           <div className={styles.card}>
             <div className={styles.cardHead}>
-              <span className={styles.cardLabel}>Seu perfil</span>
-              <button className={styles.linkBtn} onClick={() => navigate(STUDENT_ROUTES.desempenho)}>
-                Ver desempenho →
+              <span className={styles.cardLabel}>Dúvidas respondidas</span>
+              <button className={styles.linkBtn} onClick={() => navigate(STUDENT_ROUTES.duvidas)}>
+                Ver todas →
               </button>
             </div>
-            {loadingPerfil ? (
-              <div className={styles.emptyCard}><Sk h={14} /></div>
-            ) : !perfil ? (
+            {duvidasRespondidas.length === 0 ? (
               <div className={styles.emptyCard}>
-                <Icon name="user" size={24} style={{ opacity: .18 }} />
-                <p>Configure seu perfil para ver suas metas aqui.</p>
+                <Icon name="alertCircle" size={24} style={{ opacity: .18 }} />
+                <p>Suas dúvidas respondidas aparecerão aqui.</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {perfil.objetivo && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.6px', color: 'var(--text-muted)' }}>Objetivo</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)', background: 'var(--accent-soft)', border: '1px solid var(--accent-border)', borderRadius: 20, padding: '2px 10px' }}>
-                      {perfil.objetivo === 'ENEM' ? 'ENEM' : perfil.objetivo === 'VESTIBULAR' ? 'Vestibular' : perfil.objetivo === 'REFORCO' ? 'Reforço' : 'Faculdade'}
+              <div className={styles.actList}>
+                {duvidasRespondidas.map(d => (
+                  <div
+                    key={d.id}
+                    className={styles.actItem}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => navigate(STUDENT_ROUTES.duvidas)}
+                  >
+                    <span className={styles.actIcon} style={{ background: 'rgba(34,197,94,.1)', color: '#22c55e' }}>
+                      <Icon name="checkCircle" size={15} />
                     </span>
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)' }}>
-                    <span>Meta semanal</span>
-                    <span style={{ fontWeight: 700, color: 'var(--text)' }}>{metaSemanal} aulas</span>
-                  </div>
-                  {perfil.ritmo && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)' }}>
-                      <span>Ritmo</span>
-                      <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                        {perfil.ritmo === 'INTENSO' ? '🏃 Intenso' : perfil.ritmo === 'LEVE' ? '🐢 Leve' : '🚶 Moderado'}
-                      </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className={styles.actText} style={{ fontWeight: 600, color: 'var(--text)' }}>
+                        {d.aulaTitulo}
+                      </p>
+                      <p className={styles.actText} style={{ fontSize: 12, marginTop: 2 }}>
+                        {d.resposta?.slice(0, 60)}{d.resposta?.length > 60 ? '...' : ''}
+                      </p>
                     </div>
-                  )}
-                  {perfil.interesses && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 2 }}>
-                      {perfil.interesses.split(',').slice(0, 3).map(m => (
-                        <span key={m} style={{ fontSize: 11, color: 'var(--text-secondary)', background: 'rgba(255,255,255,.05)', border: '1px solid var(--border)', borderRadius: 6, padding: '2px 8px' }}>{m.trim()}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

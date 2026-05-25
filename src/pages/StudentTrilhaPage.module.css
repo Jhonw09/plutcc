@@ -733,3 +733,134 @@
   transition: background .15s;
 }
 .videoLink:hover { background: rgba(108,92,231,.18); }
+
+/* ── Seção de dúvidas no modal ── */
+.duvidaSection {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.duvidaHeader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.duvidaForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.duvidaInput {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color .15s;
+  box-sizing: border-box;
+}
+.duvidaInput:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+.duvidaInput::placeholder { color: var(--text-muted); }
+
+.duvidaBtn {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.duvidaBtn:hover:not(:disabled)  { background: var(--accent-hover); }
+.duvidaBtn:active:not(:disabled) { transform: scale(.97); }
+.duvidaBtn:disabled { opacity: .4; cursor: not-allowed; }
+
+.duvidaEnviada {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #22c55e;
+  background: rgba(34,197,94,.08);
+  border: 1px solid rgba(34,197,94,.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.duvidaErr {
+  font-size: 12px;
+  color: #ef4444;
+  margin: 0;
+}
+
+/* ── Histórico de dúvidas ── */
+.duvidaHistorico {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.duvidaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.duvidaPergunta {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.duvidaPergunta svg { flex-shrink: 0; margin-top: 2px; opacity: .5; }
+
+.duvidaResposta {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 13px;
+  color: #22c55e;
+  background: rgba(34,197,94,.07);
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  line-height: 1.5;
+}
+.duvidaResposta svg { flex-shrink: 0; margin-top: 2px; }
+
+.duvidaAguardando {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}

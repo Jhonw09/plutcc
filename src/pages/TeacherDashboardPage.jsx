@@ -10,10 +10,9 @@ import { useToast }           from '../hooks/useToast'
 import { useAuth }            from '../context/AuthContext'
 import { useTrilhas }         from '../hooks/useTrilhas'
 import { getResumoProfessor } from '../api/services/matriculaService'
+import { getDuvidasByTrilha } from '../api/services/duvidaService'
 import { TEACHER_ROUTES }     from '../constants/routes'
 import styles from './TeacherDashboardPage.module.css'
-
-const WEEK_DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 
 const AULA_TOUR_KEY      = 'plut_tour_aula_editor'
 const dashTourKey  = (id) => `plut_tour_dashboard_${id}`
@@ -150,10 +149,9 @@ function OnboardingView({ firstName, onCreateTrilha }) {
 }
 
 // ─── DASHBOARD NORMAL ─────────────────────────────────────────────────────────
-function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate, onOpenCreate }) {
+function DashboardView({ user, trilhas, loading, resumo, loadingResumo, duvidasPendentes, navigate, onOpenCreate }) {
   const firstName = user?.name?.split(' ')[0] ?? 'Professor'
   const top3      = resumo?.trilhas ?? []
-  const hasAlunos = (resumo?.totalAlunos ?? 0) > 0
 
   const stats = useMemo(() => [
     { icon: 'school',   color: 'purple', value: loading       ? '—' : trilhas.length,               label: 'Trilhas criadas',     delta: `${trilhas.length} no total`   },
@@ -194,28 +192,43 @@ function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate
         <div className={styles.card} data-tour="dash-desempenho">
           <div className={styles.cardHead}>
             <span className={styles.cardTitle}>Desempenho das trilhas</span>
-            <span className={styles.cardBadge}>Últimos 7 dias</span>
+            <span className={styles.cardBadge}>Taxa de conclusão</span>
           </div>
-          {hasAlunos ? (
-            <div className={styles.barChart}>
-              {WEEK_DAYS.map(day => (
-                <div key={day} className={styles.barCol}>
-                  <div className={styles.barWrap}>
-                    <div className={`${styles.bar} ${styles.barEmpty}`} style={{ height: '100%' }} />
-                  </div>
-                  <span className={styles.barLabel}>{day}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
+          {loadingResumo ? (
+            <div className={styles.skList}>{[0,1,2].map(i => <Sk key={i} />)}</div>
+          ) : top3.length === 0 ? (
             <div className={styles.emptyChart}>
               <Icon name="barChart" size={28} style={{ opacity: .18 }} />
-              <p>Quando seus alunos começarem a estudar, o gráfico de atividade aparecerá aqui.</p>
+              <p>Quando seus alunos começarem a estudar, o desempenho aparecerá aqui.</p>
+            </div>
+          ) : (
+            <div className={styles.studentList}>
+              {top3.map((t, i) => {
+                const pct = Number(t.taxaConclusao ?? 0)
+                return (
+                  <div key={i} className={styles.studentRow}>
+                    <div className={styles.trilhaThumb}><Icon name="school" size={14} /></div>
+                    <div className={styles.studentInfo}>
+                      <span className={styles.studentName}>{t.nome}</span>
+                      <span className={styles.studentSub}>
+                        <Icon name="users" size={10} /> {t.alunos} aluno{t.alunos !== 1 ? 's' : ''}
+                        {' · '}{t.aulas} aula{t.aulas !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div className={styles.studentRight}>
+                      <span className={styles.studentPct}>{pct}%</span>
+                      <div className={styles.studentTrack}>
+                        <div className={styles.studentFill} style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
           <div className={styles.barLegend}>
             <span className={styles.legendDot} />
-            <span className={styles.legendText}>Alunos ativos</span>
+            <span className={styles.legendText}>% de aulas concluídas pelos alunos</span>
           </div>
         </div>
 
@@ -311,10 +324,25 @@ function DashboardView({ user, trilhas, loading, resumo, loadingResumo, navigate
           <div className={styles.cardHead}>
             <span className={styles.cardTitle}>Dúvidas não respondidas</span>
           </div>
-          <div className={styles.emptyChart}>
-            <Icon name="alertCircle" size={24} style={{ opacity: .18 }} />
-            <p>Quando seus alunos enviarem dúvidas nas aulas, elas aparecerão aqui para você responder.</p>
-          </div>
+          {duvidasPendentes.length === 0 ? (
+            <div className={styles.emptyChart}>
+              <Icon name="alertCircle" size={24} style={{ opacity: .18 }} />
+              <p>Quando seus alunos enviarem dúvidas nas aulas, elas aparecerão aqui para você responder.</p>
+            </div>
+          ) : (
+            <div className={styles.actList}>
+              {duvidasPendentes.slice(0, 4).map((d, i) => (
+                <div key={i} className={styles.actItem}>
+                  <span className={styles.actIcon} style={{ background: 'rgba(234,179,8,.12)', color: '#fbbf24' }}>
+                    <Icon name="alertCircle" size={15} />
+                  </span>
+                  <span className={styles.actText}>
+                    <strong>{d.alunoNome}</strong> — <em>{d.aulaTitulo}</em>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>
@@ -331,6 +359,7 @@ export default function TeacherDashboardPage() {
 
   const [resumo,         setResumo]         = useState(null)
   const [loadingResumo,  setLoadingResumo]  = useState(true)
+  const [duvidasPendentes, setDuvidasPendentes] = useState([])
   const [classModalOpen, setClassModalOpen] = useState(false)
   const [editTarget,     setEditTarget]     = useState(null)
   const [deleteTarget,   setDeleteTarget]   = useState(null)
@@ -359,7 +388,17 @@ export default function TeacherDashboardPage() {
   useEffect(() => {
     if (!user?.id) return
     getResumoProfessor(user.id)
-      .then(setResumo)
+      .then(data => {
+        setResumo(data)
+        // fetch pending duvidas for all trilhas
+        if (data?.trilhas?.length) {
+          Promise.all(data.trilhas.map(t => getDuvidasByTrilha(t.id)))
+            .then(results => {
+              const pending = results.flat().filter(d => d.status === 'PENDENTE')
+              setDuvidasPendentes(pending)
+            })
+        }
+      })
       .finally(() => setLoadingResumo(false))
   }, [user?.id])
 
@@ -489,6 +528,7 @@ export default function TeacherDashboardPage() {
             loading={loading}
             resumo={resumo}
             loadingResumo={loadingResumo}
+            duvidasPendentes={duvidasPendentes}
             navigate={navigate}
             onOpenCreate={() => { setEditTarget(null); setClassModalOpen(true) }}
           />

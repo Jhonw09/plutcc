@@ -5,6 +5,8 @@ import { getTrilhaById } from '../api/services/trilhaService'
 import { getAulasByTrilha } from '../api/services/aulaService'
 import { useTrilhasAluno } from '../hooks/useTrilhasAluno'
 import { useMatricula } from '../hooks/useMatricula'
+import { useAuth } from '../context/AuthContext'
+import { criarDuvida, getDuvidasByAlunoEAula } from '../api/services/duvidaService'
 import Icon from '../components/ui/Icon'
 import styles from './StudentTrilhaPage.module.css'
 
@@ -31,8 +33,87 @@ function aulaTipo(aula) {
   return 'texto'
 }
 
-// ── Modal de conteúdo (aulas sem questionário) ────────────────────────────────
-function AulaConteudoModal({ aula, isDone, onConcluir, onClose }) {
+// ── Seção de dúvidas: histórico + nova dúvida ─────────────────────────────────
+function DuvidaAlunoSection({ aulaId, trilhaId, alunoId, label }) {
+  const [duvidas, setDuvidas]   = useState([])
+  const [texto, setTexto]       = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [err, setErr]           = useState(null)
+
+  useEffect(() => {
+    if (!alunoId || !aulaId) return
+    getDuvidasByAlunoEAula(alunoId, aulaId).then(data => setDuvidas(data ?? []))
+  }, [alunoId, aulaId])
+
+  async function handleEnviar() {
+    if (!texto.trim()) return
+    setEnviando(true)
+    setErr(null)
+    try {
+      const nova = await criarDuvida(alunoId, aulaId, trilhaId, texto.trim())
+      setDuvidas(prev => [nova, ...prev])
+      setTexto('')
+    } catch {
+      setErr('Não foi possível enviar. Tente novamente.')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  return (
+    <div className={styles.duvidaSection}>
+      <div className={styles.duvidaHeader}>
+        <Icon name="alertCircle" size={14} />
+        <span>{label}</span>
+      </div>
+
+      {duvidas.length > 0 && (
+        <div className={styles.duvidaHistorico}>
+          {duvidas.map(d => (
+            <div key={d.id} className={styles.duvidaItem}>
+              <div className={styles.duvidaPergunta}>
+                <Icon name="user" size={11} />
+                <span>{d.mensagem}</span>
+              </div>
+              {d.resposta ? (
+                <div className={styles.duvidaResposta}>
+                  <Icon name="checkCircle" size={11} />
+                  <span>{d.resposta}</span>
+                </div>
+              ) : (
+                <div className={styles.duvidaAguardando}>
+                  <Icon name="clock" size={11} />
+                  <span>Aguardando resposta do professor...</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={styles.duvidaForm}>
+        <textarea
+          className={styles.duvidaInput}
+          placeholder="Enviar nova dúvida sobre esta aula..."
+          value={texto}
+          onChange={e => setTexto(e.target.value)}
+          rows={3}
+        />
+        {err && <p className={styles.duvidaErr}>{err}</p>}
+        <button
+          className={styles.duvidaBtn}
+          onClick={handleEnviar}
+          disabled={!texto.trim() || enviando}
+        >
+          {enviando ? 'Enviando...' : <><Icon name="arrow" size={13} /> Enviar dúvida</>}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Modal de conteúdo ─────────────────────────────────────────────────────────
+function AulaConteudoModal({ aula, trilhaId, alunoId, isDone, onConcluir, onClose }) {
   const blocos = aula.blocos ?? []
 
   return (
@@ -95,6 +176,13 @@ function AulaConteudoModal({ aula, isDone, onConcluir, onClose }) {
               </div>
             )}
           </div>
+
+          <DuvidaAlunoSection
+            aulaId={aula.id}
+            trilhaId={trilhaId}
+            alunoId={alunoId}
+            label="Ficou com dúvida nesta aula?"
+          />
         </div>
       </div>
     </div>
@@ -102,7 +190,7 @@ function AulaConteudoModal({ aula, isDone, onConcluir, onClose }) {
 }
 
 // ── Modal de exercício ────────────────────────────────────────────────────────
-function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo }) {
+function ExercicioModal({ ex, trilhaId, alunoId, isDone, onConcluir, onClose, onProximo, temProximo }) {
   const [selecionada, setSelecionada] = useState(null)
   const [resultado,   setResultado]   = useState(null)
 
@@ -211,6 +299,13 @@ function ExercicioModal({ ex, isDone, onConcluir, onClose, onProximo, temProximo
               <button className={styles.btnProximo} onClick={onClose}>Concluir trilha</button>
             )}
           </div>
+
+          <DuvidaAlunoSection
+            aulaId={ex.id}
+            trilhaId={trilhaId}
+            alunoId={alunoId}
+            label="Ficou com dúvida neste exercício?"
+          />
         </div>
       </div>
     </div>
@@ -241,13 +336,13 @@ export default function StudentTrilhaPage() {
   const navigate = useNavigate()
   const { concluirAula, concluidasSet } = useTrilhasAluno()
   const { matriculado, loadingCheck } = useMatricula(id)
+  const { user } = useAuth()
 
   const [trilha,  setTrilha]  = useState(null)
   const [aulas,   setAulas]   = useState([])
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
-
-  const [modal, setModal] = useState(null)
+  const [modal,   setModal]   = useState(null)
 
   useEffect(() => {
     if (!loadingCheck && !matriculado) {
@@ -303,7 +398,6 @@ export default function StudentTrilhaPage() {
   const iconName = SUBJECT_ICON[trilha.disciplina] ?? 'bookOpen'
 
   const exercicios = aulas.map(aulaToExercicio).filter(Boolean)
-
   const aulaAberta = modal !== null ? aulas[modal.aulaIdx] : null
   const exAberto   = modal?.tipo === 'exercicio'
     ? exercicios.find(e => e.id === aulaAberta?.id)
@@ -422,6 +516,8 @@ export default function StudentTrilhaPage() {
         <AulaConteudoModal
           key={aulaAberta.id}
           aula={aulaAberta}
+          trilhaId={Number(id)}
+          alunoId={user?.id}
           isDone={concluidasSet.has(Number(aulaAberta.id))}
           onConcluir={() => handleConcluir(aulaAberta.id)}
           onClose={() => setModal(null)}
@@ -432,6 +528,8 @@ export default function StudentTrilhaPage() {
         <ExercicioModal
           key={exAberto.id}
           ex={exAberto}
+          trilhaId={Number(id)}
+          alunoId={user?.id}
           isDone={concluidasSet.has(Number(aulaAberta.id))}
           onConcluir={() => handleConcluir(aulaAberta.id)}
           onClose={() => setModal(null)}

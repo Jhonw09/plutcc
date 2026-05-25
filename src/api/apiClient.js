@@ -35,6 +35,17 @@ export const ENDPOINTS = {
   // Perfil de aprendizado
   perfilAprendizado:           (alunoId) => `${API_BASE}/perfil-aprendizado/${alunoId}`,
   perfilAprendizadoCreate:     `${API_BASE}/perfil-aprendizado`,
+
+  // Dúvidas
+  duvidas:                     `${API_BASE}/duvidas`,
+  duvidaResponder:             (id) => `${API_BASE}/duvidas/${id}/responder`,
+  duvidaResolver:              (id) => `${API_BASE}/duvidas/${id}/resolver`,
+  duvidasByTrilha:             (trilhaId) => `${API_BASE}/duvidas/trilha/${trilhaId}`,
+  duvidasByAula:               (aulaId)   => `${API_BASE}/duvidas/aula/${aulaId}`,
+  duvidasByAlunoEAula:         (alunoId, aulaId) => `${API_BASE}/duvidas/aluno/${alunoId}/aula/${aulaId}`,
+
+  // Estatísticas da trilha
+  estatisticasTrilha:          (trilhaId) => `${API_BASE}/matriculas/trilha/${trilhaId}/estatisticas`,
 }
 
 export const ROLE_MAP = {

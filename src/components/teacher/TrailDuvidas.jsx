@@ -1,70 +1,52 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Icon from '../ui/Icon'
+import { getDuvidasByTrilha, responderDuvida, resolverDuvida } from '../../api/services/duvidaService'
 import styles from './TrailDuvidas.module.css'
 
-const MOCK_DUVIDAS = [
-  {
-    id: 1,
-    aluno: 'Ana Souza',
-    aulaTitle: 'Introdução à Álgebra',
-    mensagem: 'Não entendi como resolver equações de segundo grau com delta negativo. Poderia explicar melhor?',
-    status: 'pendente',
-    createdAt: '2 horas atrás',
-  },
-  {
-    id: 2,
-    aluno: 'Carlos Lima',
-    aulaTitle: 'Funções do 1º Grau',
-    mensagem: 'A diferença entre função crescente e decrescente ficou confusa pra mim. O gráfico ajuda a identificar?',
-    status: 'respondida',
-    createdAt: '1 dia atrás',
-    resposta: 'Sim! No gráfico, se a reta sobe da esquerda para a direita, a função é crescente. Se desce, é decrescente. O coeficiente angular "a" determina isso: a > 0 crescente, a < 0 decrescente.',
-  },
-  {
-    id: 3,
-    aluno: 'Mariana Costa',
-    aulaTitle: 'Geometria Plana',
-    mensagem: 'Como calcular a área de um trapézio? Não lembro a fórmula.',
-    status: 'pendente',
-    createdAt: '3 horas atrás',
-  },
-  {
-    id: 4,
-    aluno: 'Pedro Alves',
-    aulaTitle: 'Introdução à Álgebra',
-    mensagem: 'Qual a diferença entre incógnita e variável? São a mesma coisa?',
-    status: 'respondida',
-    createdAt: '2 dias atrás',
-    resposta: 'Boa pergunta! Incógnita é um valor desconhecido que queremos descobrir em uma equação. Variável representa um valor que pode mudar. Na prática, em equações, usamos os dois termos de forma intercambiável.',
-  },
-]
-
-export default function TrailDuvidas() {
-  const [duvidas, setDuvidas]       = useState(MOCK_DUVIDAS)
+export default function TrailDuvidas({ trilhaId }) {
+  const [duvidas, setDuvidas]             = useState([])
+  const [loading, setLoading]             = useState(true)
   const [respondendoId, setRespondendoId] = useState(null)
   const [respostaText, setRespostaText]   = useState('')
-  const [filtro, setFiltro]         = useState('todas')
+  const [salvandoId, setSalvandoId]       = useState(null)
+  const [filtro, setFiltro]               = useState('todas')
 
-  const pendentes   = duvidas.filter(d => d.status === 'pendente').length
-  const respondidas = duvidas.filter(d => d.status === 'respondida').length
+  useEffect(() => {
+    if (!trilhaId) return
+    getDuvidasByTrilha(trilhaId).then(data => {
+      setDuvidas(data ?? [])
+      setLoading(false)
+    })
+  }, [trilhaId])
+
+  const pendentes   = duvidas.filter(d => d.status === 'PENDENTE').length
+  const respondidas = duvidas.filter(d => d.status === 'RESPONDIDA').length
 
   const visiveis = filtro === 'todas'
     ? duvidas
-    : duvidas.filter(d => d.status === filtro)
+    : duvidas.filter(d => d.status === (filtro === 'pendente' ? 'PENDENTE' : 'RESPONDIDA'))
 
-  function handleResponder(id) {
+  async function handleResponder(id) {
     if (!respostaText.trim()) return
-    setDuvidas(prev => prev.map(d =>
-      d.id === id ? { ...d, status: 'respondida', resposta: respostaText.trim() } : d
-    ))
-    setRespondendoId(null)
-    setRespostaText('')
+    setSalvandoId(id)
+    try {
+      const updated = await responderDuvida(id, respostaText.trim())
+      setDuvidas(prev => prev.map(d => d.id === id ? updated : d))
+      setRespondendoId(null)
+      setRespostaText('')
+    } finally {
+      setSalvandoId(null)
+    }
   }
 
-  function handleResolver(id) {
-    setDuvidas(prev => prev.map(d =>
-      d.id === id ? { ...d, status: 'respondida' } : d
-    ))
+  async function handleResolver(id) {
+    setSalvandoId(id)
+    try {
+      const updated = await resolverDuvida(id)
+      setDuvidas(prev => prev.map(d => d.id === id ? updated : d))
+    } finally {
+      setSalvandoId(null)
+    }
   }
 
   function iniciarResposta(id) {
@@ -72,10 +54,11 @@ export default function TrailDuvidas() {
     setRespostaText('')
   }
 
+  if (loading) return <div className={styles.container}><p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Carregando dúvidas...</p></div>
+
   return (
     <div className={styles.container}>
 
-      {/* Toolbar integrada: métricas + filtros */}
       <div className={styles.toolbar} data-tour="duvidas-toolbar">
         <div className={styles.toolbarStats}>
           <span className={styles.statItem}>
@@ -103,7 +86,6 @@ export default function TrailDuvidas() {
         </div>
       </div>
 
-      {/* Lista */}
       {visiveis.length === 0 && (
         <div className={styles.empty}>
           <Icon name="inbox" size={32} style={{ opacity: .3 }} />
@@ -113,34 +95,31 @@ export default function TrailDuvidas() {
 
       <div className={styles.list}>
         {visiveis.map(d => (
-          <div key={d.id} className={`${styles.card} ${d.status === 'respondida' ? styles.cardRespondida : ''}`}>
+          <div key={d.id} className={`${styles.card} ${d.status === 'RESPONDIDA' ? styles.cardRespondida : ''}`}>
 
-            {/* Cabeçalho do card */}
             <div className={styles.cardHeader}>
               <div className={styles.alunoInfo}>
-                <div className={styles.avatar}>{d.aluno.charAt(0)}</div>
+                <div className={styles.avatar}>{(d.alunoNome ?? 'A').charAt(0)}</div>
                 <div>
-                  <span className={styles.alunoNome}>{d.aluno}</span>
+                  <span className={styles.alunoNome}>{d.alunoNome}</span>
                   <span className={styles.aulaRef}>
                     <Icon name="bookOpen" size={11} />
-                    {d.aulaTitle}
+                    {d.aulaTitulo}
                   </span>
                 </div>
               </div>
               <div className={styles.cardMeta}>
                 <span className={styles.time}>
-                  <Icon name="clock" size={11} /> {d.createdAt}
+                  <Icon name="clock" size={11} /> {new Date(d.criadaEm).toLocaleDateString('pt-BR')}
                 </span>
-                <span className={d.status === 'pendente' ? styles.badgePendente : styles.badgeRespondida}>
-                  {d.status === 'pendente' ? 'Pendente' : 'Respondida'}
+                <span className={d.status === 'PENDENTE' ? styles.badgePendente : styles.badgeRespondida}>
+                  {d.status === 'PENDENTE' ? 'Pendente' : 'Respondida'}
                 </span>
               </div>
             </div>
 
-            {/* Mensagem */}
             <p className={styles.mensagem}>{d.mensagem}</p>
 
-            {/* Resposta existente */}
             {d.resposta && (
               <div className={styles.respostaBox}>
                 <div className={styles.respostaLabel}>
@@ -150,7 +129,6 @@ export default function TrailDuvidas() {
               </div>
             )}
 
-            {/* Formulário de resposta inline */}
             {respondendoId === d.id && (
               <div className={styles.replyForm}>
                 <textarea
@@ -162,35 +140,38 @@ export default function TrailDuvidas() {
                   autoFocus
                 />
                 <div className={styles.replyActions}>
-                  <button className={styles.cancelBtn} onClick={() => setRespondendoId(null)}>
+                  <button className={styles.cancelBtn} onClick={() => setRespondendoId(null)} disabled={salvandoId === d.id}>
                     Cancelar
                   </button>
                   <button
                     className={styles.sendBtn}
                     onClick={() => handleResponder(d.id)}
-                    disabled={!respostaText.trim()}
+                    disabled={!respostaText.trim() || salvandoId === d.id}
                   >
-                    <Icon name="arrow" size={13} /> Enviar resposta
+                    {salvandoId === d.id
+                      ? <><Icon name="hourglass" size={13} /> Respondendo...</>
+                      : <><Icon name="arrow" size={13} /> Enviar resposta</>}
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Ações */}
             {respondendoId !== d.id && (
               <div className={styles.cardActions}>
-                {d.status === 'pendente' && (
+                {d.status === 'PENDENTE' && (
                   <>
-                    <button className={styles.btnResponder} onClick={() => iniciarResposta(d.id)}>
+                    <button className={styles.btnResponder} onClick={() => iniciarResposta(d.id)} disabled={salvandoId === d.id}>
                       <Icon name="pencil" size={13} /> Responder
                     </button>
-                    <button className={styles.btnResolver} onClick={() => handleResolver(d.id)}>
-                      <Icon name="check" size={13} /> Marcar como resolvida
+                    <button className={styles.btnResolver} onClick={() => handleResolver(d.id)} disabled={salvandoId === d.id}>
+                      {salvandoId === d.id
+                        ? <><Icon name="hourglass" size={13} /> Salvando...</>
+                        : <><Icon name="check" size={13} /> Marcar como resolvida</>}
                     </button>
                   </>
                 )}
-                {d.status === 'respondida' && (
-                  <button className={styles.btnResponder} onClick={() => iniciarResposta(d.id)}>
+                {d.status === 'RESPONDIDA' && (
+                  <button className={styles.btnResponder} onClick={() => iniciarResposta(d.id)} disabled={salvandoId === d.id}>
                     <Icon name="pencil" size={13} /> Editar resposta
                   </button>
                 )}

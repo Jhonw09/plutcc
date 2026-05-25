@@ -11,6 +11,7 @@ export const STUDENT_ROUTES = {
   home:        '/dashboard',
   trilhas:     '/dashboard/trilhas',
   desempenho:  '/dashboard/desempenho',
+  duvidas:     '/dashboard/duvidas',
   subjects:    '/dashboard/disciplinas',
   exercises:   '/dashboard/exercicios',
   exams:       '/dashboard/simulados',

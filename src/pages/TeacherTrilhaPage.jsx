@@ -362,8 +362,8 @@ export default function TeacherTrilhaPage() {
         </nav>
 
         {/* ── Conteúdo das abas ── */}
-        {activeTab === 'duvidas'       && <TrailDuvidas />}
-        {activeTab === 'estatisticas'  && <TrailEstatisticas />}
+        {activeTab === 'duvidas'       && <TrailDuvidas trilhaId={Number(id)} />}
+        {activeTab === 'estatisticas'  && <TrailEstatisticas trilhaId={Number(id)} />}
         {activeTab === 'configuracoes' && (
           <TrailConfiguracoes
             trilha={trilha}

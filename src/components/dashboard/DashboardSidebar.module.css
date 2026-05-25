@@ -77,6 +77,18 @@
 .navIcon { font-size: 17px; flex-shrink: 0; }
 .navText  { flex: 1; }
 
+.badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 20px;
+  padding: 1px 7px;
+  min-width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 .bottom {
   display: flex;
   flex-direction: column;

@@ -19,6 +19,7 @@ import {
 import BlogPage          from './pages/BlogPage'
 import ExplorarTrilhas   from './pages/ExplorarTrilhas'
 import MinhasTrilhasPage from './pages/MinhasTrilhasPage'
+import MinhasDuvidasPage from './pages/MinhasDuvidasPage'
 import DesempenhoPage    from './pages/DesempenhoPage'
 import TrilhaDetalhePage from './pages/TrilhaDetalhePage'
 import './App.css'
@@ -44,6 +45,7 @@ export default function App() {
       <Route path="/dashboard/trilhas"           element={<S><MinhasTrilhasPage /></S>} />
       <Route path="/dashboard/trilha-detalhe/:id" element={<S><TrilhaDetalhePage /></S>} />
       <Route path="/dashboard/desempenho"        element={<S><DesempenhoPage /></S>} />
+      <Route path="/dashboard/duvidas"            element={<S><MinhasDuvidasPage /></S>} />
       <Route path="/dashboard/disciplinas"       element={<S><SubjectsPage /></S>} />
       <Route path="/dashboard/exercicios"        element={<S><ExercisesPage /></S>} />
       <Route path="/dashboard/simulados"         element={<S><ExamsPage /></S>} />

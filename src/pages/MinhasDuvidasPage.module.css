@@ -1,0 +1,202 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeUp 260ms ease forwards;
+}
+
+.pageHead { display: flex; flex-direction: column; gap: 4px; }
+.pageTitle { font-size: clamp(18px, 2vw, 22px); font-weight: 800; color: var(--text); }
+.pageSub   { font-size: 13px; color: var(--text-muted); }
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.stats { display: flex; align-items: center; gap: 8px; }
+.statItem { font-size: 13px; color: var(--text-secondary); }
+.statNum  { font-weight: 800; color: var(--text); }
+.statGreen { color: #22c55e; }
+.statDot  { color: var(--border); }
+
+.filters { display: flex; gap: 6px; }
+.filterBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.filterBtn:hover { color: var(--text); border-color: rgba(255,255,255,.15); }
+.filterActive {
+  color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  border-color: var(--accent-border) !important;
+}
+
+/* ── List ── */
+.list { display: flex; flex-direction: column; gap: 10px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color .18s;
+}
+.card:hover { border-color: rgba(255,255,255,.12); }
+.cardRespondida { border-color: rgba(34,197,94,.2); }
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.aulaInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.aulaNome  { font-weight: 600; color: var(--text-secondary); }
+.trilhaNome { color: var(--text-muted); }
+.dot { opacity: .4; }
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.badgePendente {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(234,179,8,.1);
+  color: #ca8a04;
+  border: 1px solid rgba(234,179,8,.25);
+}
+.badgeRespondida {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(34,197,94,.1);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,.25);
+}
+
+.mensagem {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.respostaBox {
+  background: rgba(34,197,94,.07);
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.respostaLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #22c55e;
+}
+.respostaText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.aguardando {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.btnIr {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  width: fit-content;
+  transition: background .15s;
+}
+.btnIr:hover { background: rgba(108,92,231,.18); }
+
+/* ── Empty ── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .cardTop { flex-direction: column; }
+}
