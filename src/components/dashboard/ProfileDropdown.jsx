@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { getPasswordValidationMessage, isValidEmail } from '../../utils/validation'
 import Icon from '../ui/Icon'
 import styles from './ProfileDropdown.module.css'
 
@@ -45,6 +46,7 @@ export default function ProfileDropdown() {
   async function handleSaveProfile() {
     if (!form.name.trim())  { setError('Nome não pode ser vazio.');   return }
     if (!form.email.trim()) { setError('E-mail não pode ser vazio.'); return }
+    if (!isValidEmail(form.email.trim())) { setError('E-mail invalido.'); return }
     if (!form.password.trim()) { setError('Informe sua senha para confirmar.'); return }
     setSaving(true); setError('')
     try {
@@ -57,7 +59,8 @@ export default function ProfileDropdown() {
 
   async function handleChangePassword() {
     if (!pwForm.current.trim()) { setError('Informe a senha atual.');          return }
-    if (pwForm.next.trim().length < 6) { setError('Nova senha: mínimo 6 caracteres.'); return }
+    const passwordMessage = getPasswordValidationMessage(pwForm.next.trim())
+    if (passwordMessage) { setError(passwordMessage); return }
     setSaving(true); setError('')
     try {
       await changePassword({ senhaAtual: pwForm.current.trim(), senha: pwForm.next.trim() })
@@ -176,7 +179,7 @@ export default function ProfileDropdown() {
                 <input className={styles.input} type="password" value={pwForm.next}
                   disabled={saving} autoComplete="new-password"
                   onChange={e => setPwForm(f => ({ ...f, next: e.target.value }))} />
-                <span className={styles.fieldHint}>Mínimo 6 caracteres</span>
+                <span className={styles.fieldHint}>Minimo 8 caracteres, com maiuscula, minuscula, numero e caractere especial.</span>
               </div>
               {error && error !== 'Senha atual incorreta.' && <p className={styles.error} role="alert">{error}</p>}
               <div className={styles.editActions}>

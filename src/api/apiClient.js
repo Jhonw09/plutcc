@@ -62,7 +62,14 @@ export async function api(url, options = {}) {
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    const err = new Error(text || `HTTP ${res.status}`)
+    let message = text || `HTTP ${res.status}`
+    try {
+      const parsed = JSON.parse(text)
+      message = parsed.error || parsed.message || message
+    } catch {
+      // Keep the raw response text when it is not JSON.
+    }
+    const err = new Error(message)
     err.status = res.status
     throw err
   }

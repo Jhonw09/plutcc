@@ -1,44 +1,38 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { getPasswordChecks, isStrongPassword, isValidEmail } from '../utils/validation'
 import { Button } from './ui/Button'
 import { InputField } from './ui/InputField'
 import { ToggleForm } from './ui/ToggleForm'
 import styles from './AuthForm.module.css'
 
-// ── Validation helpers ──────────────────────────────────────────────────────
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 function validateLogin({ email, password }) {
   const errors = {}
-  if (!email)                     errors.email    = 'Informe seu e-mail.'
-  else if (!EMAIL_RE.test(email)) errors.email    = 'E-mail inválido.'
-  if (!password)                  errors.password = 'Informe sua senha.'
-  else if (password.length < 6)   errors.password = 'Mínimo de 6 caracteres.'
+  if (!email) errors.email = 'Informe seu e-mail.'
+  else if (!isValidEmail(email)) errors.email = 'E-mail invalido.'
+  if (!password) errors.password = 'Informe sua senha.'
   return errors
 }
 
 function validateSignup({ name, email, password, confirm }) {
   const errors = {}
-  if (!name)                      errors.name     = 'Informe seu nome.'
-  if (!email)                     errors.email    = 'Informe seu e-mail.'
-  else if (!EMAIL_RE.test(email)) errors.email    = 'E-mail inválido.'
-  if (!password)                  errors.password = 'Informe uma senha.'
-  else if (password.length < 6)   errors.password = 'Mínimo de 6 caracteres.'
-  if (!confirm)                   errors.confirm  = 'Confirme sua senha.'
-  else if (confirm !== password)  errors.confirm  = 'As senhas não coincidem.'
+  if (!name) errors.name = 'Informe seu nome.'
+  if (!email) errors.email = 'Informe seu e-mail.'
+  else if (!isValidEmail(email)) errors.email = 'E-mail invalido.'
+  if (!password) errors.password = 'Informe uma senha.'
+  else if (!isStrongPassword(password)) errors.password = 'A senha ainda nao atende todos os requisitos.'
+  if (!confirm) errors.confirm = 'Confirme sua senha.'
+  else if (confirm !== password) errors.confirm = 'As senhas nao coincidem.'
   return errors
 }
-
-// ── Component ───────────────────────────────────────────────────────────────
 
 export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) {
   const { login, signup } = useAuth()
 
-  const [mode, setMode]       = useState(initialMode)
-  const [role, setRole]       = useState('student')
-  const [fields, setFields]   = useState({ name: '', email: '', password: '', confirm: '' })
-  const [errors, setErrors]   = useState({})
+  const [mode, setMode] = useState(initialMode)
+  const [role, setRole] = useState('student')
+  const [fields, setFields] = useState({ name: '', email: '', password: '', confirm: '' })
+  const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
   function handleChange(e) {
@@ -64,7 +58,10 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
       ? validateLogin(fields)
       : validateSignup(fields)
 
-    if (Object.keys(errs).length) { setErrors(errs); return }
+    if (Object.keys(errs).length) {
+      setErrors(errs)
+      return
+    }
 
     setLoading(true)
     try {
@@ -83,24 +80,27 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
   }
 
   const isLogin = mode === 'login'
+  const passwordChecks = getPasswordChecks(fields.password)
+  const passwordInvalid = !isLogin && fields.password && !isStrongPassword(fields.password)
+  const submitDisabled = loading || Boolean(passwordInvalid)
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.card} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
 
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar">✕</button>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar">x</button>
 
         <div className={styles.logo}>
           <svg width="180" height="28" viewBox="0 0 180 28" fill="none">
-            <text x="0"  y="22" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="24" fill="#FFFFFF">Study</text>
+            <text x="0" y="22" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="24" fill="#FFFFFF">Study</text>
             <text x="74" y="22" fontFamily="Inter,sans-serif" fontWeight="900" fontSize="24" fill="#6C5CE7">Connect</text>
           </svg>
         </div>
 
         <h2 className={styles.title}>{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</h2>
-        <p className={styles.sub}>{isLogin ? 'Entre para continuar.' : 'É grátis e leva menos de 1 minuto.'}</p>
+        <p className={styles.sub}>{isLogin ? 'Entre para continuar.' : 'E gratis e leva menos de 1 minuto.'}</p>
 
-        <div className={styles.roleSelector} role="group" aria-label="Tipo de usuário">
+        <div className={styles.roleSelector} role="group" aria-label="Tipo de usuario">
           <button
             type="button"
             className={`${styles.roleBtn} ${role === 'student' ? styles.roleBtnActive : ''}`}
@@ -146,10 +146,24 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
 
           <InputField
             id="password" name="password" label="Senha"
-            type="password" placeholder="Mínimo 6 caracteres"
+            type="password" placeholder={isLogin ? 'Sua senha' : 'Minimo 8 caracteres'}
             value={fields.password} onChange={handleChange}
             error={errors.password} autoComplete={isLogin ? 'current-password' : 'new-password'}
           />
+
+          {!isLogin && fields.password && (
+            <ul className={styles.passwordRules} aria-live="polite">
+              {passwordChecks.map(check => (
+                <li
+                  key={check.id}
+                  className={check.valid ? styles.passwordRuleValid : styles.passwordRuleInvalid}
+                >
+                  <span aria-hidden="true">{check.valid ? 'OK' : '-'}</span>
+                  {check.label}
+                </li>
+              ))}
+            </ul>
+          )}
 
           {!isLogin && (
             <InputField
@@ -160,7 +174,7 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
             />
           )}
 
-          <Button variant="primary" type="submit" disabled={loading} className={styles.submitBtn}>
+          <Button variant="primary" type="submit" disabled={submitDisabled} className={styles.submitBtn}>
             {loading
               ? (isLogin ? 'Entrando...' : 'Criando conta...')
               : (isLogin ? 'Entrar' : 'Criar conta')

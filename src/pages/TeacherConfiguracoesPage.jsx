@@ -7,11 +7,12 @@ import { Toast }         from '../components/ui/Toast'
 import Icon              from '../components/ui/Icon'
 import { useAuth }       from '../context/AuthContext'
 import { useToast }      from '../hooks/useToast'
+import { getPasswordValidationMessage, isValidEmail } from '../utils/validation'
 import styles from './TeacherConfiguracoesPage.module.css'
 
 export default function TeacherConfiguracoesPage() {
   const navigate = useNavigate()
-  const { user, updateUser, changePassword, deleteUser, logout } = useAuth()
+  const { user, updateUser, changePassword, deleteUser } = useAuth()
   const { toasts, toast, dismiss } = useToast()
 
   // ── Perfil ──
@@ -39,6 +40,7 @@ export default function TeacherConfiguracoesPage() {
     setPerfilError('')
     if (!nome.trim())   return setPerfilError('O nome é obrigatório.')
     if (!email.trim())  return setPerfilError('O e-mail é obrigatório.')
+    if (!isValidEmail(email.trim())) return setPerfilError('E-mail invalido.')
     if (!senhaConf)     return setPerfilError('Confirme sua senha para salvar.')
     setSavingPerfil(true)
     try {
@@ -57,7 +59,8 @@ export default function TeacherConfiguracoesPage() {
     e.preventDefault()
     setSenhaError('')
     if (!senhaAtual)              return setSenhaError('Informe a senha atual.')
-    if (senhaNova.length < 6)     return setSenhaError('A nova senha deve ter ao menos 6 caracteres.')
+    const passwordMessage = getPasswordValidationMessage(senhaNova)
+    if (passwordMessage)          return setSenhaError(passwordMessage)
     if (senhaNova !== senhaRep)   return setSenhaError('As senhas não coincidem.')
     setSavingSenha(true)
     try {
@@ -154,7 +157,7 @@ export default function TeacherConfiguracoesPage() {
               </span>
               <div>
                 <h2 className={styles.cardTitle}>Alterar senha</h2>
-                <p className={styles.cardSub}>Use uma senha forte com ao menos 6 caracteres.</p>
+                <p className={styles.cardSub}>Use uma senha forte com ao menos 8 caracteres.</p>
               </div>
             </div>
 

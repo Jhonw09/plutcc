@@ -34,6 +34,7 @@ function Sk({ h = 20, r = 8, w }) {
 }
 
 const STAT_COLORS = ['purple', 'green', 'blue', 'orange']
+const SKELETON_BAR_HEIGHTS = [38, 64, 46, 78, 54, 70, 42]
 
 const FRASES_MOTIVACAO = [
   'Cada aula concluída é um passo a mais rumo ao seu objetivo. 🚀',
@@ -48,16 +49,19 @@ export default function DesempenhoPage() {
   const { concluidasSet } = useTrilhasAluno()
   const { metaSemanal, perfil, interesses } = usePerfilAprendizado()
 
-  const [progressoRaw, setProgressoRaw]       = useState([])
-  const [loadingProgresso, setLoadingProgresso] = useState(true)
+  const [progressoState, setProgressoState] = useState({ userId: null, data: [] })
 
   useEffect(() => {
-    if (!user?.id) { setLoadingProgresso(false); return }
+    if (!user?.id) return
     getProgressoCompleto(user.id)
-      .then(data => setProgressoRaw(data ?? []))
-      .finally(() => setLoadingProgresso(false))
+      .then(data => setProgressoState({ userId: user.id, data: data ?? [] }))
   }, [user?.id])
 
+  const progressoRaw = useMemo(
+    () => progressoState.userId === user?.id ? progressoState.data : [],
+    [progressoState, user?.id]
+  )
+  const loadingProgresso = Boolean(user?.id && progressoState.userId !== user.id)
   const loading = loadingTrilhas || loadingProgresso
 
   // ── Estatísticas derivadas ────────────────────────────────────────────────
@@ -154,10 +158,10 @@ export default function DesempenhoPage() {
 
             {loading ? (
               <div className={styles.barChart}>
-                {WEEK_DAYS.map(d => (
+                {WEEK_DAYS.map((d, i) => (
                   <div key={d} className={styles.barCol}>
                     <div className={styles.barWrap}>
-                      <Sk h={Math.random() * 60 + 20} r={4} />
+                      <Sk h={SKELETON_BAR_HEIGHTS[i]} r={4} />
                     </div>
                     <span className={styles.barLabel}>{d}</span>
                   </div>
@@ -230,13 +234,13 @@ export default function DesempenhoPage() {
               </div>
             </div>
 
-            <p className={styles.goalText}>
+            <div className={styles.goalText}>
               {loading ? <Sk h={14} /> : (
                 goalPct >= 100
                   ? <><strong>Meta atingida!</strong> Você concluiu {aulasSemana} aulas essa semana. 🎉</>
                   : <><strong>{aulasSemana}</strong> de <strong>{metaSemanal}</strong> aulas concluídas</>
               )}
-            </p>
+            </div>
 
             <div className={`${styles.goalHint} ${goalPct >= 100 ? styles.goalHintDone : ''}`}>
               {loading ? <Sk h={12} /> : (

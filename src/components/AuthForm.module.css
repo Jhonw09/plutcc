@@ -75,6 +75,38 @@
   gap: 16px;
 }
 
+.passwordRules {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: -6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.passwordRules li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.passwordRules span {
+  width: 24px;
+  flex: 0 0 24px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.passwordRuleValid {
+  color: var(--success, #22c55e);
+}
+
+.passwordRuleInvalid {
+  color: var(--text-muted);
+}
+
 /* Make the submit button full-width */
 .submitBtn {
   width: 100% !important;

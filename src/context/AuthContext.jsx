@@ -105,11 +105,16 @@ export function AuthProvider({ children }) {
   async function updateUser({ nome, email, senha }) {
     validateId(user?.id)
 
+    try {
+      await authService.login({ email: user.email, senha })
+    } catch {
+      throw new Error('Senha incorreta.')
+    }
+
     await authService.updateUser(user.id, {
       nome,
       email,
       tipoUsuario: user.tipoUsuario,
-      senha,
     })
 
     const updated = { ...user, name: nome, avatar: nome.charAt(0).toUpperCase(), email }
