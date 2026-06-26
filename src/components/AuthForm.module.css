@@ -180,3 +180,48 @@
   padding: 8px 12px;
   line-height: 1.5;
 }
+
+.forgotLink {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-align: right;
+  align-self: flex-end;
+  margin-top: -8px;
+}
+.forgotLink:hover { text-decoration: underline; }
+
+.backLink {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+}
+.backLink:hover { color: var(--text); }
+
+.verifyActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.resendBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+.resendBtn:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+.resendBtn:not(:disabled):hover { text-decoration: underline; }

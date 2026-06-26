@@ -53,9 +53,9 @@ export function AuthProvider({ children }) {
   async function signup({ nome, email, senha, tipoUsuario = 'ALUNO' }) {
     console.log('[AuthContext] Starting signup flow for:', email)
     try {
-      const data = await authService.signup({ nome, email, senha, tipoUsuario })
-      console.log('[AuthContext] Signup response:', { id: data.id, nome: data.nome, role: data.role })
-      return loginWithData({ email, data })
+      await authService.signup({ nome, email, senha, tipoUsuario })
+      // Nao faz login automatico: usuario precisa verificar o e-mail primeiro
+      return { email }
     } catch (err) {
       console.error('[AuthContext] Signup failed:', err.message)
       throw err

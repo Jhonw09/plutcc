@@ -22,6 +22,9 @@ import MinhasTrilhasPage from './pages/MinhasTrilhasPage'
 import MinhasDuvidasPage from './pages/MinhasDuvidasPage'
 import DesempenhoPage    from './pages/DesempenhoPage'
 import TrilhaDetalhePage from './pages/TrilhaDetalhePage'
+import ResetPasswordPage        from './pages/ResetPasswordPage'
+import ForgotPasswordPage       from './pages/ForgotPasswordPage'
+import StudentConfiguracoesPage from './pages/StudentConfiguracoesPage'
 import './App.css'
 
 function S({ children }) {
@@ -50,7 +53,7 @@ export default function App() {
       <Route path="/dashboard/exercicios"        element={<S><ExercisesPage /></S>} />
       <Route path="/dashboard/simulados"         element={<S><ExamsPage /></S>} />
       <Route path="/dashboard/metas"             element={<S><GoalsPage /></S>} />
-      <Route path="/dashboard/configuracoes"     element={<S><SettingsPage /></S>} />
+      <Route path="/dashboard/configuracoes"     element={<S><StudentConfiguracoesPage /></S>} />
       <Route path="/dashboard/ajuda"             element={<S><HelpPage /></S>} />
       <Route path="/dashboard/trilha/:id"         element={<S><StudentTrilhaPage /></S>} />
 
@@ -73,6 +76,8 @@ export default function App() {
 
       <Route path="/sobre" element={<BlogPage />} />
       <Route path="/explorar" element={<S><ExplorarTrilhas /></S>} />
+      <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+      <Route path="/redefinir-senha-solicitacao" element={<ForgotPasswordPage />} />
 
       {/* ── Catch-all */}
       <Route path="/trilha/:id" element={<ProtectedRoute><TrilhaPage /></ProtectedRoute>} />

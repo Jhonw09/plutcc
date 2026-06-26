@@ -36,6 +36,14 @@ export const ENDPOINTS = {
   perfilAprendizado:           (alunoId) => `${API_BASE}/perfil-aprendizado/${alunoId}`,
   perfilAprendizadoCreate:     `${API_BASE}/perfil-aprendizado`,
 
+  // Verificação de e-mail
+  verifyEmail:          `${API_BASE}/auth/verify-email`,
+  resendVerification:   `${API_BASE}/auth/resend-verification`,
+
+  // Recuperação de senha
+  forgotPassword: `${API_BASE}/auth/forgot-password`,
+  resetPassword:  `${API_BASE}/auth/reset-password`,
+
   // Dúvidas
   duvidas:                     `${API_BASE}/duvidas`,
   duvidaResponder:             (id) => `${API_BASE}/duvidas/${id}/responder`,

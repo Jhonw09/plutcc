@@ -26,8 +26,8 @@ async function signup({ nome, email, senha, tipoUsuario = 'ALUNO' }) {
     if (err.status === 409) throw new Error('Este e-mail ja esta cadastrado.')
     throw new Error('Nao foi possivel criar sua conta. Tente novamente.')
   })
-
-  return login({ email, senha })
+  // Nao faz login: usuario precisa verificar e-mail primeiro
+  return { email }
 }
 
 async function updateUser(userId, { nome, email, tipoUsuario, senha }) {
@@ -69,4 +69,43 @@ async function deleteUser(userId) {
   }
 }
 
-export const authService = { login, signup, updateUser, changePassword, deleteUser }
+async function verifyEmail(email, code) {
+  await api(ENDPOINTS.verifyEmail, {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  }).catch(err => {
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Não foi possível verificar o e-mail. Tente novamente.')
+  })
+}
+
+async function resendVerification(email) {
+  await api(ENDPOINTS.resendVerification, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }).catch(err => {
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Não foi possível reenviar o código. Tente novamente.')
+  })
+}
+
+async function forgotPassword(email) {
+  await api(ENDPOINTS.forgotPassword, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }).catch(() => {
+    // Sempre silencioso: servidor nunca revela se e-mail existe
+  })
+}
+
+async function resetPassword(token, novaSenha) {
+  await api(ENDPOINTS.resetPassword, {
+    method: 'POST',
+    body: JSON.stringify({ token, novaSenha }),
+  }).catch(err => {
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Não foi possível redefinir a senha. Tente novamente.')
+  })
+}
+
+export const authService = { login, signup, updateUser, changePassword, deleteUser, forgotPassword, resetPassword, verifyEmail, resendVerification }

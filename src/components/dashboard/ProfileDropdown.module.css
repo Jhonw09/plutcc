@@ -232,3 +232,15 @@
   color: var(--text-muted);
   margin-top: -2px;
 }
+
+.forgotLink {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: center;
+  width: 100%;
+}
+.forgotLink:hover { text-decoration: underline; }
