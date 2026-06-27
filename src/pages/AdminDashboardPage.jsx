@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../components/admin/AdminLayout'
 import Icon from '../components/ui/Icon'
-import { useAuth } from '../context/AuthContext'
-import { getUsuarios } from '../api/services/adminService'
-import { getTrilhasAdmin } from '../api/services/adminService'
+import { getAdminResumo } from '../api/services/adminService'
 import styles from './AdminDashboardPage.module.css'
 
 function StatCard({ icon, label, value, loading }) {
@@ -16,35 +14,31 @@ function StatCard({ icon, label, value, loading }) {
   )
 }
 
+const ROLE_LABEL = { ADMIN: 'Admin', PROFESSOR: 'Professor', ALUNO: 'Aluno' }
+
 export default function AdminDashboardPage() {
-  const { user } = useAuth()
-  const [usuarios, setUsuarios] = useState([])
-  const [trilhas,  setTrilhas]  = useState([])
-  const [loading,  setLoading]  = useState(true)
+  const [resumo,  setResumo]  = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState('')
 
   useEffect(() => {
-    Promise.all([getUsuarios(), getTrilhasAdmin()])
-      .then(([u, t]) => { setUsuarios(u); setTrilhas(t) })
+    getAdminResumo()
+      .then(setResumo)
+      .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [])
 
-  const alunos     = usuarios.filter(u => u.tipoUsuario === 'ALUNO')
-  const professors = usuarios.filter(u => u.tipoUsuario === 'PROFESSOR')
-  const totalMatriculas = trilhas.reduce((acc, t) => acc + (t.totalAlunos ?? 0), 0)
-
   const stats = [
-    { id: 'usuarios',    icon: 'users',       label: 'Usuários',          value: usuarios.length },
-    { id: 'alunos',      icon: 'user',        label: 'Alunos',            value: alunos.length },
-    { id: 'professores', icon: 'school',      label: 'Professores',       value: professors.length },
-    { id: 'trilhas',     icon: 'book',        label: 'Trilhas',           value: trilhas.length },
-    { id: 'matriculas',  icon: 'checkCircle', label: 'Matrículas totais', value: totalMatriculas },
+    { id: 'usuarios',    icon: 'users',       label: 'Usuários',          value: resumo?.totalUsuarios    ?? 0 },
+    { id: 'alunos',      icon: 'user',        label: 'Alunos',            value: resumo?.totalAlunos      ?? 0 },
+    { id: 'professores', icon: 'school',      label: 'Professores',       value: resumo?.totalProfessores ?? 0 },
+    { id: 'trilhas',     icon: 'book',        label: 'Trilhas',           value: resumo?.totalTrilhas     ?? 0 },
+    { id: 'matriculas',  icon: 'checkCircle', label: 'Matrículas totais', value: resumo?.totalMatriculas  ?? 0 },
   ]
 
-  const recentUsers = [...usuarios]
-    .sort((a, b) => b.id - a.id)
+  const trilhasPopulares = [...(resumo?.trilhas ?? [])]
+    .sort((a, b) => (b.totalAlunos ?? 0) - (a.totalAlunos ?? 0))
     .slice(0, 6)
-
-  const ROLE_LABEL = { ADMIN: 'Admin', PROFESSOR: 'Professor', ALUNO: 'Aluno' }
 
   return (
     <AdminLayout>
@@ -57,20 +51,21 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
+        {error && <p style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</p>}
+
         <div className={styles.statsGrid}>
           {stats.map(s => <StatCard key={s.id} {...s} loading={loading} />)}
         </div>
 
         <div className={styles.row}>
 
-          {/* Últimos usuários */}
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>Últimos usuários cadastrados</h3>
             {loading ? (
               <p className={styles.loadingText}>Carregando...</p>
             ) : (
               <div className={styles.userList}>
-                {recentUsers.map(u => (
+                {(resumo?.recentUsers ?? []).map(u => (
                   <div key={u.id} className={styles.userItem}>
                     <span className={styles.userAvatar}>{u.nome?.charAt(0).toUpperCase()}</span>
                     <div className={styles.userInfo}>
@@ -86,28 +81,24 @@ export default function AdminDashboardPage() {
             )}
           </section>
 
-          {/* Trilhas com mais alunos */}
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>Trilhas mais populares</h3>
             {loading ? (
               <p className={styles.loadingText}>Carregando...</p>
             ) : (
               <div className={styles.trilhaList}>
-                {[...trilhas]
-                  .sort((a, b) => (b.totalAlunos ?? 0) - (a.totalAlunos ?? 0))
-                  .slice(0, 6)
-                  .map(t => (
-                    <div key={t.id} className={styles.trilhaItem}>
-                      <div className={styles.trilhaInfo}>
-                        <span className={styles.trilhaNome}>{t.nome}</span>
-                        <span className={styles.trilhaProf}>{t.professorNome ?? '—'}</span>
-                      </div>
-                      <div className={styles.trilhaAlunos}>
-                        <Icon name="users" size={12} />
-                        {t.totalAlunos ?? 0}
-                      </div>
+                {trilhasPopulares.map(t => (
+                  <div key={t.id} className={styles.trilhaItem}>
+                    <div className={styles.trilhaInfo}>
+                      <span className={styles.trilhaNome}>{t.nome}</span>
+                      <span className={styles.trilhaProf}>{t.professorNome ?? '—'}</span>
                     </div>
-                  ))}
+                    <div className={styles.trilhaAlunos}>
+                      <Icon name="users" size={12} />
+                      {t.totalAlunos ?? 0}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </section>

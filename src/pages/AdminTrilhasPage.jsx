@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/admin/AdminLayout'
 import Icon from '../components/ui/Icon'
-import { getTrilhasAdmin } from '../api/services/adminService'
+import { getAdminResumo } from '../api/services/adminService'
 import styles from './AdminTrilhasPage.module.css'
 
 const NIVEL_LABEL = { INICIANTE: 'Iniciante', INTERMEDIARIO: 'Intermediário', AVANCADO: 'Avançado' }
@@ -15,8 +15,8 @@ export default function AdminTrilhasPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    getTrilhasAdmin()
-      .then(setTrilhas)
+    getAdminResumo()
+      .then(r => setTrilhas(r.trilhas ?? []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [])
@@ -93,7 +93,7 @@ export default function AdminTrilhasPage() {
                     <td className={styles.actionsCell}>
                       <button
                         className={styles.btnView}
-                        onClick={() => navigate(`/professor/trilha/${t.id}`)}
+                        onClick={() => navigate(`/admin/trilha/${t.id}`)}
                       >
                         Ver trilha
                       </button>

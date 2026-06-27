@@ -1,6 +1,10 @@
 import { ENDPOINTS, API_BASE, api } from '../apiClient'
 import { getEstatisticasTrilha } from './duvidaService'
 
+export async function getAdminResumo() {
+  return api(`${API_BASE}/admin/resumo`).catch(() => { throw new Error('Erro ao carregar painel.') })
+}
+
 export async function getUsuarios() {
   return api(ENDPOINTS.usuarios).catch(() => { throw new Error('Erro ao carregar usuários.') })
 }
@@ -20,12 +24,14 @@ export async function toggleAtivo(usuario) {
 
 export async function getTrilhasAdmin() {
   const trilhas = await api(ENDPOINTS.trilhas).catch(() => { throw new Error('Erro ao carregar trilhas.') })
+  if (!Array.isArray(trilhas)) throw new Error('Erro ao carregar trilhas.')
 
   const comStats = await Promise.all(
-    trilhas.map(async t => {
-      const stats = await getEstatisticasTrilha(t.id)
-      return { ...t, totalAlunos: stats?.totalAlunos ?? 0 }
-    })
+    trilhas.map(t =>
+      getEstatisticasTrilha(t.id)
+        .then(stats => ({ ...t, totalAlunos: stats?.totalAlunos ?? 0 }))
+        .catch(() => ({ ...t, totalAlunos: 0 }))
+    )
   )
   return comStats
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '../components/admin/AdminLayout'
 import Icon from '../components/ui/Icon'
-import { getTrilhasAdmin, getDuvidasAdmin } from '../api/services/adminService'
+import { getAdminResumo, getDuvidasAdmin } from '../api/services/adminService'
 import { getTickets, responderTicket, fecharTicket } from '../api/services/ticketService'
 import styles from './AdminTicketsPage.module.css'
 
@@ -25,8 +25,8 @@ function DuvidasTab() {
   const [error,        setError]        = useState('')
 
   useEffect(() => {
-    getTrilhasAdmin()
-      .then(setTrilhas)
+    getAdminResumo()
+      .then(r => setTrilhas(r.trilhas ?? []))
       .catch(e => setError(e.message))
       .finally(() => setLoadTrilhas(false))
   }, [])

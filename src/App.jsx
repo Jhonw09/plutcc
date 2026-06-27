@@ -22,6 +22,8 @@ import AdminUsuariosPage from './pages/AdminUsuariosPage'
 import AdminTrilhasPage  from './pages/AdminTrilhasPage'
 import AdminTicketsPage  from './pages/AdminTicketsPage'
 
+import AdminTrilhaDetalhePage from './pages/AdminTrilhaDetalhePage'
+
 import BlogPage          from './pages/BlogPage'
 import ExplorarTrilhas   from './pages/ExplorarTrilhas'
 import MinhasTrilhasPage from './pages/MinhasTrilhasPage'
@@ -83,6 +85,7 @@ export default function App() {
       <Route path="/admin"                  element={<A><AdminDashboardPage /></A>} />
       <Route path="/admin/usuarios"         element={<A><AdminUsuariosPage /></A>} />
       <Route path="/admin/trilhas"          element={<A><AdminTrilhasPage /></A>} />
+      <Route path="/admin/trilha/:id"       element={<A><AdminTrilhaDetalhePage /></A>} />
       <Route path="/admin/escolas"          element={<A><SchoolsPage /></A>} />
       <Route path="/admin/financeiro"       element={<A><FinancePage /></A>} />
       <Route path="/admin/relatorios"       element={<A><AdminReportsPage /></A>} />
