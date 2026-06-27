@@ -20,9 +20,9 @@ const TOPICS = [
     body: 'Crie sua conta selecionando "Sou Professor", confirme seu e-mail e acesse seu painel. Crie suas trilhas, adicione aulas e compartilhe conhecimento com alunos de todo o Brasil.',
   },
   {
-    icon: '🔐',
-    title: 'Login e acesso',
-    body: 'Você pode entrar com e-mail e senha ou usar o Google para acesso rápido. Se esquecer sua senha, use a opção "Esqueceu a senha?" na tela de login.',
+    icon: '🗺️',
+    title: 'Trilhas de aprendizado',
+    body: 'As trilhas são sequências de aulas organizadas por professores em torno de um tema ou disciplina. Cada trilha tem seu próprio ritmo e você pode acompanhar seu progresso a qualquer momento.',
   },
 ]
 
@@ -48,7 +48,7 @@ export default function PublicHelpPage() {
           </div>
 
           <div className={styles.cta}>
-            <p>Já tem conta? Acesse a central de ajuda completa dentro da plataforma.</p>
+            <p>Já tem conta? Acesse a central de ajuda completa com FAQ e suporte técnico dentro da plataforma.</p>
             <div className={styles.ctaActions}>
               <Link to="/login" className={styles.ctaBtn}>Fazer login</Link>
               <Link to="/contato" className={styles.ctaLink}>Falar com suporte</Link>

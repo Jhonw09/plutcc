@@ -34,6 +34,7 @@ export const TEACHER_ROUTES = {
 export const ADMIN_ROUTES = {
   home:     '/admin',
   users:    '/admin/usuarios',
+  trilhas:  '/admin/trilhas',
   schools:  '/admin/escolas',
   finance:  '/admin/financeiro',
   reports:  '/admin/relatorios',

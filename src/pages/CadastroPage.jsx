@@ -18,6 +18,15 @@ const Logo = () => (
   </a>
 )
 
+const BackButton = ({ onClick }) => (
+  <button className={styles.backBtn} onClick={onClick} aria-label="Voltar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    Voltar
+  </button>
+)
+
 const UserIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -145,6 +154,7 @@ export default function CadastroPage() {
     return (
       <div className={styles.page}>
         <div className={styles.card}>
+          <BackButton onClick={() => navigate(-1)} />
           <div className={styles.logo}><Logo /></div>
           <h2 className={styles.title}>Verifique seu e-mail</h2>
           <p className={styles.sub}>
@@ -193,6 +203,7 @@ export default function CadastroPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
+        <BackButton onClick={() => navigate(-1)} />
         <div className={styles.logo}><Logo /></div>
         <h2 className={styles.title}>Crie sua conta</h2>
         <p className={styles.sub}>Grátis e leva menos de 1 minuto.</p>

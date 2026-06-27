@@ -7,6 +7,15 @@ import { ROLE_ROUTES, DEFAULT_ROUTE } from '../constants/routes'
 import GoogleButton from '../components/ui/GoogleButton'
 import styles from './AuthPage.module.css'
 
+const BackButton = ({ onClick }) => (
+  <button className={styles.backBtn} onClick={onClick} aria-label="Voltar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    Voltar
+  </button>
+)
+
 const Logo = () => (
   <a href="/" className={styles.logoLink}>
     <svg width="180" height="28" viewBox="0 0 180 28" fill="none">
@@ -93,6 +102,7 @@ export default function LoginPage() {
     return (
       <div className={styles.page}>
         <div className={styles.card}>
+          <BackButton onClick={() => navigate(-1)} />
           <div className={styles.logo}><Logo /></div>
           <h2 className={styles.title}>Esqueceu a senha?</h2>
 
@@ -137,6 +147,7 @@ export default function LoginPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
+        <BackButton onClick={() => navigate(-1)} />
         <div className={styles.logo}><Logo /></div>
         <h2 className={styles.title}>Bem-vindo de volta</h2>
         <p className={styles.sub}>Entre para continuar sua jornada.</p>

@@ -6,10 +6,11 @@ import adminStyles from './AdminSidebar.module.css'
 const navItems = [
   { icon: '🛡️', label: 'Visão geral',   path: ADMIN_ROUTES.home     },
   { icon: '👥', label: 'Usuários',       path: ADMIN_ROUTES.users    },
+  { icon: '📚', label: 'Trilhas',        path: ADMIN_ROUTES.trilhas  },
+  { icon: '🎫', label: 'Tickets',        path: ADMIN_ROUTES.tickets  },
   { icon: '🏫', label: 'Escolas',        path: ADMIN_ROUTES.schools  },
   { icon: '💰', label: 'Financeiro',     path: ADMIN_ROUTES.finance  },
   { icon: '📊', label: 'Relatórios',     path: ADMIN_ROUTES.reports  },
-  { icon: '🚨', label: 'Tickets',        path: ADMIN_ROUTES.tickets  },
 ]
 
 const bottomItems = [

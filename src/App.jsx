@@ -18,6 +18,9 @@ import {
 import HelpPage from './pages/HelpPage'
 import PublicHelpPage from './pages/PublicHelpPage'
 import ContatoPage    from './pages/ContatoPage'
+import AdminUsuariosPage from './pages/AdminUsuariosPage'
+import AdminTrilhasPage  from './pages/AdminTrilhasPage'
+import AdminTicketsPage  from './pages/AdminTicketsPage'
 
 import BlogPage          from './pages/BlogPage'
 import ExplorarTrilhas   from './pages/ExplorarTrilhas'
@@ -77,11 +80,12 @@ export default function App() {
 
       {/* ── Admin ── */}
       <Route path="/admin"                  element={<A><AdminDashboardPage /></A>} />
-      <Route path="/admin/usuarios"         element={<A><UsersPage /></A>} />
+      <Route path="/admin/usuarios"         element={<A><AdminUsuariosPage /></A>} />
+      <Route path="/admin/trilhas"          element={<A><AdminTrilhasPage /></A>} />
       <Route path="/admin/escolas"          element={<A><SchoolsPage /></A>} />
       <Route path="/admin/financeiro"       element={<A><FinancePage /></A>} />
       <Route path="/admin/relatorios"       element={<A><AdminReportsPage /></A>} />
-      <Route path="/admin/tickets"          element={<A><TicketsPage /></A>} />
+      <Route path="/admin/tickets"          element={<A><AdminTicketsPage /></A>} />
       <Route path="/admin/configuracoes"    element={<A><SettingsPage /></A>} />
       <Route path="/admin/ajuda"            element={<A><HelpPage /></A>} />
 
