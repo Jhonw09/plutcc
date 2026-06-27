@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import styles from './GoogleButton.module.css'
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
-let gisInitialized = false
 
 export default function GoogleButton({ onToken, loading }) {
   const onTokenRef = useRef(onToken)
@@ -10,8 +9,7 @@ export default function GoogleButton({ onToken, loading }) {
 
   useEffect(() => {
     function init() {
-      if (!window.google || !CLIENT_ID || gisInitialized) return
-      gisInitialized = true
+      if (!window.google || !CLIENT_ID) return
       window.google.accounts.id.initialize({
         client_id: CLIENT_ID,
         callback: (res) => onTokenRef.current(res.credential),
@@ -28,7 +26,10 @@ export default function GoogleButton({ onToken, loading }) {
   }, [])
 
   function handleClick() {
-    if (!window.google || !CLIENT_ID) return
+    if (!window.google || !CLIENT_ID) {
+      console.error('[GoogleButton] CLIENT_ID ausente ou google SDK não carregou')
+      return
+    }
     window.google.accounts.id.prompt()
   }
 
