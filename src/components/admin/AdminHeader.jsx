@@ -2,11 +2,12 @@ import AppHeader   from '../layout/AppHeader'
 import Icon        from '../ui/Icon'
 import adminStyles from './AdminHeader.module.css'
 
-export default function AdminHeader() {
+export default function AdminHeader({ onMenuOpen }) {
   return (
     <AppHeader
-      subtitle="Painel administrativo — visão geral da plataforma"
+      subtitle="Painel administrativo"
       extraClass={adminStyles.header}
+      onMenuOpen={onMenuOpen}
     />
   )
 }

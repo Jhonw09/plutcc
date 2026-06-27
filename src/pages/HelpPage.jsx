@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import TeacherLayout from '../components/teacher/TeacherLayout'
 import Icon from '../components/ui/Icon'
+import { criarTicket } from '../api/services/ticketService'
 import styles from './HelpPage.module.css'
 
 const FAQ_STUDENT = [
@@ -162,12 +163,18 @@ function SupportForm() {
 
     setLoading(true)
     try {
-      await new Promise(r => setTimeout(r, 800))
+      await criarTicket({
+        usuarioId: user?.id,
+        nome:      user?.name,
+        email:     user?.email,
+        tipo:      form.tipo,
+        mensagem:  form.mensagem,
+      })
       localStorage.setItem(getRateLimitKey(user?.id), String(Date.now()))
       setCooldown(RATE_LIMIT_MS)
       setSent(true)
-    } catch {
-      setApiErr('Não foi possível enviar. Tente novamente.')
+    } catch (err) {
+      setApiErr(err.message)
     } finally {
       setLoading(false)
     }

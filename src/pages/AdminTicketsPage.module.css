@@ -249,3 +249,101 @@
   .layout { grid-template-columns: 1fr; }
   .sidebar { max-height: 200px; }
 }
+
+/* ── Abas ── */
+.abas {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+  margin-bottom: 4px;
+}
+
+.aba {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  font-family: var(--font);
+  margin-bottom: -1px;
+}
+.aba:hover { color: var(--text); }
+.abaActive { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── Reply form ── */
+.replyTextarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color .15s;
+  box-sizing: border-box;
+}
+.replyTextarea:focus { border-color: var(--accent-border); }
+
+.replyActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.replyBtn {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity .15s;
+}
+.replyBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+.closeBtn {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: border-color .15s, color .15s;
+}
+.closeBtn:hover { border-color: var(--danger); color: var(--danger); }
+.closeBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* status colors for support tickets */
+.statusDot.aberto     { background: #fbbf24; }
+.statusDot.respondido { background: var(--accent); }
+.statusDot.fechado    { background: var(--text-muted); }
+
+.statusBadge.aberto     { background: rgba(251,191,36,.12); color: #b45309; }
+.statusBadge.respondido { background: var(--accent-soft);   color: var(--accent); }
+.statusBadge.fechado    { background: var(--surface-2);     color: var(--text-muted); }
+
+.ticketTipo {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}

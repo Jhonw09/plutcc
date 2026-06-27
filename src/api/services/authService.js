@@ -5,6 +5,7 @@ async function login({ email, senha }) {
     method: 'POST',
     body: JSON.stringify({ email, senha }),
   }).catch(err => {
+    if (err.status === 403) { const e = new Error('conta_suspensa'); e.suspended = true; throw e }
     if (err.status === 400) throw new Error(err.message)
     if (err.status === 401) throw new Error('E-mail ou senha incorretos.')
     throw new Error('Erro no servidor. Tente novamente.')
@@ -113,6 +114,7 @@ async function googleLogin(idToken) {
     method: 'POST',
     body: JSON.stringify({ idToken }),
   }).catch(err => {
+    if (err.status === 403) { const e = new Error('conta_suspensa'); e.suspended = true; throw e }
     if (err.status === 401) throw new Error('Autenticação com Google falhou.')
     throw new Error('Não foi possível entrar com Google. Tente novamente.')
   })

@@ -1,20 +1,19 @@
 import { useState, useEffect, useMemo } from 'react'
 import AdminLayout from '../components/admin/AdminLayout'
 import Icon from '../components/ui/Icon'
-import { getUsuarios, deleteUsuario } from '../api/services/adminService'
+import { getUsuarios, toggleAtivo } from '../api/services/adminService'
 import styles from './AdminUsuariosPage.module.css'
 
-const ROLE_LABEL = { ADMIN: 'Admin', PROFESSOR: 'Professor', ALUNO: 'Aluno' }
+const ROLE_LABEL  = { ADMIN: 'Admin', PROFESSOR: 'Professor', ALUNO: 'Aluno' }
 const ROLE_FILTER = ['Todos', 'ALUNO', 'PROFESSOR', 'ADMIN']
 
 export default function AdminUsuariosPage() {
-  const [usuarios, setUsuarios] = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const [error,    setError]    = useState('')
-  const [search,   setSearch]   = useState('')
+  const [usuarios,   setUsuarios]   = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState('')
+  const [search,     setSearch]     = useState('')
   const [roleFilter, setRoleFilter] = useState('Todos')
-  const [deletingId, setDeletingId] = useState(null)
-  const [confirmId,  setConfirmId]  = useState(null)
+  const [togglingId, setTogglingId] = useState(null)
 
   useEffect(() => {
     getUsuarios()
@@ -33,16 +32,17 @@ export default function AdminUsuariosPage() {
     })
   }, [usuarios, search, roleFilter])
 
-  async function handleDelete(id) {
-    setDeletingId(id)
+  async function handleToggle(usuario) {
+    if (usuario.tipoUsuario === 'ADMIN') return
+    setTogglingId(usuario.id)
+    setError('')
     try {
-      await deleteUsuario(id)
-      setUsuarios(prev => prev.filter(u => u.id !== id))
+      const updated = await toggleAtivo(usuario)
+      setUsuarios(prev => prev.map(u => u.id === updated.id ? updated : u))
     } catch (e) {
       setError(e.message)
     } finally {
-      setDeletingId(null)
-      setConfirmId(null)
+      setTogglingId(null)
     }
   }
 
@@ -91,53 +91,60 @@ export default function AdminUsuariosPage() {
                   <th>Nome</th>
                   <th>E-mail</th>
                   <th>Perfil</th>
+                  <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={4} className={styles.empty}>Nenhum usuário encontrado.</td></tr>
-                ) : filtered.map(u => (
-                  <tr key={u.id}>
-                    <td>
-                      <div className={styles.userCell}>
-                        <span className={styles.avatar}>{u.nome?.charAt(0).toUpperCase()}</span>
-                        <span className={styles.userName}>{u.nome}</span>
-                      </div>
-                    </td>
-                    <td className={styles.emailCell}>{u.email}</td>
-                    <td>
-                      <span className={`${styles.roleBadge} ${styles[u.tipoUsuario?.toLowerCase()]}`}>
-                        {ROLE_LABEL[u.tipoUsuario] ?? u.tipoUsuario}
-                      </span>
-                    </td>
-                    <td className={styles.actionsCell}>
-                      {confirmId === u.id ? (
-                        <div className={styles.confirmRow}>
-                          <span className={styles.confirmText}>Confirmar exclusão?</span>
-                          <button
-                            className={styles.btnDanger}
-                            onClick={() => handleDelete(u.id)}
-                            disabled={deletingId === u.id}
-                          >
-                            {deletingId === u.id ? '...' : 'Excluir'}
-                          </button>
-                          <button className={styles.btnCancel} onClick={() => setConfirmId(null)}>
-                            Cancelar
-                          </button>
+                  <tr><td colSpan={5} className={styles.empty}>Nenhum usuário encontrado.</td></tr>
+                ) : filtered.map(u => {
+                  const isAdmin    = u.tipoUsuario === 'ADMIN'
+                  const isToggling = togglingId === u.id
+                  return (
+                    <tr key={u.id} className={!u.ativo ? styles.rowInativo : ''}>
+                      <td>
+                        <div className={styles.userCell}>
+                          <span className={`${styles.avatar} ${!u.ativo ? styles.avatarInativo : ''}`}>
+                            {u.nome?.charAt(0).toUpperCase()}
+                          </span>
+                          <span className={styles.userName}>{u.nome}</span>
                         </div>
-                      ) : (
-                        <button
-                          className={styles.btnDelete}
-                          onClick={() => setConfirmId(u.id)}
-                          aria-label="Excluir usuário"
-                        >
-                          <Icon name="trash" size={14} />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className={styles.emailCell}>{u.email}</td>
+                      <td>
+                        <span className={`${styles.roleBadge} ${styles[u.tipoUsuario?.toLowerCase()]}`}>
+                          {ROLE_LABEL[u.tipoUsuario] ?? u.tipoUsuario}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${u.ativo ? styles.statusAtivo : styles.statusInativo}`}>
+                          {u.ativo ? 'Ativo' : 'Suspenso'}
+                        </span>
+                      </td>
+                      <td className={styles.actionsCell}>
+                        {isAdmin ? (
+                          <span className={styles.protectedText}>—</span>
+                        ) : (
+                          <button
+                            className={`${styles.toggleBtn} ${u.ativo ? styles.toggleBtnAtivo : styles.toggleBtnInativo}`}
+                            onClick={() => handleToggle(u)}
+                            disabled={isToggling}
+                            title={u.ativo ? 'Suspender usuário' : 'Reativar usuário'}
+                          >
+                            {isToggling ? (
+                              <span className={styles.spinner} />
+                            ) : u.ativo ? (
+                              <><Icon name="lock" size={13} /> Suspender</>
+                            ) : (
+                              <><Icon name="unlock" size={13} /> Reativar</>
+                            )}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

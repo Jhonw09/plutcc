@@ -54,13 +54,15 @@ export default function LoginPage() {
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotError,   setForgotError]   = useState('')
 
-  if (user) return <Navigate to={ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE} replace />
+  if (user && user.ativo !== false) return <Navigate to={ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE} replace />
 
   async function handleGoogleToken(idToken) {
     setGoogleLoading(true)
     try {
-      await loginWithGoogle(idToken)
+      const userData = await loginWithGoogle(idToken)
+      if (userData.ativo === false) navigate('/conta-suspensa', { replace: true })
     } catch (err) {
+      if (err.suspended) { navigate('/conta-suspensa', { replace: true }); return }
       setErrors({ form: err.message ?? 'Falha ao entrar com Google.' })
     } finally {
       setGoogleLoading(false)
@@ -77,8 +79,10 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      await login({ email, senha: password })
+      const userData = await login({ email, senha: password })
+      if (userData.ativo === false) navigate('/conta-suspensa', { replace: true })
     } catch (err) {
+      if (err.suspended) { navigate('/conta-suspensa', { replace: true }); return }
       setErrors({ form: err.message ?? 'Algo deu errado. Tente novamente.' })
     } finally {
       setLoading(false)

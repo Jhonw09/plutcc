@@ -35,6 +35,7 @@ import StudentConfiguracoesPage from './pages/StudentConfiguracoesPage'
 import EditarPerfilPage         from './pages/EditarPerfilPage'
 import LoginPage                from './pages/LoginPage'
 import CadastroPage             from './pages/CadastroPage'
+import ContaSuspensaPage from './pages/ContaSuspensaPage'
 import './App.css'
 
 function S({ children }) {
@@ -96,6 +97,8 @@ export default function App() {
       <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
       <Route path="/redefinir-senha-solicitacao" element={<ForgotPasswordPage />} />
       <Route path="/confirmar-troca-email" element={<ConfirmarTrocaEmailPage />} />
+
+      <Route path="/conta-suspensa" element={<ContaSuspensaPage />} />
 
       {/* ── Catch-all */}
       <Route path="/trilha/:id" element={<ProtectedRoute><TrilhaPage /></ProtectedRoute>} />

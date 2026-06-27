@@ -67,7 +67,9 @@ export function AuthProvider({ children }) {
       email:        data.email ?? null,
       fotoUrl:      data.fotoUrl ?? null,
       isGoogleUser: isGoogle,
+      ativo:        data.ativo !== false,
     }
+    if (userData.ativo === false) return userData // não persiste nem seta sessão
     persist(userData)
     setUser(userData)
     return userData

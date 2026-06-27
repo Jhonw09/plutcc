@@ -140,48 +140,59 @@
 /* ── Actions ── */
 .actionsCell { text-align: right; white-space: nowrap; }
 
-.btnDelete {
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 6px 8px;
-  transition: color .15s, border-color .15s, background .15s;
-}
-.btnDelete:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
-
-.confirmRow {
-  display: flex;
+.toggleBtn {
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.confirmText { font-size: 12px; color: var(--text-secondary); }
-
-.btnDanger {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  background: var(--danger);
-  border: none;
-  border-radius: 7px;
-  padding: 5px 12px;
-  cursor: pointer;
-}
-.btnDanger:disabled { opacity: .6; cursor: not-allowed; }
-
-.btnCancel {
+  gap: 5px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 5px 12px;
+  border-radius: 8px;
+  padding: 6px 12px;
   cursor: pointer;
+  border: 1px solid;
+  transition: opacity .15s, transform .15s;
+  font-family: var(--font);
 }
+.toggleBtn:hover:not(:disabled) { opacity: .8; transform: translateY(-1px); }
+.toggleBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+.toggleBtnAtivo {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+.toggleBtnInativo {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: var(--success);
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.protectedText { color: var(--text-muted); font-size: 13px; }
+
+/* ── Row inativo ── */
+.rowInativo td { opacity: .55; }
+.avatarInativo { background: var(--surface-2) !important; color: var(--text-muted) !important; }
+
+/* ── Status badge ── */
+.statusBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.statusAtivo   { background: rgba(34,197,94,.12); color: #16a34a; }
+.statusInativo { background: var(--danger-bg); color: var(--danger); }
 
 /* ── States ── */
 .loading { padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px; }

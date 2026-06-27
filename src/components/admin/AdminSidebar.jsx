@@ -1,21 +1,22 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ADMIN_ROUTES } from '../../constants/routes'
+import Icon from '../ui/Icon'
 import styles from '../dashboard/DashboardSidebar.module.css'
 import adminStyles from './AdminSidebar.module.css'
 
 const navItems = [
-  { icon: '🛡️', label: 'Visão geral',   path: ADMIN_ROUTES.home     },
-  { icon: '👥', label: 'Usuários',       path: ADMIN_ROUTES.users    },
-  { icon: '📚', label: 'Trilhas',        path: ADMIN_ROUTES.trilhas  },
-  { icon: '🎫', label: 'Tickets',        path: ADMIN_ROUTES.tickets  },
-  { icon: '🏫', label: 'Escolas',        path: ADMIN_ROUTES.schools  },
-  { icon: '💰', label: 'Financeiro',     path: ADMIN_ROUTES.finance  },
-  { icon: '📊', label: 'Relatórios',     path: ADMIN_ROUTES.reports  },
+  { icon: 'shield',    label: 'Visão geral',  path: ADMIN_ROUTES.home    },
+  { icon: 'users',     label: 'Usuários',      path: ADMIN_ROUTES.users   },
+  { icon: 'bookOpen',  label: 'Trilhas',       path: ADMIN_ROUTES.trilhas },
+  { icon: 'alertCircle', label: 'Tickets',     path: ADMIN_ROUTES.tickets },
+  { icon: 'school',    label: 'Escolas',       path: ADMIN_ROUTES.schools },
+  { icon: 'dollar',    label: 'Financeiro',    path: ADMIN_ROUTES.finance },
+  { icon: 'barChart',  label: 'Relatórios',    path: ADMIN_ROUTES.reports },
 ]
 
 const bottomItems = [
-  { icon: '⚙️', label: 'Configurações', path: ADMIN_ROUTES.settings },
-  { icon: '❓', label: 'Ajuda',          path: ADMIN_ROUTES.help     },
+  { icon: 'cpu',         label: 'Configurações', path: ADMIN_ROUTES.settings },
+  { icon: 'alertCircle', label: 'Ajuda',         path: ADMIN_ROUTES.help     },
 ]
 
 export default function AdminSidebar() {
@@ -34,7 +35,7 @@ export default function AdminSidebar() {
         className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
         onClick={() => navigate(item.path)}
       >
-        <span className={styles.navIcon}>{item.icon}</span>
+        <span className={styles.navIcon}><Icon name={item.icon} size={17} /></span>
         <span className={styles.navText}>{item.label}</span>
         {active && <span className={styles.activeBar} />}
       </button>

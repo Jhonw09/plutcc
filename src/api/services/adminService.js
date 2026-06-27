@@ -5,10 +5,17 @@ export async function getUsuarios() {
   return api(ENDPOINTS.usuarios).catch(() => { throw new Error('Erro ao carregar usuários.') })
 }
 
-export async function deleteUsuario(id) {
-  return api(ENDPOINTS.userById(id), { method: 'DELETE' }).catch(() => {
-    throw new Error('Não foi possível excluir o usuário.')
-  })
+export async function toggleAtivo(usuario) {
+  const body = {
+    nome:        usuario.nome,
+    email:       usuario.email,
+    tipoUsuario: usuario.tipoUsuario,
+    ativo:       !usuario.ativo,
+  }
+  return api(ENDPOINTS.userById(usuario.id), {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  }).catch(() => { throw new Error('Não foi possível alterar o status do usuário.') })
 }
 
 export async function getTrilhasAdmin() {

@@ -62,6 +62,11 @@ export const ENDPOINTS = {
 
   // Estatísticas da trilha
   estatisticasTrilha:          (trilhaId) => `${API_BASE}/matriculas/trilha/${trilhaId}/estatisticas`,
+
+  // Tickets de suporte
+  tickets:       `${API_BASE}/tickets`,
+  ticketById:    (id) => `${API_BASE}/tickets/${id}`,
+  ticketsByUser: (userId) => `${API_BASE}/tickets/usuario/${userId}`,
 }
 
 export const ROLE_MAP = {
