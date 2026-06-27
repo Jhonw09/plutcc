@@ -5,6 +5,7 @@ import { authService } from '../api/services/authService'
 import { Button } from './ui/Button'
 import { InputField } from './ui/InputField'
 import { ToggleForm } from './ui/ToggleForm'
+import GoogleButton from './ui/GoogleButton'
 import styles from './AuthForm.module.css'
 
 const RESEND_COOLDOWN = 30
@@ -39,13 +40,14 @@ const Logo = () => (
 )
 
 export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) {
-  const { login, signup } = useAuth()
+  const { login, loginWithGoogle, signup } = useAuth()
 
   const [mode, setMode] = useState(initialMode)
   const [role, setRole] = useState('student')
   const [fields, setFields] = useState({ name: '', email: '', password: '', confirm: '' })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
 
   // ── Forgot password ──────────────────────────────────────────
   const [forgotSent, setForgotSent] = useState(false)
@@ -146,6 +148,18 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
   }
 
   // ── Login / Signup handler ───────────────────────────────────
+  async function handleGoogleToken(idToken) {
+    setGoogleLoading(true)
+    try {
+      await loginWithGoogle(idToken)
+      if (onSuccess) onSuccess('login')
+    } catch (err) {
+      setErrors({ form: err.message ?? 'Falha ao entrar com Google.' })
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     const errs = mode === 'login' ? validateLogin(fields) : validateSignup(fields)
@@ -277,6 +291,13 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
 
         <h2 className={styles.title}>{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</h2>
         <p className={styles.sub}>{isLogin ? 'Entre para continuar.' : 'E gratis e leva menos de 1 minuto.'}</p>
+
+        <GoogleButton onToken={handleGoogleToken} loading={googleLoading} />
+        <div className={styles.divider}>
+          <span className={styles.dividerLine} />
+          <span className={styles.dividerText}>ou</span>
+          <span className={styles.dividerLine} />
+        </div>
 
         <div className={styles.roleSelector} role="group" aria-label="Tipo de usuario">
           <button

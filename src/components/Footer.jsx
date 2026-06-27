@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import Icon from './ui/Icon'
 import styles from './Footer.module.css'
 
@@ -5,8 +6,7 @@ const cols = {
   'Plataforma': ['Videoaulas', 'Exercícios', 'Simulados', 'Trilhas com IA', 'App Mobile', 'Offline'],
   'Disciplinas': ['Matemática', 'Português', 'Ciências', 'História', 'Inglês', 'Ver todas'],
   'Para Escolas': ['Como funciona', 'Planos para escolas', 'Integrações', 'Cases de sucesso', 'Fale com vendas'],
-  'Empresa': ['Sobre nós', 'Blog', 'Carreiras', 'Imprensa', 'Contato'],
-  'Suporte': ['Central de Ajuda', 'Status', 'Termos de Uso', 'Privacidade', 'Cookies'],
+  'Empresa': ['Sobre nós', 'Blog', 'Carreiras', 'Imprensa'],
 }
 
 export default function Footer() {
@@ -60,6 +60,18 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+
+          {/* Suporte — links reais */}
+          <div className={styles.col}>
+            <h4 className={styles.colTitle}>Suporte</h4>
+            <ul className={styles.colLinks}>
+              <li><Link to="/ajuda">Ajuda</Link></li>
+              <li><Link to="/contato">Contato</Link></li>
+              <li><a href="#">Termos de Uso</a></li>
+              <li><a href="#">Privacidade</a></li>
+              <li><a href="#">Cookies</a></li>
+            </ul>
+          </div>
         </div>
 
         <div className={styles.bottom}>

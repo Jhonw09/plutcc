@@ -1,0 +1,207 @@
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 760px;
+  animation: fadeUp 260ms ease forwards;
+}
+
+.header { display: flex; flex-direction: column; gap: 4px; }
+.title  { font-size: clamp(20px, 2.2vw, 26px); font-weight: 800; color: var(--text); }
+.sub    { font-size: 14px; color: var(--text-secondary); }
+
+/* ── Section titles ── */
+.sectionTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── FAQ ── */
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faqItem {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.faqItem:has(.faqBody:not([hidden])) {
+  border-color: var(--accent-border);
+}
+
+.faqBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+}
+
+.faqQ {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.faqChevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+.faqChevronOpen { transform: rotate(180deg); }
+
+.faqBody {
+  padding: 0 20px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.faqBody a { color: var(--accent); text-decoration: underline; }
+
+/* ── Form ── */
+.formCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.select,
+.input,
+.textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+  width: 100%;
+}
+.select:focus,
+.input:focus,
+.textarea:focus {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.select { appearance: none; cursor: pointer; }
+.textarea { resize: vertical; min-height: 110px; }
+.inputError { border-color: var(--danger) !important; }
+
+.fieldError {
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.formError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.formSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+}
+.successIcon {
+  font-size: 40px;
+}
+.formSuccess h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+.formSuccess p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.submitBtn {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  padding: 11px 24px;
+  cursor: pointer;
+  transition: background .15s, transform .15s;
+}
+.submitBtn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+.submitBtn:disabled { opacity: .6; cursor: not-allowed; }
+
+.newBtn {
+  align-self: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.newBtn:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .formGrid { grid-template-columns: 1fr; }
+  .formCard { padding: 20px 18px; }
+  .submitBtn { align-self: stretch; justify-content: center; }
+}

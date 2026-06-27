@@ -40,6 +40,14 @@ export const ENDPOINTS = {
   verifyEmail:          `${API_BASE}/auth/verify-email`,
   resendVerification:   `${API_BASE}/auth/resend-verification`,
 
+  // Google OAuth2
+  googleAuth:           `${API_BASE}/auth/google`,
+
+  // Troca de e-mail (2 etapas)
+  emailChangeRequest:   `${API_BASE}/auth/email-change/request`,
+  emailChangeConfirm:   (token) => `${API_BASE}/auth/email-change/confirm?token=${token}`,
+  emailChangeVerify:    `${API_BASE}/auth/email-change/verify`,
+
   // Recuperação de senha
   forgotPassword: `${API_BASE}/auth/forgot-password`,
   resetPassword:  `${API_BASE}/auth/reset-password`,

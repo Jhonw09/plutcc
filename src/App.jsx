@@ -13,8 +13,11 @@ import ProtectedRoute            from './components/ProtectedRoute'
 import {
   SubjectsPage, ExercisesPage, ExamsPage, GoalsPage,
   UsersPage, SchoolsPage, FinancePage, TicketsPage, AdminReportsPage,
-  SettingsPage, HelpPage,
+  SettingsPage,
 } from './pages/placeholders'
+import HelpPage from './pages/HelpPage'
+import PublicHelpPage from './pages/PublicHelpPage'
+import ContatoPage    from './pages/ContatoPage'
 
 import BlogPage          from './pages/BlogPage'
 import ExplorarTrilhas   from './pages/ExplorarTrilhas'
@@ -24,7 +27,11 @@ import DesempenhoPage    from './pages/DesempenhoPage'
 import TrilhaDetalhePage from './pages/TrilhaDetalhePage'
 import ResetPasswordPage        from './pages/ResetPasswordPage'
 import ForgotPasswordPage       from './pages/ForgotPasswordPage'
+import ConfirmarTrocaEmailPage  from './pages/ConfirmarTrocaEmailPage'
 import StudentConfiguracoesPage from './pages/StudentConfiguracoesPage'
+import EditarPerfilPage         from './pages/EditarPerfilPage'
+import LoginPage                from './pages/LoginPage'
+import CadastroPage             from './pages/CadastroPage'
 import './App.css'
 
 function S({ children }) {
@@ -40,8 +47,9 @@ function A({ children }) {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage key="landing" />} />
-      <Route path="/cadastro" element={<LandingPage key="cadastro" initialAuth="signup" />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login"   element={<LoginPage />} />
+      <Route path="/cadastro" element={<CadastroPage />} />
 
       {/* ── Student ── */}
       <Route path="/dashboard"                  element={<S><DashboardPage /></S>} />
@@ -54,6 +62,7 @@ export default function App() {
       <Route path="/dashboard/simulados"         element={<S><ExamsPage /></S>} />
       <Route path="/dashboard/metas"             element={<S><GoalsPage /></S>} />
       <Route path="/dashboard/configuracoes"     element={<S><StudentConfiguracoesPage /></S>} />
+      <Route path="/dashboard/editar-perfil"      element={<S><EditarPerfilPage /></S>} />
       <Route path="/dashboard/ajuda"             element={<S><HelpPage /></S>} />
       <Route path="/dashboard/trilha/:id"         element={<S><StudentTrilhaPage /></S>} />
 
@@ -62,6 +71,8 @@ export default function App() {
       <Route path="/teacher-dashboard/trilhas"      element={<T><TeacherMinhasTrilhasPage /></T>} />
       <Route path="/teacher-dashboard/relatorios"   element={<T><TeacherRelatoriosPage /></T>} />
       <Route path="/teacher-dashboard/configuracoes" element={<T><TeacherConfiguracoesPage /></T>} />
+      <Route path="/teacher-dashboard/editar-perfil"  element={<T><EditarPerfilPage /></T>} />
+      <Route path="/teacher-dashboard/ajuda"           element={<T><HelpPage /></T>} />
       <Route path="/professor/trilha/:id"           element={<T><TeacherTrilhaPage /></T>} />
 
       {/* ── Admin ── */}
@@ -75,9 +86,12 @@ export default function App() {
       <Route path="/admin/ajuda"            element={<A><HelpPage /></A>} />
 
       <Route path="/sobre" element={<BlogPage />} />
+      <Route path="/ajuda" element={<PublicHelpPage />} />
+      <Route path="/contato" element={<ContatoPage />} />
       <Route path="/explorar" element={<S><ExplorarTrilhas /></S>} />
       <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
       <Route path="/redefinir-senha-solicitacao" element={<ForgotPasswordPage />} />
+      <Route path="/confirmar-troca-email" element={<ConfirmarTrocaEmailPage />} />
 
       {/* ── Catch-all */}
       <Route path="/trilha/:id" element={<ProtectedRoute><TrilhaPage /></ProtectedRoute>} />

@@ -118,7 +118,7 @@ export default function ProfileDropdown() {
                 </div>
               </div>
               <div className={styles.divider} />
-              <button className={styles.actionBtn} onClick={() => goTo(MODE.PROFILE)}>
+              <button className={styles.actionBtn} onClick={() => { setOpen(false); navigate(user?.role === 'teacher' ? '/teacher-dashboard/editar-perfil' : '/dashboard/editar-perfil') }}>
                 <Icon name="pencil" size={14} /> Editar perfil
               </button>
               <button className={styles.actionBtn} onClick={() => goTo(MODE.DELETE)}>
@@ -144,11 +144,13 @@ export default function ProfileDropdown() {
                 <input className={styles.input} type="email" value={form.email} disabled={saving}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Confirme sua senha para salvar</label>
-                <input className={styles.input} type="password" value={form.password} disabled={saving}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
-              </div>
+              {!user.isGoogleUser && (
+                <div className={styles.field}>
+                  <label className={styles.label}>Confirme sua senha para salvar</label>
+                  <input className={styles.input} type="password" value={form.password} disabled={saving}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+                </div>
+              )}
               {error && <p className={styles.error} role="alert">{error}</p>}
               <div className={styles.editActions}>
                 <button className={styles.cancelBtn} onClick={() => goTo(MODE.VIEW)} disabled={saving}>Cancelar</button>
@@ -157,9 +159,11 @@ export default function ProfileDropdown() {
                 </button>
               </div>
               <div className={styles.divider} />
-              <button className={styles.actionBtn} onClick={() => goTo(MODE.PASSWORD)}>
-                <Icon name="key" size={14} /> Alterar senha
-              </button>
+              {!user.isGoogleUser && (
+                <button className={styles.actionBtn} onClick={() => goTo(MODE.PASSWORD)}>
+                  <Icon name="key" size={14} /> Alterar senha
+                </button>
+              )}
             </>
           )}
 

@@ -10,7 +10,8 @@ const navItems = [
 ]
 
 const bottomItems = [
-  { icon: 'cpu', label: 'Configurações', path: TEACHER_ROUTES.settings },
+  { icon: 'cpu',         label: 'Configurações', path: TEACHER_ROUTES.settings },
+  { icon: 'alertCircle', label: 'Ajuda',         path: TEACHER_ROUTES.help     },
 ]
 
 export default function TeacherSidebar() {

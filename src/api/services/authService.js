@@ -30,11 +30,11 @@ async function signup({ nome, email, senha, tipoUsuario = 'ALUNO' }) {
   return { email }
 }
 
-async function updateUser(userId, { nome, email, tipoUsuario, senha }) {
+async function updateUser(userId, { nome, email, tipoUsuario, senha, fotoUrl }) {
   if (!userId) throw new Error('Sessao invalida. Faca login novamente.')
-  const body = senha
-    ? { nome, email, tipoUsuario, ativo: true, senha }
-    : { nome, email, tipoUsuario, ativo: true }
+  const body = { nome, email, tipoUsuario, ativo: true }
+  if (senha) body.senha = senha
+  if (fotoUrl !== undefined) body.fotoUrl = fotoUrl
 
   return api(ENDPOINTS.userById(userId), {
     method: 'PUT',
@@ -108,4 +108,45 @@ async function resetPassword(token, novaSenha) {
   })
 }
 
-export const authService = { login, signup, updateUser, changePassword, deleteUser, forgotPassword, resetPassword, verifyEmail, resendVerification }
+async function googleLogin(idToken) {
+  const data = await api(ENDPOINTS.googleAuth, {
+    method: 'POST',
+    body: JSON.stringify({ idToken }),
+  }).catch(err => {
+    if (err.status === 401) throw new Error('Autenticação com Google falhou.')
+    throw new Error('Não foi possível entrar com Google. Tente novamente.')
+  })
+  if (!data?.id || !data?.nome || !data?.role) {
+    throw new Error('Resposta do servidor inválida.')
+  }
+  return data
+}
+
+async function requestEmailChange(usuarioId, emailNovo) {
+  await api(ENDPOINTS.emailChangeRequest, {
+    method: 'POST',
+    body: JSON.stringify({ usuarioId, emailNovo }),
+  }).catch(err => {
+    if (err.status === 400) throw new Error(err.message)
+    if (err.status === 409) throw new Error(err.message)
+    throw new Error('Não foi possível solicitar a troca. Tente novamente.')
+  })
+}
+
+async function confirmEmailChange(token) {
+  return api(ENDPOINTS.emailChangeConfirm(token)).catch(err => {
+    throw new Error(err.message || 'Link inválido ou expirado.')
+  })
+}
+
+async function verifyEmailChange(usuarioId, otp) {
+  await api(ENDPOINTS.emailChangeVerify, {
+    method: 'POST',
+    body: JSON.stringify({ usuarioId, otp }),
+  }).catch(err => {
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Não foi possível verificar o código. Tente novamente.')
+  })
+}
+
+export const authService = { login, signup, updateUser, changePassword, deleteUser, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, confirmEmailChange, verifyEmailChange }

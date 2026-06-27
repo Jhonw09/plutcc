@@ -39,6 +39,5 @@ export function TicketsPage() { return <ComingSoon title="Tickets"    emoji="�
 
 // ── Shared ───────────────────────────────────────────────────────────────────
 export function SettingsPage() { return <ComingSoon title="Configurações" emoji="⚙️" /> }
-export function HelpPage()     { return <ComingSoon title="Ajuda"         emoji="❓" /> }
 // Admin reuses the same Reports component as teacher for now
 export { ReportsPage as AdminReportsPage }

@@ -27,6 +27,7 @@ export const TEACHER_ROUTES = {
   trilhas:  '/teacher-dashboard/trilhas',
   reports:  '/teacher-dashboard/relatorios',
   settings: '/teacher-dashboard/configuracoes',
+  help:     '/teacher-dashboard/ajuda',
 }
 
 // ── Admin routes ─────────────────────────────────────────────
