@@ -1,5 +1,74 @@
+import { STORAGE_KEYS } from '../constants/storageKeys'
+
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 export const API_BASE = `${BASE}/api/v1`
+export const AUTH_EXPIRED_EVENT = 'sc:auth-expired'
+
+const PUBLIC_ENDPOINTS = {
+  GET: new Set([
+    '/health',
+    '/api/v1/auth/email-change/confirm',
+  ]),
+  POST: new Set([
+    '/api/v1/usuarios',
+    '/api/v1/auth/login',
+    '/api/v1/auth/google',
+    '/api/v1/auth/verify-email',
+    '/api/v1/auth/resend-verification',
+    '/api/v1/auth/forgot-password',
+    '/api/v1/auth/reset-password',
+    '/api/v1/auth/email-change/request',
+    '/api/v1/auth/email-change/verify',
+  ]),
+}
+
+let unauthorizedSessionNotified = false
+
+function pathFromUrl(url) {
+  try {
+    return new URL(url, window.location.origin).pathname
+  } catch {
+    return ''
+  }
+}
+
+function isProtectedApiRequest(url, method) {
+  const path = pathFromUrl(url)
+  if (!path || !path.startsWith('/api/')) return false
+  return !PUBLIC_ENDPOINTS[method]?.has(path)
+}
+
+export function storeAccessToken(accessToken, expiresIn) {
+  const lifetimeSeconds = Number(expiresIn)
+  if (!accessToken || !Number.isFinite(lifetimeSeconds) || lifetimeSeconds <= 0) {
+    throw new Error('Resposta de autenticacao invalida. Faca login novamente.')
+  }
+  sessionStorage.setItem(STORAGE_KEYS.accessToken, accessToken)
+  sessionStorage.setItem(STORAGE_KEYS.tokenExpiresAt, String(Date.now() + lifetimeSeconds * 1000))
+  unauthorizedSessionNotified = false
+}
+
+export function clearAccessToken() {
+  sessionStorage.removeItem(STORAGE_KEYS.accessToken)
+  sessionStorage.removeItem(STORAGE_KEYS.tokenExpiresAt)
+}
+
+export function getAccessToken() {
+  const accessToken = sessionStorage.getItem(STORAGE_KEYS.accessToken)
+  const expiresAt = Number(sessionStorage.getItem(STORAGE_KEYS.tokenExpiresAt))
+  if (!accessToken || !Number.isFinite(expiresAt) || Date.now() >= expiresAt) {
+    clearAccessToken()
+    return null
+  }
+  return accessToken
+}
+
+function notifyUnauthorizedSession() {
+  clearAccessToken()
+  if (unauthorizedSessionNotified) return
+  unauthorizedSessionNotified = true
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
+}
 
 export const ENDPOINTS = {
   // Auth
@@ -76,12 +145,21 @@ export const ROLE_MAP = {
 }
 
 export async function api(url, options = {}) {
+  const method = (options.method || 'GET').toUpperCase()
+  const protectedRequest = isProtectedApiRequest(url, method)
+  const accessToken = protectedRequest ? getAccessToken() : null
+
   const res = await fetch(url, {
     ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...options.headers,
+    },
   })
 
   if (!res.ok) {
+    if (res.status === 401 && protectedRequest) notifyUnauthorizedSession()
     const text = await res.text().catch(() => '')
     let message = text || `HTTP ${res.status}`
     try {

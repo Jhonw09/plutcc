@@ -11,7 +11,7 @@ async function login({ email, senha }) {
     throw new Error('Erro no servidor. Tente novamente.')
   })
 
-  if (!data?.id || !data?.nome || !data?.role) {
+  if (!data?.id || !data?.nome || !data?.role || !data?.accessToken || !data?.expiresIn) {
     throw new Error('Resposta do servidor invalida. Contate o suporte.')
   }
 
@@ -118,7 +118,7 @@ async function googleLogin(idToken) {
     if (err.status === 401) throw new Error('Autenticação com Google falhou.')
     throw new Error('Não foi possível entrar com Google. Tente novamente.')
   })
-  if (!data?.id || !data?.nome || !data?.role) {
+  if (!data?.id || !data?.nome || !data?.role || !data?.accessToken || !data?.expiresIn) {
     throw new Error('Resposta do servidor inválida.')
   }
   return data

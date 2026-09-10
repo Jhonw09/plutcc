@@ -1,6 +1,6 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { authService } from '../api/services/authService'
-import { ROLE_MAP } from '../api/apiClient'
+import { AUTH_EXPIRED_EVENT, clearAccessToken, getAccessToken, ROLE_MAP, storeAccessToken } from '../api/apiClient'
 import { STORAGE_KEYS } from '../constants/storageKeys'
 
 const AuthContext = createContext(null)
@@ -10,7 +10,7 @@ function readStorage() {
     const raw = localStorage.getItem(STORAGE_KEYS.user)
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    if (!parsed?.id) {
+    if (!parsed?.id || !getAccessToken()) {
       localStorage.removeItem(STORAGE_KEYS.user)
       return null
     }
@@ -33,6 +33,15 @@ function persist(userData) {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => readStorage())
+
+  useEffect(() => {
+    function handleExpiredSession() {
+      clearSession()
+    }
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleExpiredSession)
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleExpiredSession)
+  }, [])
 
   async function signup({ nome, email, senha, tipoUsuario = 'ALUNO' }) {
     try {
@@ -58,6 +67,9 @@ export function AuthProvider({ children }) {
   }
 
   function loginWithData({ data, isGoogle = false }) {
+    if (!data?.accessToken || !data?.expiresIn) {
+      throw new Error('Resposta de autenticacao invalida. Faca login novamente.')
+    }
     const userData = {
       id:           data.id,
       name:         data.nome,
@@ -70,6 +82,7 @@ export function AuthProvider({ children }) {
       ativo:        data.ativo !== false,
     }
     if (userData.ativo === false) return userData // não persiste nem seta sessão
+    storeAccessToken(data.accessToken, data.expiresIn)
     persist(userData)
     setUser(userData)
     return userData
@@ -117,6 +130,7 @@ async function updateUser({ nome, email, senha, fotoUrl }) {
 
   function clearSession() {
     localStorage.removeItem(STORAGE_KEYS.user)
+    clearAccessToken()
     sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
     setUser(null)
   }
