@@ -2,12 +2,21 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../api/services/authService'
+import { solicitacaoService } from '../api/services/solicitacaoService'
 import { getPasswordChecks, isStrongPassword, isValidEmail } from '../utils/validation'
 import { ROLE_ROUTES, DEFAULT_ROUTE } from '../constants/routes'
+import { STORAGE_KEYS } from '../constants/storageKeys'
 import GoogleButton from '../components/ui/GoogleButton'
 import styles from './AuthPage.module.css'
 
 const RESEND_COOLDOWN = 30
+
+const TIPO_COMPROVANTE_OPTIONS = [
+  { value: 'CERTIFICADO',           label: 'Certificado' },
+  { value: 'VINCULO_INSTITUCIONAL', label: 'Vínculo institucional' },
+  { value: 'EMAIL_INSTITUCIONAL',   label: 'E-mail institucional' },
+  { value: 'OUTRO',                 label: 'Outro' },
+]
 
 const Logo = () => (
   <a href="/" className={styles.logoLink}>
@@ -42,6 +51,12 @@ const LockIcon = () => (
     <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
   </svg>
 )
+const LinkIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+  </svg>
+)
 
 export default function CadastroPage() {
   const { user, login, loginWithGoogle, signup } = useAuth()
@@ -63,6 +78,17 @@ export default function CadastroPage() {
   const [verifyError,    setVerifyError]    = useState('')
   const cooldownRef = useRef(null)
 
+  // Solicitação de professor
+  // roleRef preserva a escolha durante toda a troca de estados
+  const roleRef = useRef('student')
+  const [solicitacaoMode, setSolicitacaoMode] = useState(false)
+  const [solicitacao, setSolicitacao] = useState({ tipoComprovante: 'CERTIFICADO', comprovanteUrl: '' })
+  const [solicitacaoLoading, setSolicitacaoLoading] = useState(false)
+  const [solicitacaoError,   setSolicitacaoError]   = useState('')
+  const [solicitacaoEnviada, setSolicitacaoEnviada] = useState(false)
+  const [solicitacaoExistente, setSolicitacaoExistente] = useState(null)
+  const [documentoPublico, setDocumentoPublico] = useState(false)
+
   useEffect(() => {
     if (cooldown <= 0) return
     cooldownRef.current = setInterval(() => {
@@ -74,7 +100,7 @@ export default function CadastroPage() {
     return () => clearInterval(cooldownRef.current)
   }, [cooldown])
 
-  if (user) return <Navigate to={ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE} replace />
+  if (user && !solicitacaoMode && roleRef.current !== 'teacher') return <Navigate to={ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE} replace />
 
   async function handleGoogleToken(idToken) {
     setGoogleLoading(true)
@@ -105,10 +131,19 @@ export default function CadastroPage() {
     else if (fields.confirm !== fields.password) errs.confirm = 'As senhas não coincidem.'
     if (Object.keys(errs).length) { setErrors(errs); return }
 
+    // Preserva a escolha de role para uso após verificação
+    roleRef.current = role
+
+    // Grava intenção no sessionStorage vinculada ao e-mail (userId ainda não existe)
+    // Será migrada para userId após o login automático
+    if (role === 'teacher') {
+      try { sessionStorage.setItem('sc_pending_teacher_intent_signup', fields.email) } catch {}
+    }
+
     setLoading(true)
     try {
-      const tipoUsuario = role === 'teacher' ? 'PROFESSOR' : 'ALUNO'
-      const { email } = await signup({ nome: fields.name, email: fields.email, senha: fields.password, tipoUsuario })
+      // Sempre cria como ALUNO — promoção a PROFESSOR só ocorre via aprovação admin
+      const { email } = await signup({ nome: fields.name, email: fields.email, senha: fields.password, tipoUsuario: 'ALUNO' })
       setVerifyEmail(email)
       setVerifyPassword(fields.password)
       setCooldown(RESEND_COOLDOWN)
@@ -127,8 +162,38 @@ export default function CadastroPage() {
     setVerifyError('')
     try {
       await authService.verifyEmail(verifyEmail, code)
+
+      if (roleRef.current === 'teacher') {
+        setSolicitacaoMode(true)
+      }
+
       await login({ email: verifyEmail, senha: verifyPassword })
+
+      if (roleRef.current === 'teacher') {
+        // Migra a flag para o userId agora que o login foi concluído
+        try {
+          const raw = localStorage.getItem(STORAGE_KEYS.user)
+          const userData = raw ? JSON.parse(raw) : null
+          if (userData?.id) {
+            sessionStorage.setItem(STORAGE_KEYS.pendingTeacherIntent(userData.id), '1')
+          }
+          sessionStorage.removeItem('sc_pending_teacher_intent_signup')
+        } catch {}
+
+        try {
+          const lista = await solicitacaoService.minhas()
+          const pendente = lista?.find(s => s.status === 'PENDENTE')
+          const aprovada = lista?.find(s => s.status === 'APROVADO')
+          if (pendente || aprovada) setSolicitacaoExistente(pendente ?? aprovada)
+        } catch {
+          // falha silenciosa — mostra o formulário normalmente
+        }
+        return
+      }
+
+      // ALUNO: redirecionamento automático via AuthContext/Navigate
     } catch (err) {
+      setSolicitacaoMode(false)
       setVerifyError(err.message ?? 'Código inválido.')
     } finally {
       setVerifyLoading(false)
@@ -146,8 +211,164 @@ export default function CadastroPage() {
     }
   }
 
+  async function handleEnviarSolicitacao(e) {
+    e.preventDefault()
+    if (!solicitacao.comprovanteUrl.trim()) {
+      setSolicitacaoError('Informe o link do comprovante.')
+      return
+    }
+    if (!solicitacao.comprovanteUrl.startsWith('http://') && !solicitacao.comprovanteUrl.startsWith('https://')) {
+      setSolicitacaoError('O link deve começar com http:// ou https://')
+      return
+    }
+    setSolicitacaoLoading(true)
+    setSolicitacaoError('')
+    try {
+      await solicitacaoService.criar({
+        tipoComprovante: solicitacao.tipoComprovante,
+        comprovanteUrl:  solicitacao.comprovanteUrl.trim(),
+      })
+      setSolicitacaoEnviada(true)
+      // Limpa a flag de intenção — solicitação foi enviada com sucesso
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.user)
+        const userData = raw ? JSON.parse(raw) : null
+        if (userData?.id) sessionStorage.removeItem(STORAGE_KEYS.pendingTeacherIntent(userData.id))
+      } catch {}
+    } catch (err) {
+      setSolicitacaoError(err.message ?? 'Não foi possível enviar a solicitação.')
+    } finally {
+      setSolicitacaoLoading(false)
+    }
+  }
+
+  function handleIrParaDashboard() {
+    navigate(DEFAULT_ROUTE, { replace: true })
+  }
+
+  function handleVoltarInicio() {
+    window.location.replace('/')
+  }
+
   const checks = getPasswordChecks(fields.password)
   const passwordInvalid = fields.password && !isStrongPassword(fields.password)
+
+  // ── Etapa: solicitação de professor ─────────────────────────────
+  if (solicitacaoMode) {
+    // Solicitação já enviada com sucesso agora
+    if (solicitacaoEnviada) {
+      return (
+        <div className={styles.page}>
+          <div className={styles.card}>
+            <div className={styles.logo}><Logo /></div>
+            <h2 className={styles.title}>Solicitação enviada!</h2>
+            <p className={styles.sub}>
+              Sua solicitação foi registrada. Aguarde as próximas 24 horas para verificarmos seu cadastro.
+            </p>
+            <p className={styles.sub} style={{ marginTop: '8px' }}>
+              Você poderá acompanhar o status da solicitação pelo StudyConnect.
+            </p>
+            <button className={styles.submitBtn} onClick={handleVoltarInicio}>
+              Voltar para a página inicial
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    // Solicitação já existente (PENDENTE ou APROVADO)
+    if (solicitacaoExistente) {
+      const isPendente = solicitacaoExistente.status === 'PENDENTE'
+      return (
+        <div className={styles.page}>
+          <div className={styles.card}>
+            <div className={styles.logo}><Logo /></div>
+            <h2 className={styles.title}>Comprovação de professor</h2>
+            <p className={styles.sub}>
+              {isPendente
+                ? 'Sua solicitação já está em análise. Aguarde as próximas 24 horas para verificarmos seu cadastro.'
+                : 'Sua solicitação foi aprovada! Você já pode acessar o dashboard como professor.'}
+            </p>
+            <button className={styles.submitBtn} onClick={handleIrParaDashboard}>
+              Ir para o dashboard
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    // Formulário de solicitação
+    return (
+      <div className={styles.page}>
+        <div className={styles.card}>
+          <div className={styles.logo}><Logo /></div>
+          <h2 className={styles.title}>Comprovação de professor</h2>
+          <p className={styles.sub}>
+            Para concluir sua solicitação, envie um comprovante de que você é professor.
+          </p>
+          <p className={styles.sub} style={{ marginTop: '4px', fontSize: '13px', color: 'var(--text-muted)' }}>
+            Exemplos aceitos: certificado, vínculo institucional, e-mail institucional.
+          </p>
+
+          {solicitacaoError && <p className={styles.formError} role="alert">{solicitacaoError}</p>}
+
+          <form onSubmit={handleEnviarSolicitacao} noValidate className={styles.form}>
+            <div className={styles.fieldWrap}>
+              <label className={styles.fieldLabel}>Tipo de comprovante</label>
+              <div className={styles.fieldInner}>
+                <select
+                  className={styles.fieldInput}
+                  style={{ paddingLeft: '14px' }}
+                  value={solicitacao.tipoComprovante}
+                  onChange={e => setSolicitacao(s => ({ ...s, tipoComprovante: e.target.value }))}
+                >
+                  {TIPO_COMPROVANTE_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className={styles.fieldWrap}>
+              <label className={styles.fieldLabel}>Link do comprovante</label>
+              <div style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.3)', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                <strong style={{ color: 'rgba(250,204,21,0.9)' }}>⚠️ O documento precisa estar público e acessível pelo link informado.</strong>
+                <br />
+                No Google Drive, por exemplo, configure o acesso como &quot;Qualquer pessoa com o link&quot;.
+              </div>
+              <div className={styles.fieldInner}>
+                <span className={styles.fieldIcon}><LinkIcon /></span>
+                <input
+                  className={styles.fieldInput}
+                  type="url"
+                  placeholder="https://drive.google.com/..."
+                  value={solicitacao.comprovanteUrl}
+                  onChange={e => { setSolicitacao(s => ({ ...s, comprovanteUrl: e.target.value })); setSolicitacaoError('') }}
+                />
+              </div>
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.5 }}>
+              <input
+                type="checkbox"
+                checked={documentoPublico}
+                onChange={e => setDocumentoPublico(e.target.checked)}
+                style={{ marginTop: '2px', accentColor: 'var(--primary)', flexShrink: 0 }}
+              />
+              Confirmo que o documento está público e pode ser acessado pelo link informado.
+            </label>
+
+            <button type="submit" className={styles.submitBtn} disabled={solicitacaoLoading || !documentoPublico}>
+              {solicitacaoLoading ? 'Enviando...' : 'Enviar solicitação'}
+            </button>
+          </form>
+
+          <div className={styles.verifyActions}>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ── Tela de verificação ──────────────────────────────────────────
   if (verifyMode) {
@@ -234,6 +455,12 @@ export default function CadastroPage() {
             Sou Professor
           </button>
         </div>
+
+        {role === 'teacher' && (
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-8px 0 0', lineHeight: 1.5 }}>
+            Sua conta será criada como aluno. Após o cadastro, você poderá enviar um comprovante para solicitar acesso como professor.
+          </p>
+        )}
 
         {errors.form && <p className={styles.formError} role="alert">{errors.form}</p>}
 

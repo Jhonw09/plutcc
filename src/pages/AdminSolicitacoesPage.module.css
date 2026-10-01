@@ -1,0 +1,400 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeUp 240ms ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title { font-size: clamp(18px, 2vw, 24px); font-weight: 800; color: var(--text); }
+.sub   { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b45309;
+  background: rgba(251,191,36,.12);
+  border: 1px solid rgba(251,191,36,.3);
+  border-radius: 20px;
+  padding: 5px 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+/* ── List ── */
+.list { display: flex; flex-direction: column; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+}
+.item:last-child { border-bottom: none; }
+.item:hover { background: var(--surface-2); }
+
+.itemAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.itemInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemNome {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemEmail {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.itemTipo { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.itemDot  { font-size: 12px; color: var(--text-muted); }
+.itemData { font-size: 12px; color: var(--text-muted); }
+
+/* ── Badge ── */
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.badge.pendente  { background: rgba(251,191,36,.12); color: #b45309; }
+.badge.aprovado  { background: rgba(134,239,172,.12); color: #16a34a; }
+.badge.reprovado { background: var(--danger-bg, rgba(239,68,68,.1)); color: var(--danger, #dc2626); }
+
+/* ── Buttons ── */
+.btnAnalisar {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background .12s, border-color .12s;
+  flex-shrink: 0;
+}
+.btnAnalisar:hover { background: var(--accent); color: #fff; }
+
+/* ── Empty / loading ── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 200px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--danger);
+  background: var(--danger-bg, rgba(239,68,68,.08));
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  padding: 11px 14px;
+}
+
+/* ── Modal ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.modalTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color .12s, color .12s;
+}
+.closeBtn:hover { border-color: var(--danger); color: var(--danger); }
+
+.modalLoading,
+.modalError {
+  padding: 32px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.modalError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--danger);
+}
+
+.modalBody {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fieldGroup { display: flex; flex-direction: column; gap: 3px; }
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-muted);
+}
+
+.fieldValue {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* ── Document link ── */
+.docRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.docLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  width: fit-content;
+}
+.docLink:hover { text-decoration: underline; }
+
+.docWarning {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Modal actions ── */
+.modalActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.btnAprovar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9px;
+  border: none;
+  background: #16a34a;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity .15s;
+}
+.btnAprovar:disabled { opacity: .5; cursor: not-allowed; }
+.btnAprovar:not(:disabled):hover { opacity: .88; }
+
+.btnReprovar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9px;
+  border: 1px solid var(--danger, #dc2626);
+  background: transparent;
+  color: var(--danger, #dc2626);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background .12s, color .12s;
+}
+.btnReprovar:not(:disabled):hover { background: var(--danger, #dc2626); color: #fff; }
+.btnReprovar:disabled { opacity: .5; cursor: not-allowed; }
+
+.btnSecondary {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: border-color .12s;
+}
+.btnSecondary:hover { border-color: var(--accent-border); }
+.btnSecondary:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Confirm box ── */
+.confirmBox {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confirmText {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Reprovar box ── */
+.reprovarBox {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reprovarLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.required { color: var(--danger, #dc2626); }
+
+.reprovarTextarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+  resize: vertical;
+  transition: border-color .15s;
+  box-sizing: border-box;
+}
+.reprovarTextarea:focus { border-color: var(--accent-border); }

@@ -1,18 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import DashboardLayout  from '../components/dashboard/DashboardLayout'
-import { InputField }   from '../components/ui/InputField'
-import { ConfirmModal } from '../components/ui/ConfirmModal'
-import { Toast }        from '../components/ui/Toast'
-import Icon             from '../components/ui/Icon'
-import { useAuth }      from '../context/AuthContext'
-import { useToast }     from '../hooks/useToast'
+import DashboardLayout    from '../components/dashboard/DashboardLayout'
+import { InputField }     from '../components/ui/InputField'
+import { Toast }          from '../components/ui/Toast'
+import Icon               from '../components/ui/Icon'
+import MfaSecuritySection from '../components/ui/MfaSecuritySection'
+import DeleteAccountModal from '../components/ui/DeleteAccountModal'
+import { useAuth }        from '../context/AuthContext'
+import { useToast }       from '../hooks/useToast'
 import { getPasswordValidationMessage } from '../utils/validation'
 import styles from './TeacherConfiguracoesPage.module.css'
 
 export default function StudentConfiguracoesPage() {
   const navigate = useNavigate()
-  const { user, changePassword, deleteUser } = useAuth()
+  const { user, changePassword, deleteUserWithAuth, requestDeleteChallenge, toggleMfa } = useAuth()
   const { toasts, toast, dismiss } = useToast()
 
   const [senhaAtual,  setSenhaAtual]  = useState('')
@@ -23,7 +24,6 @@ export default function StudentConfiguracoesPage() {
   const [senhaOk,     setSenhaOk]     = useState(false)
 
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [deleting,      setDeleting]      = useState(false)
 
   async function handleChangeSenha(e) {
     e.preventDefault()
@@ -45,27 +45,25 @@ export default function StudentConfiguracoesPage() {
     }
   }
 
-  async function handleDeleteAccount() {
-    setDeleting(true)
+  async function handleDeleteConfirm(senha, codigoMfa) {
     try {
-      await deleteUser()
+      await deleteUserWithAuth(senha, codigoMfa)
       navigate('/')
     } catch (err) {
-      toast(err.message || 'Erro ao excluir conta.', 'error')
-      setDeleting(false)
-      setConfirmDelete(false)
+      throw err // repassado ao modal para exibir o erro
     }
   }
 
   return (
     <DashboardLayout>
       {confirmDelete && (
-        <ConfirmModal
-          title="Excluir conta"
-          message="Tem certeza? Todos os seus dados serão permanentemente excluídos. Esta ação não pode ser desfeita."
-          confirmLabel={deleting ? 'Excluindo...' : 'Excluir minha conta'}
-          onConfirm={handleDeleteAccount}
+        <DeleteAccountModal
+          mfaHabilitado={user.mfaHabilitado}
+          isGoogleUser={user.isGoogleUser}
+          onRequestChallenge={requestDeleteChallenge}
+          onConfirm={handleDeleteConfirm}
           onCancel={() => setConfirmDelete(false)}
+          roleLabel="conta"
         />
       )}
       <Toast toasts={toasts} onDismiss={dismiss} />
@@ -153,6 +151,15 @@ export default function StudentConfiguracoesPage() {
               </div>
             </section>
           )}
+
+          {/* ── MFA ── */}
+          <MfaSecuritySection
+            mfaHabilitado={user.mfaHabilitado}
+            isAdmin={false}
+            isGoogleUser={user.isGoogleUser}
+            onToggle={toggleMfa}
+            cardStyles={styles}
+          />
 
           {/* ── Zona de perigo ── */}
           <section className={`${styles.card} ${styles.dangerCard}`}>

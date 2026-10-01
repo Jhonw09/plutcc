@@ -11,6 +11,8 @@ async function login({ email, senha }) {
     throw new Error('Erro no servidor. Tente novamente.')
   })
 
+  if (data?.mfaPendente === true) return data
+
   if (!data?.id || !data?.nome || !data?.role || !data?.accessToken || !data?.expiresIn) {
     throw new Error('Resposta do servidor invalida. Contate o suporte.')
   }
@@ -62,12 +64,40 @@ async function deleteUser(userId) {
   if (!userId) throw new Error('Sessao invalida. Faca login novamente.')
   console.log('[authService.deleteUser] DELETE', ENDPOINTS.userById(userId))
   try {
-    await api(ENDPOINTS.userById(userId), { method: 'DELETE' })
+    await api(ENDPOINTS.userById(userId), {
+      method: 'DELETE',
+      body: JSON.stringify({}),
+    })
     console.log('[authService.deleteUser] sucesso')
   } catch (err) {
     console.error('[authService.deleteUser] falhou:', err.status, err.message)
     throw new Error('Nao foi possivel excluir a conta. Tente novamente.')
   }
+}
+
+async function requestDeleteChallenge(userId, senha) {
+  await api(ENDPOINTS.deleteChallenge(userId), {
+    method: 'POST',
+    body: JSON.stringify({ senha }),
+  }).catch(err => {
+    if (err.status === 401) throw new Error('Senha incorreta.')
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Nao foi possivel enviar o codigo. Tente novamente.')
+  })
+}
+
+async function deleteUserWithAuth(userId, senha, codigoMfa) {
+  if (!userId) throw new Error('Sessao invalida. Faca login novamente.')
+  const body = { senha }
+  if (codigoMfa) body.codigoMfa = codigoMfa
+  await api(ENDPOINTS.userById(userId), {
+    method: 'DELETE',
+    body: JSON.stringify(body),
+  }).catch(err => {
+    if (err.status === 401) throw new Error(err.message || 'Senha ou codigo incorretos.')
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Nao foi possivel excluir a conta. Tente novamente.')
+  })
 }
 
 async function verifyEmail(email, code) {
@@ -151,4 +181,41 @@ async function verifyEmailChange(usuarioId, otp) {
   })
 }
 
-export const authService = { login, signup, updateUser, changePassword, deleteUser, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, confirmEmailChange, verifyEmailChange }
+async function verifyMfa(email, code) {
+  const data = await api(ENDPOINTS.mfaVerify, {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  }).catch(err => {
+    if (err.status === 401) throw new Error('Código inválido ou expirado.')
+    if (err.status === 429) throw new Error('Muitas tentativas. Aguarde e tente novamente.')
+    throw new Error('Não foi possível verificar o código. Tente novamente.')
+  })
+  if (!data?.id || !data?.accessToken) {
+    throw new Error('Resposta do servidor inválida.')
+  }
+  return data
+}
+
+async function enableMfa(senha) {
+  await api(ENDPOINTS.mfaEnable, {
+    method: 'POST',
+    body: JSON.stringify({ senha }),
+  }).catch(err => {
+    if (err.status === 401) throw new Error('Senha incorreta.')
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Não foi possível habilitar o MFA. Tente novamente.')
+  })
+}
+
+async function disableMfa(senha) {
+  await api(ENDPOINTS.mfaDisable, {
+    method: 'POST',
+    body: JSON.stringify({ senha }),
+  }).catch(err => {
+    if (err.status === 401) throw new Error('Senha incorreta.')
+    if (err.status === 400) throw new Error(err.message)
+    throw new Error('Não foi possível desabilitar o MFA. Tente novamente.')
+  })
+}
+
+export const authService = { login, signup, updateUser, changePassword, deleteUser, requestDeleteChallenge, deleteUserWithAuth, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, confirmEmailChange, verifyEmailChange, verifyMfa, enableMfa, disableMfa }

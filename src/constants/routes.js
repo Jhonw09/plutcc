@@ -32,13 +32,14 @@ export const TEACHER_ROUTES = {
 
 // ── Admin routes ─────────────────────────────────────────────
 export const ADMIN_ROUTES = {
-  home:     '/admin',
-  users:    '/admin/usuarios',
-  trilhas:  '/admin/trilhas',
-  schools:  '/admin/escolas',
-  finance:  '/admin/financeiro',
-  reports:  '/admin/relatorios',
-  tickets:  '/admin/tickets',
-  settings: '/admin/configuracoes',
-  help:     '/admin/ajuda',
+  home:          '/admin',
+  users:         '/admin/usuarios',
+  trilhas:       '/admin/trilhas',
+  solicitacoes:  '/admin/solicitacoes-professores',
+  schools:       '/admin/escolas',
+  finance:       '/admin/financeiro',
+  reports:       '/admin/relatorios',
+  tickets:       '/admin/tickets',
+  settings:      '/admin/configuracoes',
+  help:          '/admin/ajuda',
 }

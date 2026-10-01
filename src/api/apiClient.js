@@ -17,6 +17,7 @@ const PUBLIC_ENDPOINTS = {
     '/api/v1/auth/resend-verification',
     '/api/v1/auth/forgot-password',
     '/api/v1/auth/reset-password',
+    '/api/v1/auth/mfa/verify',
     '/api/v1/auth/email-change/request',
     '/api/v1/auth/email-change/verify',
   ]),
@@ -117,6 +118,12 @@ export const ENDPOINTS = {
   emailChangeConfirm:   (token) => `${API_BASE}/auth/email-change/confirm?token=${token}`,
   emailChangeVerify:    `${API_BASE}/auth/email-change/verify`,
 
+  // MFA
+  mfaVerify:  `${API_BASE}/auth/mfa/verify`,
+  mfaEnable:  `${API_BASE}/auth/mfa/enable`,
+  mfaDisable: `${API_BASE}/auth/mfa/disable`,
+  deleteChallenge: (id) => `${API_BASE}/usuarios/${id}/delete-challenge`,
+
   // Recuperação de senha
   forgotPassword: `${API_BASE}/auth/forgot-password`,
   resetPassword:  `${API_BASE}/auth/reset-password`,
@@ -136,6 +143,13 @@ export const ENDPOINTS = {
   tickets:       `${API_BASE}/tickets`,
   ticketById:    (id) => `${API_BASE}/tickets/${id}`,
   ticketsByUser: (userId) => `${API_BASE}/tickets/usuario/${userId}`,
+
+  // Solicitação de professor
+  solicitacoesProfessor:        `${API_BASE}/solicitacoes-professor`,
+  solicitacoesMinhas:           `${API_BASE}/solicitacoes-professor/minhas`,
+  solicitacaoById:              (id) => `${API_BASE}/solicitacoes-professor/${id}`,
+  solicitacaoAprovar:           (id) => `${API_BASE}/solicitacoes-professor/${id}/aprovar`,
+  solicitacaoReprovar:          (id) => `${API_BASE}/solicitacoes-professor/${id}/reprovar`,
 }
 
 export const ROLE_MAP = {

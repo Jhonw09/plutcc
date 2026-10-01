@@ -8,6 +8,8 @@ import OnboardingPerfilPage from '../../pages/OnboardingPerfilPage'
 import SpotlightTour from '../ui/SpotlightTour'
 import { STUDENT_ROUTES } from '../../constants/routes'
 import { api, ENDPOINTS } from '../../api/apiClient'
+import { solicitacaoService } from '../../api/services/solicitacaoService'
+import { STORAGE_KEYS } from '../../constants/storageKeys'
 import Icon from '../ui/Icon'
 import styles from './DashboardPage.module.css'
 
@@ -167,19 +169,42 @@ export default function DashboardPage() {
       .catch(() => {})
   }, [user?.id])
 
+  // Verifica se o aluno tem solicitação de professor PENDENTE — bloqueia onboarding
+  // Checa primeiro o sessionStorage (intenção ainda não enviada) e depois a API
+  const hasLocalIntent = user?.id
+    ? (() => { try { return sessionStorage.getItem(STORAGE_KEYS.pendingTeacherIntent(user.id)) === '1' } catch { return false } })()
+    : false
+
+  const [temSolicitacaoPendente, setTemSolicitacaoPendente] = useState(hasLocalIntent)
+  const [checkingSolicitacao, setCheckingSolicitacao] = useState(!hasLocalIntent)
+  useEffect(() => {
+    if (user?.role !== 'student') { setCheckingSolicitacao(false); return }
+    solicitacaoService.minhas()
+      .then(lista => {
+        const pendente = (lista ?? []).some(s => s.status === 'PENDENTE')
+        const resultado = pendente || hasLocalIntent
+        setTemSolicitacaoPendente(resultado)
+        if (resultado) navigate('/aguardando-aprovacao', { replace: true })
+      })
+      .catch(() => {})
+      .finally(() => setCheckingSolicitacao(false))
+  }, [user?.role]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Onboarding de perfil: mostra se perfil ainda não existe (após carregar)
+  // Não mostra para candidatos a professor com solicitação pendente
   const [showPerfilOnboarding, setShowPerfilOnboarding] = useState(false)
   useEffect(() => {
-    if (!loadingPerfil && perfil === null && user?.role === 'student') {
+    if (!loadingPerfil && perfil === null && user?.role === 'student' && !checkingSolicitacao && !temSolicitacaoPendente) {
       setShowPerfilOnboarding(true)
     }
-  }, [loadingPerfil, perfil, user?.role])
+  }, [loadingPerfil, perfil, user?.role, checkingSolicitacao, temSolicitacaoPendente])
 
   async function handlePerfilComplete(data) {
     await savePerfil(data)
     setShowPerfilOnboarding(false)
   }
 
+  // Onboarding de boas-vindas: não mostra para candidatos a professor com solicitação pendente
   const [showOnboarding, setShowOnboarding] = useState(() =>
     user?.id ? !isObDone(user.id) : false
   )
@@ -188,14 +213,15 @@ export default function DashboardPage() {
   const [showLetsGo,   setShowLetsGo]   = useState(false)
 
   // Após onboarding, mostra card de boas-vindas à dashboard
+  // Não mostra para candidatos a professor com solicitação pendente
   useEffect(() => {
-    if (!user?.id || showOnboarding) return
+    if (!user?.id || showOnboarding || checkingSolicitacao || temSolicitacaoPendente) return
     try {
       if (localStorage.getItem(tourKey(user.id)) !== 'true') {
         setTimeout(() => setShowWelcome(true), 600)
       }
     } catch {}
-  }, [user?.id, showOnboarding])
+  }, [user?.id, showOnboarding, checkingSolicitacao, temSolicitacaoPendente])
 
   function handleObFinish() {
     markObDone(user?.id)
@@ -204,7 +230,10 @@ export default function DashboardPage() {
 
   const firstName = user?.name?.split(' ')[0] ?? 'Aluno'
 
-  if (showOnboarding) {
+  // Enquanto verifica solicitação, não renderiza nada para evitar flash do onboarding
+  if (checkingSolicitacao) return null
+
+  if (showOnboarding && !temSolicitacaoPendente) {
     return <OnboardingView firstName={firstName} onFinish={handleObFinish} />
   }
 

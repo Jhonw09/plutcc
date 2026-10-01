@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getPasswordChecks, isStrongPassword, isValidEmail } from '../utils/validation'
 import { authService } from '../api/services/authService'
+import { solicitacaoService } from '../api/services/solicitacaoService'
 import { Button } from './ui/Button'
 import { InputField } from './ui/InputField'
 import { ToggleForm } from './ui/ToggleForm'
@@ -44,6 +45,7 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
 
   const [mode, setMode] = useState(initialMode)
   const [role, setRole] = useState('student')
+  const roleRef = useRef('student')
   const [fields, setFields] = useState({ name: '', email: '', password: '', confirm: '' })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -59,6 +61,13 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
   const [code, setCode] = useState('')
   const [cooldown, setCooldown] = useState(0)
   const cooldownRef = useRef(null)
+
+  // ── Solicitação de professor ────────────────────────────────
+  const [solicitacao, setSolicitacao] = useState({ tipoComprovante: 'CERTIFICADO', comprovanteUrl: '' })
+  const [solicitacaoError, setSolicitacaoError] = useState('')
+  const [solicitacaoEnviada, setSolicitacaoEnviada] = useState(false)
+  const [solicitacaoExistente, setSolicitacaoExistente] = useState(null)
+  const [documentoPublico, setDocumentoPublico] = useState(false)
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -118,9 +127,30 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
     setLoading(true)
     try {
       await authService.verifyEmail(verifyEmail, code)
+
+      // Seta mode ANTES do login para que qualquer guarda if(user) no componente
+      // pai já encontre o modal em modo solicitacao no re-render causado pelo setUser
+      if (roleRef.current === 'teacher') {
+        setMode('solicitacao')
+      }
+
       await login({ email: verifyEmail, senha: verifyPassword })
+
+      if (roleRef.current === 'teacher') {
+        try {
+          const lista = await solicitacaoService.minhas()
+          const pendente = lista?.find(s => s.status === 'PENDENTE')
+          const aprovada = lista?.find(s => s.status === 'APROVADO')
+          if (pendente || aprovada) setSolicitacaoExistente(pendente ?? aprovada)
+        } catch {
+          // falha silenciosa
+        }
+        return
+      }
+
       if (onSuccess) onSuccess('signup')
     } catch (err) {
+      setMode('verify')
       setErrors({ code: err.message ?? 'Código inválido.' })
     } finally {
       setLoading(false)
@@ -171,8 +201,9 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
         await login({ email: fields.email, senha: fields.password })
         if (onSuccess) onSuccess('login')
       } else {
-        const tipoUsuario = role === 'teacher' ? 'PROFESSOR' : 'ALUNO'
-        const { email } = await signup({ nome: fields.name, email: fields.email, senha: fields.password, tipoUsuario })
+        roleRef.current = role
+        // Sempre cria como ALUNO — promoção a PROFESSOR só ocorre via aprovação admin
+        const { email } = await signup({ nome: fields.name, email: fields.email, senha: fields.password, tipoUsuario: 'ALUNO' })
         setVerifyEmail(email)
         setVerifyPassword(fields.password)
         startCooldown()
@@ -190,6 +221,147 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
   const passwordChecks = getPasswordChecks(fields.password)
   const passwordInvalid = !isLogin && fields.password && !isStrongPassword(fields.password)
   const submitDisabled = loading || Boolean(passwordInvalid)
+
+  // ── Handler: enviar solicitação de professor ────────────────────────
+  async function handleEnviarSolicitacao(e) {
+    if (!documentoPublico) return
+    e.preventDefault()
+    if (!solicitacao.comprovanteUrl.trim()) {
+      setSolicitacaoError('Informe o link do comprovante.')
+      return
+    }
+    if (!solicitacao.comprovanteUrl.startsWith('http://') && !solicitacao.comprovanteUrl.startsWith('https://')) {
+      setSolicitacaoError('O link deve começar com http:// ou https://')
+      return
+    }
+    setLoading(true)
+    setSolicitacaoError('')
+    try {
+      await solicitacaoService.criar({
+        tipoComprovante: solicitacao.tipoComprovante,
+        comprovanteUrl:  solicitacao.comprovanteUrl.trim(),
+      })
+      setSolicitacaoEnviada(true)
+    } catch (err) {
+      setSolicitacaoError(err.message ?? 'Não foi possível enviar a solicitação.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── Render: solicitacao ─────────────────────────────────────
+  if (mode === 'solicitacao') {
+    const TIPOS = [
+      { value: 'CERTIFICADO',           label: 'Certificado' },
+      { value: 'VINCULO_INSTITUCIONAL', label: 'Vínculo institucional' },
+      { value: 'EMAIL_INSTITUCIONAL',   label: 'E-mail institucional' },
+      { value: 'OUTRO',                 label: 'Outro' },
+    ]
+    const irParaDashboard = () => { if (onSuccess) onSuccess('signup') }
+
+    if (solicitacaoEnviada) {
+      return (
+        <div className={styles.backdrop} onClick={onClose}>
+          <div className={styles.card} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar">x</button>
+            <Logo />
+            <h2 className={styles.title}>Solicitação enviada!</h2>
+            <p className={styles.sub}>
+              Sua solicitação foi registrada. Aguarde as próximas 24 horas para verificarmos seu cadastro.
+            </p>
+            <p className={styles.sub} style={{ marginTop: '8px' }}>
+              Você poderá acompanhar o status da solicitação pelo StudyConnect.
+            </p>
+            <Button variant="primary" className={styles.submitBtn} onClick={irParaDashboard}>
+              Ir para o dashboard
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
+    if (solicitacaoExistente) {
+      const isPendente = solicitacaoExistente.status === 'PENDENTE'
+      return (
+        <div className={styles.backdrop} onClick={onClose}>
+          <div className={styles.card} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar">x</button>
+            <Logo />
+            <h2 className={styles.title}>Comprovação de professor</h2>
+            <p className={styles.sub}>
+              {isPendente
+                ? 'Sua solicitação já está em análise. Aguarde as próximas 24 horas para verificarmos seu cadastro.'
+                : 'Sua solicitação foi aprovada! Você já pode acessar o dashboard.'}
+            </p>
+            <Button variant="primary" className={styles.submitBtn} onClick={irParaDashboard}>
+              Ir para o dashboard
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className={styles.backdrop} onClick={onClose}>
+        <div className={styles.card} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar">x</button>
+          <Logo />
+          <h2 className={styles.title}>Comprovação de professor</h2>
+          <p className={styles.sub}>
+            Para concluir sua solicitação, envie um comprovante de que você é professor.
+          </p>
+          <p className={styles.sub} style={{ marginTop: '4px', fontSize: '13px', color: 'var(--text-muted)' }}>
+            Exemplos aceitos: certificado, vínculo institucional, e-mail institucional.
+          </p>
+
+          {solicitacaoError && <p className={styles.formError} role="alert">{solicitacaoError}</p>}
+
+          <form onSubmit={handleEnviarSolicitacao} noValidate className={styles.form}>
+            <div>
+              <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                Tipo de comprovante
+              </label>
+              <select
+                style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px', fontSize: '15px', color: 'var(--text)', fontFamily: 'var(--font)', outline: 'none' }}
+                value={solicitacao.tipoComprovante}
+                onChange={e => setSolicitacao(s => ({ ...s, tipoComprovante: e.target.value }))}
+              >
+                {TIPOS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <div style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.3)', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                <strong style={{ color: 'rgba(250,204,21,0.9)' }}>⚠️ O documento precisa estar público e acessível pelo link informado.</strong>
+                <br />
+                No Google Drive, por exemplo, configure o acesso como &quot;Qualquer pessoa com o link&quot;.
+              </div>
+              <InputField
+                id="comprovanteUrl" name="comprovanteUrl" label="Link do comprovante"
+                type="url" placeholder="https://drive.google.com/..."
+                value={solicitacao.comprovanteUrl}
+                onChange={e => { setSolicitacao(s => ({ ...s, comprovanteUrl: e.target.value })); setSolicitacaoError('') }}
+              />
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.5 }}>
+              <input
+                type="checkbox"
+                checked={documentoPublico}
+                onChange={e => setDocumentoPublico(e.target.checked)}
+                style={{ marginTop: '2px', accentColor: 'var(--primary)', flexShrink: 0 }}
+              />
+              Confirmo que o documento está público e pode ser acessado pelo link informado.
+            </label>
+
+            <Button variant="primary" type="submit" disabled={loading || !documentoPublico} className={styles.submitBtn}>
+              {loading ? 'Enviando...' : 'Enviar solicitação'}
+            </Button>
+          </form>
+        </div>
+      </div>
+    )
+  }
 
   // ── Render: verify ───────────────────────────────────────────
   if (mode === 'verify') {
@@ -323,6 +495,12 @@ export default function AuthForm({ initialMode = 'login', onClose, onSuccess }) 
             Sou Professor
           </button>
         </div>
+
+        {!isLogin && role === 'teacher' && (
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '-8px 0 0', lineHeight: 1.5 }}>
+            Sua conta será criada como aluno. Após o cadastro, você poderá enviar um comprovante para solicitar acesso como professor.
+          </p>
+        )}
 
         {errors.form && <p className={styles.formError} role="alert">{errors.form}</p>}
 

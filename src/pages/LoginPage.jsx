@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../api/services/authService'
+import { solicitacaoService } from '../api/services/solicitacaoService'
 import { isValidEmail } from '../utils/validation'
 import { ROLE_ROUTES, DEFAULT_ROUTE } from '../constants/routes'
 import GoogleButton from '../components/ui/GoogleButton'
@@ -40,12 +41,15 @@ const LockIcon = () => (
 export default function LoginPage() {
   const { user, login, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const mensagemAprovacao = location.state?.mensagem ?? null
 
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
   const [errors,   setErrors]   = useState({})
   const [loading,  setLoading]  = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
   // Forgot password
   const [forgotMode,  setForgotMode]  = useState(false)
@@ -54,12 +58,13 @@ export default function LoginPage() {
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotError,   setForgotError]   = useState('')
 
-  if (user && user.ativo !== false) return <Navigate to={ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE} replace />
+  if (user && user.ativo !== false && !redirecting) return <Navigate to={ROLE_ROUTES[user.role] ?? DEFAULT_ROUTE} replace />
 
   async function handleGoogleToken(idToken) {
     setGoogleLoading(true)
     try {
       const userData = await loginWithGoogle(idToken)
+      if (userData?.mfaPendente) { navigate('/mfa', { replace: true }); return }
       if (userData.ativo === false) navigate('/conta-suspensa', { replace: true })
     } catch (err) {
       if (err.suspended) { navigate('/conta-suspensa', { replace: true }); return }
@@ -78,10 +83,25 @@ export default function LoginPage() {
     if (Object.keys(errs).length) { setErrors(errs); return }
 
     setLoading(true)
+    setRedirecting(true)
     try {
       const userData = await login({ email, senha: password })
-      if (userData.ativo === false) navigate('/conta-suspensa', { replace: true })
+      if (userData?.mfaPendente) { navigate('/mfa', { replace: true }); return }
+      if (userData.ativo === false) { navigate('/conta-suspensa', { replace: true }); return }
+
+      if (userData.role === 'student') {
+        try {
+          const lista = await solicitacaoService.minhas()
+          const temPendente = (lista ?? []).some(s => s.status === 'PENDENTE')
+          if (temPendente) { navigate('/aguardando-aprovacao', { replace: true }); return }
+        } catch {
+          // falha silenciosa — segue o fluxo normal
+        }
+      }
+
+      navigate(ROLE_ROUTES[userData.role] ?? DEFAULT_ROUTE, { replace: true })
     } catch (err) {
+      setRedirecting(false)
       if (err.suspended) { navigate('/conta-suspensa', { replace: true }); return }
       setErrors({ form: err.message ?? 'Algo deu errado. Tente novamente.' })
     } finally {
@@ -163,6 +183,12 @@ export default function LoginPage() {
           <span className={styles.dividerText}>ou</span>
           <span className={styles.dividerLine} />
         </div>
+
+        {mensagemAprovacao && (
+          <p className={styles.sub} style={{ background: 'rgba(22,163,74,.1)', border: '1px solid rgba(22,163,74,.3)', borderRadius: '10px', padding: '10px 14px', color: '#16a34a', fontSize: '13px', marginBottom: '4px' }}>
+            {mensagemAprovacao}
+          </p>
+        )}
 
         {errors.form && <p className={styles.formError} role="alert">{errors.form}</p>}
 

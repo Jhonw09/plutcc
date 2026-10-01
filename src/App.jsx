@@ -20,7 +20,8 @@ import PublicHelpPage from './pages/PublicHelpPage'
 import ContatoPage    from './pages/ContatoPage'
 import AdminUsuariosPage from './pages/AdminUsuariosPage'
 import AdminTrilhasPage  from './pages/AdminTrilhasPage'
-import AdminTicketsPage  from './pages/AdminTicketsPage'
+import AdminTicketsPage        from './pages/AdminTicketsPage'
+import AdminSolicitacoesPage   from './pages/AdminSolicitacoesPage'
 
 import AdminTrilhaDetalhePage from './pages/AdminTrilhaDetalhePage'
 
@@ -38,6 +39,9 @@ import EditarPerfilPage         from './pages/EditarPerfilPage'
 import LoginPage                from './pages/LoginPage'
 import CadastroPage             from './pages/CadastroPage'
 import ContaSuspensaPage from './pages/ContaSuspensaPage'
+import AguardandoAprovacaoPage from './pages/AguardandoAprovacaoPage'
+import MfaVerifyPage from './pages/MfaVerifyPage'
+import AdminConfiguracoesPage from './pages/AdminConfiguracoesPage'
 import './App.css'
 
 function S({ children }) {
@@ -90,7 +94,8 @@ export default function App() {
       <Route path="/admin/financeiro"       element={<A><FinancePage /></A>} />
       <Route path="/admin/relatorios"       element={<A><AdminReportsPage /></A>} />
       <Route path="/admin/tickets"          element={<A><AdminTicketsPage /></A>} />
-      <Route path="/admin/configuracoes"    element={<A><SettingsPage /></A>} />
+      <Route path="/admin/solicitacoes-professores" element={<A><AdminSolicitacoesPage /></A>} />
+      <Route path="/admin/configuracoes"    element={<A><AdminConfiguracoesPage /></A>} />
       <Route path="/admin/ajuda"            element={<A><HelpPage /></A>} />
 
       <Route path="/sobre" element={<BlogPage />} />
@@ -102,6 +107,8 @@ export default function App() {
       <Route path="/confirmar-troca-email" element={<ConfirmarTrocaEmailPage />} />
 
       <Route path="/conta-suspensa" element={<ContaSuspensaPage />} />
+      <Route path="/aguardando-aprovacao" element={<AguardandoAprovacaoPage />} />
+      <Route path="/mfa" element={<MfaVerifyPage />} />
 
       {/* ── Catch-all */}
       <Route path="/trilha/:id" element={<ProtectedRoute><TrilhaPage /></ProtectedRoute>} />
