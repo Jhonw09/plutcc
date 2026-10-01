@@ -11,6 +11,9 @@ import { api, ENDPOINTS } from '../../api/apiClient'
 import { solicitacaoService } from '../../api/services/solicitacaoService'
 import { STORAGE_KEYS } from '../../constants/storageKeys'
 import Icon from '../ui/Icon'
+import EntrarTrilhaPrivadaModal from '../ui/EntrarTrilhaPrivadaModal'
+import { Toast } from '../ui/Toast'
+import { useToast } from '../../hooks/useToast'
 import styles from './DashboardPage.module.css'
 
 const SUBJECT_ICON = {
@@ -154,12 +157,21 @@ const TOUR_STEPS = [
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { minhasTrilhas, todasTrilhas, loading, getProgresso } = useMinhasTrilhas()
+  const { minhasTrilhas, todasTrilhas, loading, getProgresso, reload } = useMinhasTrilhas()
   const { perfil, loading: loadingPerfil, savePerfil, metaSemanal } = usePerfilAprendizado()
 
   const concluidas  = minhasTrilhas.filter(t => getProgresso(t.id) === 100)
   const destaque    = minhasTrilhas.find(t => getProgresso(t.id) < 100) ?? minhasTrilhas[0]
   const destaquePct = destaque ? getProgresso(destaque.id) : 0
+
+  const { toasts, toast, dismiss } = useToast()
+  const [showPrivadaModal, setShowPrivadaModal] = useState(false)
+
+  function handlePrivadaSuccess() {
+    setShowPrivadaModal(false)
+    toast('Acesso concedido! A trilha já está disponível.', 'success')
+    reload()
+  }
 
   const [duvidasRespondidas, setDuvidasRespondidas] = useState([])
   useEffect(() => {
@@ -243,6 +255,14 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <Toast toasts={toasts} onDismiss={dismiss} />
+
+      {showPrivadaModal && (
+        <EntrarTrilhaPrivadaModal
+          onSuccess={handlePrivadaSuccess}
+          onCancel={() => setShowPrivadaModal(false)}
+        />
+      )}
       <SpotlightTour
         steps={TOUR_STEPS}
         active={showTour}
@@ -355,6 +375,17 @@ export default function DashboardPage() {
               />
             </div>
           </div>
+        </div>
+
+        {/* ── 1b. Ação rápida: trilha privada ── */}
+        <div className={styles.quickActions}>
+          <button
+            className={styles.btnPrivada}
+            onClick={() => setShowPrivadaModal(true)}
+          >
+            <Icon name="lock" size={15} />
+            Entrar em trilha privada
+          </button>
         </div>
 
         {/* ── 2. Resumo rápido: 3 números ── */}

@@ -89,6 +89,20 @@ export async function regenerarCodigoAcesso(trilhaId) {
   })
 }
 
+/** Aluno informa apenas o código para obter acesso a uma trilha privada. */
+export async function solicitarAcessoPorCodigo(codigo) {
+  return api(ENDPOINTS.trilhaAcessoPorCodigo, {
+    method: 'POST',
+    body: JSON.stringify({ codigo }),
+  }).catch(err => {
+    if (err.status === 401) throw new Error('Código de acesso inválido.')
+    if (err.status === 404) throw new Error('Nenhuma trilha encontrada com este código.')
+    if (err.status === 409) throw new Error('Você já possui acesso a esta trilha.')
+    if (err.status === 400) throw new Error(err.message || 'Requisição inválida.')
+    throw new Error('Erro ao solicitar acesso.')
+  })
+}
+
 /** Aluno informa o código para obter acesso a uma trilha privada. */
 export async function solicitarAcessoPrivado(trilhaId, codigo) {
   return api(ENDPOINTS.trilhaAcesso(trilhaId), {

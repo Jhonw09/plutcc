@@ -128,6 +128,7 @@ export const ENDPOINTS = {
   trilhaCodigo:          (id) => `${API_BASE}/trilhas/${id}/codigo`,
   trilhaCodigoRegenerar: (id) => `${API_BASE}/trilhas/${id}/codigo/regenerar`,
   trilhaAcesso:          (id) => `${API_BASE}/trilhas/${id}/acesso`,
+  trilhaAcessoPorCodigo: `${API_BASE}/trilhas/acesso`,
 
   // Recuperação de senha
   forgotPassword: `${API_BASE}/auth/forgot-password`,
