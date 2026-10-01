@@ -144,6 +144,12 @@ export default function ExplorarTrilhas() {
                           <span className={styles.nivel} style={{ background: nivel.bg, color: nivel.color }}>
                             {trilha.nivel}
                           </span>
+                          {trilha.tipo === 'PRIVADA' && (
+                            <span className={styles.badgePrivada}>
+                              <Icon name="lock" size={10} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 3 }} />
+                              Privada
+                            </span>
+                          )}
                         </div>
                         <h3 className={styles.cardTitle}>{trilha.nome}</h3>
                         <p className={styles.cardDesc}>{trilha.descricao}</p>

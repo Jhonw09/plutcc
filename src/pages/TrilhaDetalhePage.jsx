@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
+import CodigoAcessoModal from '../components/ui/CodigoAcessoModal'
 import { getTrilhaById } from '../api/services/trilhaService'
+import { solicitarAcessoPrivado } from '../api/services/trilhaService'
 import { getAulasByTrilha } from '../api/services/aulaService'
 import { useMatricula } from '../hooks/useMatricula'
 import Icon from '../components/ui/Icon'
@@ -64,6 +66,7 @@ export default function TrilhaDetalhePage() {
   const [error,   setError]   = useState(null)
   const [confirmSair, setConfirmSair] = useState(false)
   const [actionError, setActionError] = useState(null)
+  const [showCodigoModal, setShowCodigoModal] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -73,7 +76,13 @@ export default function TrilhaDetalhePage() {
           getAulasByTrilha(id),
         ])
         if (trilhaData.status === 'fulfilled') setTrilha(trilhaData.value)
-        else throw new Error('Trilha não encontrada.')
+        else {
+          if (trilhaData.reason?.message === 'acesso_negado') {
+            setShowCodigoModal(true)
+          } else {
+            throw new Error('Trilha não encontrada.')
+          }
+        }
         if (aulasData.status === 'fulfilled') setAulas(aulasData.value)
       } catch (err) {
         setError(err.message)
@@ -83,6 +92,23 @@ export default function TrilhaDetalhePage() {
     }
     load()
   }, [id])
+
+  async function handleCodigoConfirm(codigo) {
+    await solicitarAcessoPrivado(id, codigo)
+    // Acesso concedido — recarrega a trilha
+    setShowCodigoModal(false)
+    setLoading(true)
+    try {
+      const [trilhaData, aulasData] = await Promise.allSettled([
+        getTrilhaById(id),
+        getAulasByTrilha(id),
+      ])
+      if (trilhaData.status === 'fulfilled') setTrilha(trilhaData.value)
+      if (aulasData.status === 'fulfilled') setAulas(aulasData.value)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleMatricular() {
     setActionError(null)
@@ -109,6 +135,13 @@ export default function TrilhaDetalhePage() {
   if (loading || loadingCheck) {
     return (
       <DashboardLayout>
+        {showCodigoModal && (
+          <CodigoAcessoModal
+            trilhaNome="esta trilha"
+            onConfirm={handleCodigoConfirm}
+            onCancel={() => navigate('/dashboard/trilhas')}
+          />
+        )}
         <div className={styles.loadingWrap}>
           <Icon name="hourglass" size={28} style={{ opacity: .4, color: 'var(--text-muted)' }} />
           <p>Carregando trilha...</p>

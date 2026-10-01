@@ -124,6 +124,11 @@ export const ENDPOINTS = {
   mfaDisable: `${API_BASE}/auth/mfa/disable`,
   deleteChallenge: (id) => `${API_BASE}/usuarios/${id}/delete-challenge`,
 
+  // Trilhas privadas
+  trilhaCodigo:          (id) => `${API_BASE}/trilhas/${id}/codigo`,
+  trilhaCodigoRegenerar: (id) => `${API_BASE}/trilhas/${id}/codigo/regenerar`,
+  trilhaAcesso:          (id) => `${API_BASE}/trilhas/${id}/acesso`,
+
   // Recuperação de senha
   forgotPassword: `${API_BASE}/auth/forgot-password`,
   resetPassword:  `${API_BASE}/auth/reset-password`,
