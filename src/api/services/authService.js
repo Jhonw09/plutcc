@@ -60,21 +60,6 @@ async function changePassword(userId, { nome, email, tipoUsuario, senha }) {
   })
 }
 
-async function deleteUser(userId) {
-  if (!userId) throw new Error('Sessao invalida. Faca login novamente.')
-  console.log('[authService.deleteUser] DELETE', ENDPOINTS.userById(userId))
-  try {
-    await api(ENDPOINTS.userById(userId), {
-      method: 'DELETE',
-      body: JSON.stringify({}),
-    })
-    console.log('[authService.deleteUser] sucesso')
-  } catch (err) {
-    console.error('[authService.deleteUser] falhou:', err.status, err.message)
-    throw new Error('Nao foi possivel excluir a conta. Tente novamente.')
-  }
-}
-
 async function requestDeleteChallenge(userId, senha) {
   await api(ENDPOINTS.deleteChallenge(userId), {
     method: 'POST',
@@ -221,4 +206,4 @@ async function disableMfa(senha) {
   })
 }
 
-export const authService = { login, signup, updateUser, changePassword, deleteUser, requestDeleteChallenge, deleteUserWithAuth, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, confirmEmailChange, verifyEmailChange, verifyMfa, enableMfa, disableMfa }
+export const authService = { login, signup, updateUser, changePassword, requestDeleteChallenge, deleteUserWithAuth, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, confirmEmailChange, verifyEmailChange, verifyMfa, enableMfa, disableMfa }

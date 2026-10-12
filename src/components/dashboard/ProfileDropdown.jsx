@@ -3,22 +3,30 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getPasswordValidationMessage, isValidEmail } from '../../utils/validation'
 import Icon from '../ui/Icon'
+import DeleteAccountModal from '../ui/DeleteAccountModal'
 import styles from './ProfileDropdown.module.css'
 
 const ROLE_LABELS = { student: 'Aluno', teacher: 'Professor', admin: 'Admin' }
-const MODE = { VIEW: 'view', PROFILE: 'profile', PASSWORD: 'password', DELETE: 'delete' }
+const MODE = { VIEW: 'view', PROFILE: 'profile', PASSWORD: 'password' }
 
 export default function ProfileDropdown() {
-  const { user, updateUser, changePassword, deleteUser, logout } = useAuth()
+  const {
+    user,
+    updateUser,
+    changePassword,
+    deleteUserWithAuth,
+    requestDeleteChallenge,
+    logout,
+  } = useAuth()
   const navigate = useNavigate()
 
   const [open, setOpen]         = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [mode, setMode]         = useState(MODE.VIEW)
   const [form, setForm]         = useState({ name: '', email: '', password: '' })
   const [pwForm, setPwForm]     = useState({ current: '', next: '', confirm: '' })
   const [error, setError]       = useState('')
   const [saving, setSaving]     = useState(false)
-  const [deleting, setDeleting] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
@@ -70,15 +78,9 @@ export default function ProfileDropdown() {
     } finally { setSaving(false) }
   }
 
-  async function handleDelete() {
-    setDeleting(true); setError('')
-    try {
-      await deleteUser()
-      navigate('/', { replace: true })
-    } catch (err) {
-      setError(err.message ?? 'Erro ao excluir conta.')
-      setDeleting(false); goTo(MODE.VIEW)
-    }
+  async function handleDelete(senha, codigoMfa) {
+    await deleteUserWithAuth(senha, codigoMfa)
+    navigate('/', { replace: true })
   }
 
   function handleForgotPassword() {
@@ -94,6 +96,7 @@ export default function ProfileDropdown() {
   const initials = (user?.name ?? 'U').charAt(0).toUpperCase()
 
   return (
+    <>
     <div className={styles.wrap} ref={ref}>
       <button
         className={`${styles.avatar} ${open ? styles.avatarActive : ''}`}
@@ -121,7 +124,7 @@ export default function ProfileDropdown() {
               <button className={styles.actionBtn} onClick={() => { setOpen(false); navigate(user?.role === 'teacher' ? '/teacher-dashboard/editar-perfil' : '/dashboard/editar-perfil') }}>
                 <Icon name="pencil" size={14} /> Editar perfil
               </button>
-              <button className={styles.actionBtn} onClick={() => goTo(MODE.DELETE)}>
+              <button className={styles.actionBtn} onClick={() => { setOpen(false); setConfirmDelete(true) }}>
                 <Icon name="trash" size={14} /> Excluir conta
               </button>
               <div className={styles.divider} />
@@ -203,22 +206,19 @@ export default function ProfileDropdown() {
             </>
           )}
 
-          {mode === MODE.DELETE && (
-            <>
-              <p className={styles.editTitle}>Excluir conta</p>
-              <p className={styles.deleteWarning}>Essa ação é permanente e não pode ser desfeita. Tem certeza?</p>
-              {error && <p className={styles.error} role="alert">{error}</p>}
-              <div className={styles.editActions}>
-                <button className={styles.cancelBtn} onClick={() => goTo(MODE.VIEW)} disabled={deleting}>Cancelar</button>
-                <button className={styles.deleteBtn} onClick={handleDelete} disabled={deleting}>
-                  {deleting ? 'Excluindo...' : 'Excluir'}
-                </button>
-              </div>
-            </>
-          )}
-
         </div>
       )}
     </div>
+    {confirmDelete && (
+      <DeleteAccountModal
+        mfaHabilitado={user.mfaHabilitado || user.role === 'admin'}
+        isGoogleUser={user.isGoogleUser}
+        onRequestChallenge={requestDeleteChallenge}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+        roleLabel="conta"
+      />
+    )}
+    </>
   )
 }

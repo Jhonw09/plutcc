@@ -39,6 +39,17 @@ function isProtectedApiRequest(url, method) {
   return !PUBLIC_ENDPOINTS[method]?.has(path)
 }
 
+function isCredentialConfirmationRequest(url, method) {
+  const path = pathFromUrl(url)
+  return (method === 'POST' && /\/api\/v1\/usuarios\/\d+\/delete-challenge$/.test(path))
+    || (method === 'DELETE' && /\/api\/v1\/usuarios\/\d+$/.test(path))
+}
+
+function isCredentialConfirmationFailure(url, method, message) {
+  return isCredentialConfirmationRequest(url, method)
+    && ['Senha incorreta.', 'Código inválido ou expirado.'].includes(message)
+}
+
 export function storeAccessToken(accessToken, expiresIn) {
   const lifetimeSeconds = Number(expiresIn)
   if (!accessToken || !Number.isFinite(lifetimeSeconds) || lifetimeSeconds <= 0) {
@@ -179,7 +190,6 @@ export async function api(url, options = {}) {
   })
 
   if (!res.ok) {
-    if (res.status === 401 && protectedRequest) notifyUnauthorizedSession()
     const text = await res.text().catch(() => '')
     let message = text || `HTTP ${res.status}`
     try {
@@ -187,6 +197,13 @@ export async function api(url, options = {}) {
       message = parsed.error || parsed.message || message
     } catch {
       // Keep the raw response text when it is not JSON.
+    }
+    if (
+      res.status === 401
+      && protectedRequest
+      && !isCredentialConfirmationFailure(url, method, message)
+    ) {
+      notifyUnauthorizedSession()
     }
     const err = new Error(message)
     err.status = res.status

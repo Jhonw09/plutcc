@@ -22,6 +22,29 @@ export async function toggleAtivo(usuario) {
   }).catch(() => { throw new Error('Não foi possível alterar o status do usuário.') })
 }
 
+export async function solicitarDesafioExclusao(usuarioId, senha) {
+  if (!usuarioId) throw new Error('Usuário inválido.')
+  return api(ENDPOINTS.deleteChallenge(usuarioId), {
+    method: 'POST',
+    body: JSON.stringify({ senha }),
+  }).catch(err => {
+    if ([400, 401, 403, 404].includes(err.status)) throw new Error(err.message)
+    throw new Error('Não foi possível enviar o código de confirmação. Tente novamente.')
+  })
+}
+
+export async function deleteUsuarioComAuth(usuarioId, senha, codigoMfa) {
+  if (!usuarioId) throw new Error('Usuário inválido.')
+  const body = { senha, codigoMfa }
+  return api(ENDPOINTS.userById(usuarioId), {
+    method: 'DELETE',
+    body: JSON.stringify(body),
+  }).catch(err => {
+    if ([400, 401, 403, 404].includes(err.status)) throw new Error(err.message)
+    throw new Error('Não foi possível excluir o usuário. Tente novamente.')
+  })
+}
+
 export async function getTrilhasAdmin() {
   const trilhas = await api(ENDPOINTS.trilhas).catch(() => { throw new Error('Erro ao carregar trilhas.') })
   if (!Array.isArray(trilhas)) throw new Error('Erro ao carregar trilhas.')

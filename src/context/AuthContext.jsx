@@ -181,12 +181,6 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  async function deleteUser() {
-    validateId(user?.id)
-    await authService.deleteUserWithAuth(user.id, '\x00', null) // fallback — fluxo real usa deleteUserWithAuth direto
-    clearSession()
-  }
-
   async function requestDeleteChallenge(senha) {
     validateId(user?.id)
     await authService.requestDeleteChallenge(user.id, senha)
@@ -206,7 +200,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, mfaPending,
       login, loginWithGoogle, verifyMfa,
-      signup, updateUser, changePassword, deleteUser, deleteUserWithAuth, requestDeleteChallenge, logout, toggleMfa,
+      signup, updateUser, changePassword, deleteUserWithAuth, requestDeleteChallenge, logout, toggleMfa,
     }}>
       {children}
     </AuthContext.Provider>

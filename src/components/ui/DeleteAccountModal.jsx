@@ -22,6 +22,11 @@ export default function DeleteAccountModal({
   onConfirm,
   onCancel,
   roleLabel = 'conta',
+  title = 'Excluir conta',
+  passwordLabel = 'Senha atual',
+  passwordDescription,
+  mfaDescription,
+  confirmLabel = 'Excluir conta',
 }) {
   // step: 'senha' | 'codigo'
   const [step,       setStep]       = useState('senha')
@@ -29,7 +34,6 @@ export default function DeleteAccountModal({
   const [codigo,     setCodigo]     = useState('')
   const [error,      setError]      = useState('')
   const [loading,    setLoading]    = useState(false)
-  const [codeSent,   setCodeSent]   = useState(false)
 
   const needsMfa = mfaHabilitado && !isGoogleUser
 
@@ -41,7 +45,6 @@ export default function DeleteAccountModal({
     try {
       if (needsMfa) {
         await onRequestChallenge(senha)
-        setCodeSent(true)
         setStep('codigo')
       } else {
         await onConfirm(senha, null)
@@ -72,7 +75,6 @@ export default function DeleteAccountModal({
     setLoading(true)
     try {
       await onRequestChallenge(senha)
-      setCodeSent(true)
     } catch (err) {
       setError(err.message || 'Erro ao reenviar código.')
     } finally {
@@ -94,20 +96,20 @@ export default function DeleteAccountModal({
         </div>
 
         <h3 id="delete-modal-title" className={styles.modalTitle}>
-          {step === 'senha' ? 'Excluir conta' : 'Confirmar exclusão'}
+          {step === 'senha' ? title : 'Confirmar exclusão'}
         </h3>
 
         {step === 'senha' ? (
           <>
             <p className={styles.modalDesc}>
               {needsMfa
-                ? 'Para excluir sua conta, confirme sua senha. Em seguida, enviaremos um código de verificação para o seu e-mail.'
-                : `Esta ação é permanente. Todos os dados da sua ${roleLabel} serão removidos. Confirme sua senha para continuar.`}
+                ? passwordDescription || 'Para excluir sua conta, confirme sua senha. Em seguida, enviaremos um código de verificação para o seu e-mail.'
+                : passwordDescription || `Esta ação é permanente. Todos os dados da sua ${roleLabel} serão removidos. Confirme sua senha para continuar.`}
             </p>
             <form onSubmit={handleSenhaSubmit} noValidate className={styles.modalForm}>
               <InputField
                 id="delete-senha"
-                label="Senha atual"
+                label={passwordLabel}
                 type="password"
                 placeholder="••••••••"
                 value={senha}
@@ -129,7 +131,7 @@ export default function DeleteAccountModal({
         ) : (
           <>
             <p className={styles.modalDesc}>
-              Enviamos um código de 6 dígitos para o seu e-mail. Informe-o abaixo para confirmar a exclusão.
+              {mfaDescription || 'Enviamos um código de 6 dígitos para o seu e-mail. Informe-o abaixo para confirmar a exclusão.'}
             </p>
             <form onSubmit={handleCodigoSubmit} noValidate className={styles.modalForm}>
               <InputField
@@ -153,7 +155,7 @@ export default function DeleteAccountModal({
                   Cancelar
                 </button>
                 <button type="submit" className={styles.confirmBtnDisable} disabled={loading || codigo.length < 6}>
-                  {loading ? 'Verificando…' : 'Excluir conta'}
+                  {loading ? 'Verificando…' : confirmLabel}
                 </button>
               </div>
             </form>

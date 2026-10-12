@@ -1,7 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import AdminLayout from '../components/admin/AdminLayout'
 import Icon from '../components/ui/Icon'
-import { getUsuarios, toggleAtivo } from '../api/services/adminService'
+import DeleteAccountModal from '../components/ui/DeleteAccountModal'
+import {
+  deleteUsuarioComAuth,
+  getUsuarios,
+  solicitarDesafioExclusao,
+  toggleAtivo,
+} from '../api/services/adminService'
 import styles from './AdminUsuariosPage.module.css'
 
 const ROLE_LABEL  = { ADMIN: 'Admin', PROFESSOR: 'Professor', ALUNO: 'Aluno' }
@@ -14,6 +20,8 @@ export default function AdminUsuariosPage() {
   const [search,     setSearch]     = useState('')
   const [roleFilter, setRoleFilter] = useState('Todos')
   const [togglingId, setTogglingId] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
+  const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null)
 
   useEffect(() => {
     getUsuarios()
@@ -46,8 +54,34 @@ export default function AdminUsuariosPage() {
     }
   }
 
+  async function handleDelete(senha, codigoMfa) {
+    if (!usuarioParaExcluir) return
+    setDeletingId(usuarioParaExcluir.id)
+    try {
+      await deleteUsuarioComAuth(usuarioParaExcluir.id, senha, codigoMfa)
+      setUsuarios(prev => prev.filter(u => u.id !== usuarioParaExcluir.id))
+      setUsuarioParaExcluir(null)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <AdminLayout>
+      {usuarioParaExcluir && (
+        <DeleteAccountModal
+          mfaHabilitado={true}
+          isGoogleUser={false}
+          onRequestChallenge={senha => solicitarDesafioExclusao(usuarioParaExcluir.id, senha)}
+          onConfirm={handleDelete}
+          onCancel={() => setUsuarioParaExcluir(null)}
+          title="Excluir usuário"
+          confirmLabel="Excluir usuário"
+          passwordLabel="Senha do administrador"
+          passwordDescription={`A conta de ${usuarioParaExcluir.nome} será excluída permanentemente. Confirme sua senha de administrador para receber um código de autorização.`}
+          mfaDescription="Informe o código enviado ao e-mail da sua conta de administrador para confirmar a exclusão."
+        />
+      )}
       <div className={styles.page}>
         <div className={styles.pageHeader}>
           <div>
@@ -126,20 +160,33 @@ export default function AdminUsuariosPage() {
                         {isAdmin ? (
                           <span className={styles.protectedText}>—</span>
                         ) : (
-                          <button
-                            className={`${styles.toggleBtn} ${u.ativo ? styles.toggleBtnAtivo : styles.toggleBtnInativo}`}
-                            onClick={() => handleToggle(u)}
-                            disabled={isToggling}
-                            title={u.ativo ? 'Suspender usuário' : 'Reativar usuário'}
-                          >
-                            {isToggling ? (
-                              <span className={styles.spinner} />
-                            ) : u.ativo ? (
-                              <><Icon name="lock" size={13} /> Suspender</>
-                            ) : (
-                              <><Icon name="unlock" size={13} /> Reativar</>
-                            )}
-                          </button>
+                          <div className={styles.actionButtons}>
+                            <button
+                              className={`${styles.toggleBtn} ${u.ativo ? styles.toggleBtnAtivo : styles.toggleBtnInativo}`}
+                              onClick={() => handleToggle(u)}
+                              disabled={isToggling}
+                              title={u.ativo ? 'Suspender usuário' : 'Reativar usuário'}
+                            >
+                              {isToggling ? (
+                                <span className={styles.spinner} />
+                              ) : u.ativo ? (
+                                <><Icon name="lock" size={13} /> Suspender</>
+                              ) : (
+                                <><Icon name="unlock" size={13} /> Reativar</>
+                              )}
+                            </button>
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => setUsuarioParaExcluir(u)}
+                              disabled={isToggling || deletingId === u.id}
+                              title={`Excluir ${u.nome}`}
+                              aria-label={`Excluir usuário ${u.nome}`}
+                            >
+                              {deletingId === u.id
+                                ? <span className={styles.spinner} />
+                                : <><Icon name="trash" size={13} /> Excluir</>}
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

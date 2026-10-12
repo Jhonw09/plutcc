@@ -21,7 +21,7 @@ export default function AdminConfiguracoesPage() {
     <AdminLayout>
       {confirmDelete && (
         <DeleteAccountModal
-          mfaHabilitado={user.mfaHabilitado}
+          mfaHabilitado={user.mfaHabilitado || user.role === 'admin'}
           isGoogleUser={user.isGoogleUser}
           onRequestChallenge={requestDeleteChallenge}
           onConfirm={handleDeleteConfirm}

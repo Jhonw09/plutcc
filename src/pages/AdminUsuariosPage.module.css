@@ -140,6 +140,13 @@
 /* ── Actions ── */
 .actionsCell { text-align: right; white-space: nowrap; }
 
+.actionButtons {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .toggleBtn {
   display: inline-flex;
   align-items: center;
@@ -166,6 +173,24 @@
   background: var(--success-bg);
   border-color: var(--success);
 }
+
+.deleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: opacity .15s, transform .15s;
+  font-family: var(--font);
+}
+.deleteBtn:hover:not(:disabled) { opacity: .8; transform: translateY(-1px); }
+.deleteBtn:disabled { opacity: .5; cursor: not-allowed; }
 
 .spinner {
   width: 12px;
