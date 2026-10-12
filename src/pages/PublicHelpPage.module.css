@@ -105,6 +105,19 @@
 }
 .ctaLink:hover { text-decoration: underline; }
 
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 28px;
+  transition: color .15s;
+}
+.backLink:hover { color: var(--text-secondary); }
+
 /* ── Contato ── */
 .contactCard {
   background: var(--surface);

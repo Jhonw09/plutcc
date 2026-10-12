@@ -20,22 +20,29 @@
 }
 
 .stat {
-  padding: 16px 24px;
+  padding: 28px 24px;
   border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 .stat:last-child { border-right: none; }
 
-.statValue {
-  font-size: clamp(34px, 4vw, 50px);
-  font-weight: 900;
-  color: var(--text);
-  line-height: 1;
-  margin-bottom: 6px;
+.statIcon {
+  font-size: 28px;
+  margin-bottom: 4px;
 }
-.suffix { font-size: .6em; color: var(--accent); }
+
+.statValue {
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+}
 
 .statLabel {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
   font-weight: 500;
 }

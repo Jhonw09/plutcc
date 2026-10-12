@@ -4,5 +4,6 @@ export const STORAGE_KEYS = {
   tokenExpiresAt:      'sc_token_expires_at',
   dashboardEntered:    'sc_dashboard_entered',
   mfaPendingEmail:     'sc_mfa_pending_email',
+  cookieConsent:       'sc_cookie_consent',
   pendingTeacherIntent: (userId) => `sc_pending_teacher_intent_${userId}`,
 }

@@ -42,6 +42,9 @@ import ContaSuspensaPage from './pages/ContaSuspensaPage'
 import AguardandoAprovacaoPage from './pages/AguardandoAprovacaoPage'
 import MfaVerifyPage from './pages/MfaVerifyPage'
 import AdminConfiguracoesPage from './pages/AdminConfiguracoesPage'
+import PrivacidadePage from './pages/PrivacidadePage'
+import CookiesPage from './pages/CookiesPage'
+import DireitosTitularPage from './pages/DireitosTitularPage'
 import './App.css'
 
 function S({ children }) {
@@ -109,6 +112,10 @@ export default function App() {
       <Route path="/conta-suspensa" element={<ContaSuspensaPage />} />
       <Route path="/aguardando-aprovacao" element={<AguardandoAprovacaoPage />} />
       <Route path="/mfa" element={<MfaVerifyPage />} />
+
+      <Route path="/privacidade" element={<PrivacidadePage />} />
+      <Route path="/cookies" element={<CookiesPage />} />
+      <Route path="/direitos-titular" element={<DireitosTitularPage />} />
 
       {/* ── Catch-all */}
       <Route path="/trilha/:id" element={<ProtectedRoute><TrilhaPage /></ProtectedRoute>} />

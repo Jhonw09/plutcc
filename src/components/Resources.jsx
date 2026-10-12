@@ -10,10 +10,10 @@ export default function Resources() {
       <div className={styles.container}>
 
         <div className={styles.header}>
-          <span className="section-tag">Recursos gratuitos</span>
-          <h2 className="section-title">Tudo que você precisa, 100% grátis</h2>
+          <span className="section-tag">O que oferecemos</span>
+          <h2 className="section-title">O que você encontra no StudyConnect</h2>
           <p className="section-sub">
-            Acesse videoaulas, simulados e trilhas personalizadas com IA — sem pagar nada.
+            Trilhas de aprendizagem, aulas e acompanhamento de progresso — tudo em um só lugar.
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export default function Resources() {
         </div>
 
         <div className={styles.note}>
-          {['Sem cadastro obrigatório', 'Sem cartão de crédito', '100% gratuito'].map(t => (
+          {['Cadastro gratuito', 'Sem cartão de crédito', 'Acesso imediato'].map(t => (
             <span key={t} style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"/>

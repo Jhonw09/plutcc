@@ -16,8 +16,8 @@
 
 .tag {
   display: inline-block;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: rgba(108, 92, 231, 0.12);
+  color: #a29bfe;
   font-size: 13px;
   font-weight: 700;
   padding: 5px 14px;
@@ -25,7 +25,7 @@
   margin-bottom: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: 1px solid var(--accent-border);
+  border: 1px solid rgba(108, 92, 231, 0.25);
 }
 
 .title {
@@ -50,38 +50,40 @@
 
 .logoCard {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 24px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   transition: border-color .2s, box-shadow .2s;
-  cursor: default;
+  width: calc(50% - 8px);
+  box-sizing: border-box;
 }
 .logoCard:hover {
   border-color: var(--accent-border);
   box-shadow: 0 4px 16px var(--accent-glow);
 }
 
-.logoInitial {
-  width: 32px;
-  height: 32px;
-  background: var(--accent);
-  color: white;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 15px;
+.featureIcon {
+  font-size: 24px;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .logoName {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.featureDesc {
+  font-size: 13px;
   color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
 }
 
 .ctaBox {
@@ -94,6 +96,21 @@
   gap: 32px;
   border: 1px solid var(--accent-border);
   box-shadow: 0 0 60px rgba(108, 92, 231, 0.06);
+}
+
+.draftBadge {
+  display: block;
+  width: fit-content;
+  background: rgba(253, 203, 110, 0.12);
+  color: #fdcb6e;
+  border: 1px solid rgba(253, 203, 110, 0.3);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
 }
 
 .ctaContent h3 {
@@ -131,26 +148,13 @@
   box-shadow: 0 8px 24px var(--accent-glow);
 }
 
-.btnCtaOutline {
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 15px;
-  font-weight: 700;
-  padding: 14px 24px;
-  border-radius: 8px;
-  white-space: nowrap;
-  transition: border-color .2s, background .2s;
-}
-.btnCtaOutline:hover {
-  border-color: rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.06);
-}
-
 @media (max-width: 768px) {
   .ctaBox { flex-direction: column; text-align: center; padding: 32px 24px; }
   .ctaActions { justify-content: center; }
+  .draftBadge { margin: 0 auto 14px; }
   .title { font-size: 26px; }
   .section { padding: 56px 0; }
+  .logoCard { width: 100%; }
 }
 @media (max-width: 480px) {
   .section { padding: 40px 0; }
@@ -158,5 +162,5 @@
   .ctaContent h3 { font-size: 20px; }
   .ctaContent p  { font-size: 14px; }
   .ctaActions { flex-direction: column; width: 100%; }
-  .btnCta, .btnCtaOutline { text-align: center; justify-content: center; }
+  .btnCta { text-align: center; justify-content: center; }
 }

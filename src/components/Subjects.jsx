@@ -10,8 +10,8 @@ export default function Subjects() {
       <div className={styles.container}>
         <div className={styles.header}>
           <span className="section-tag blue">Disciplinas</span>
-          <h2 className="section-title">Todas as matérias? Tá tudo aqui.</h2>
-          <p className="section-sub">Do Fundamental ao Médio, do básico ao avançado. Escolha uma disciplina e comece agora.</p>
+          <h2 className="section-title">Disciplinas disponíveis nas trilhas</h2>
+          <p className="section-sub">Os professores podem criar trilhas em qualquer área do conhecimento. Explore o que já está disponível.</p>
         </div>
 
         <div className={styles.grid}>
@@ -20,7 +20,6 @@ export default function Subjects() {
               <div className={styles.cardIcon}><Icon name={s.icon} size={22} /></div>
               <div className={styles.cardInfo}>
                 <span className={styles.cardName}>{s.name}</span>
-                <span className={styles.cardCount}>{s.count}</span>
               </div>
               <svg className={styles.arrow} width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

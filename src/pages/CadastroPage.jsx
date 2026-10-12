@@ -67,6 +67,7 @@ export default function CadastroPage() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [cientePrivacidade, setCientePrivacidade] = useState(false)
 
   // Verificação de e-mail
   const [verifyMode,     setVerifyMode]     = useState(false)
@@ -129,6 +130,7 @@ export default function CadastroPage() {
     else if (!isStrongPassword(fields.password)) errs.password = 'A senha não atende todos os requisitos.'
     if (!fields.confirm)              errs.confirm  = 'Confirme sua senha.'
     else if (fields.confirm !== fields.password) errs.confirm = 'As senhas não coincidem.'
+    if (!cientePrivacidade)           errs.privacidade = 'Você precisa ler e estar ciente da Política de Privacidade para continuar.'
     if (Object.keys(errs).length) { setErrors(errs); return }
 
     // Preserva a escolha de role para uso após verificação
@@ -516,6 +518,29 @@ export default function CadastroPage() {
                 value={fields.confirm} onChange={handleChange} autoComplete="new-password" />
             </div>
             {errors.confirm && <span className={styles.fieldError}>{errors.confirm}</span>}
+          </div>
+
+          <div className={styles.fieldWrap}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', lineHeight: 1.5 }}>
+              <input
+                id="ciente-privacidade"
+                type="checkbox"
+                checked={cientePrivacidade}
+                onChange={e => { setCientePrivacidade(e.target.checked); if (errors.privacidade) setErrors(p => ({ ...p, privacidade: undefined })) }}
+                style={{ marginTop: '3px', accentColor: 'var(--primary)', flexShrink: 0 }}
+                aria-describedby={errors.privacidade ? 'privacidade-erro' : undefined}
+              />
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                Li e estou ciente da{' '}
+                <a href="/privacidade" target="_blank" rel="noopener noreferrer"
+                  style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+                  Política de Privacidade
+                </a>{' '}do StudyConnect.
+              </span>
+            </label>
+            {errors.privacidade && (
+              <span id="privacidade-erro" className={styles.fieldError}>{errors.privacidade}</span>
+            )}
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading || Boolean(passwordInvalid)}>

@@ -1,27 +1,25 @@
-import { useCTA } from '../hooks/useCTA'
-import Icon from './ui/Icon'
+import { Link } from 'react-router-dom'
 import styles from './CtaBanner.module.css'
 
 export default function CtaBanner() {
-  const handleCTA = useCTA()
   return (
     <section className={styles.section} id="escolas">
       <div className={styles.container}>
         <div className={styles.box}>
           <div className={styles.left}>
-            <span className={styles.tag}>Para escolas</span>
+            <span className={styles.tag}>Ideia para o futuro</span>
             <h2 className={styles.title}>
-              Leve o StudyConnect para<br />sua escola
+              StudyConnect para escolas
             </h2>
             <p className={styles.desc}>
-              Mais de 20 mil escolas já usam o StudyConnect para conectar alunos e professores. Implemente em dias, não em meses.
+              Esta funcionalidade ainda não existe. É uma ideia que temos para o futuro — caso o projeto cresça, queremos oferecer uma solução institucional para escolas conectarem alunos e professores em um só lugar.
             </p>
             <div className={styles.items}>
               {[
-                'Integração com qualquer sistema escolar',
-                'Treinamento completo para professores',
-                'Suporte dedicado 24/7',
-                'Relatórios para gestores e pais',
+                'Gestão de turmas e matrículas',
+                'Relatórios para gestores',
+                'Trilhas personalizadas por escola',
+                'Integração com sistemas existentes',
               ].map((item, i) => (
                 <div key={i} className={styles.item}>
                   <span className={styles.itemCheck}>
@@ -32,8 +30,7 @@ export default function CtaBanner() {
               ))}
             </div>
             <div className={styles.actions}>
-              <a href="/cadastro" className={styles.btnPrimary} onClick={handleCTA}>Quero para minha escola</a>
-              <a href="/cadastro" className={styles.btnGhost}   onClick={handleCTA}>Agendar demonstração</a>
+              <Link to="/contato" className={styles.btnPrimary}>Tenho interesse</Link>
             </div>
           </div>
 
@@ -45,12 +42,12 @@ export default function CtaBanner() {
               </div>
               <div className={styles.dashStats}>
                 {[
-                  { label: 'Alunos ativos hoje',    value: '1.247', icon: 'users'   },
-                  { label: 'Questões respondidas',   value: '8.432', icon: 'pencil'  },
-                  { label: 'Horas de estudo',         value: '2.891', icon: 'clock'   },
+                  { label: 'Alunos ativos hoje',    value: '1.247', icon: '👥' },
+                  { label: 'Aulas assistidas',       value: '8.432', icon: '▶️'  },
+                  { label: 'Horas de estudo',        value: '2.891', icon: '🕐'  },
                 ].map((s, i) => (
                   <div key={i} className={styles.dashStat}>
-                    <span className={styles.dashStatIcon}><Icon name={s.icon} size={18} /></span>
+                    <span className={styles.dashStatIcon}>{s.icon}</span>
                     <div>
                       <strong>{s.value}</strong>
                       <span>{s.label}</span>

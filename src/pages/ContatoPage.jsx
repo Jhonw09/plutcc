@@ -40,6 +40,7 @@ export default function ContatoPage() {
         </div>
 
         <div className={styles.container}>
+          <Link to="/" className={styles.backLink}>← Voltar para a página inicial</Link>
           <div className={styles.contactCard}>
             {sent ? (
               <div className={styles.sentBox}>
