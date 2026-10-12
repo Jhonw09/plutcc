@@ -160,6 +160,7 @@ function SuporteTab() {
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [resposta,     setResposta]     = useState({})
   const [submitting,   setSubmitting]   = useState(null)
+  const [emailFeedback, setEmailFeedback] = useState({})
 
   useEffect(() => {
     getTickets()
@@ -172,11 +173,17 @@ function SuporteTab() {
     const texto = resposta[id]?.trim()
     if (!texto) return
     setSubmitting(id)
+    setEmailFeedback(f => ({ ...f, [id]: null }))
     try {
       const updated = await responderTicket(id, texto)
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, ...updated, status: 'RESPONDIDO' } : t))
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, ...updated } : t))
       setResposta(r => ({ ...r, [id]: '' }))
-      setExpandedId(null)
+      setEmailFeedback(f => ({
+        ...f,
+        [id]: updated.emailEnviado === true ? 'ok'
+            : updated.emailEnviado === false ? 'fail'
+            : null,
+      }))
     } catch (e) {
       setError(e.message)
     } finally {
@@ -209,7 +216,7 @@ function SuporteTab() {
       {error && <p className={styles.error}><Icon name="alertCircle" size={13} /> {error}</p>}
       <div className={styles.content} style={{ borderRadius: 16 }}>
         <div className={styles.contentHeader}>
-          <span className={styles.contentTitle}>Todos os tickets de suporte</span>
+          <span className={styles.contentTitle}>Todos os chamados de suporte</span>
           <div className={styles.statusFilters}>
             {['Todos', 'ABERTO', 'RESPONDIDO', 'FECHADO'].map(s => (
               <button
@@ -225,9 +232,9 @@ function SuporteTab() {
         </div>
 
         {loading ? (
-          <div className={styles.loading}>Carregando tickets...</div>
+          <div className={styles.loading}>Carregando chamados...</div>
         ) : filtered.length === 0 ? (
-          <div className={styles.empty}>Nenhum ticket encontrado.</div>
+          <div className={styles.empty}>Nenhum chamado encontrado.</div>
         ) : (
           <div className={styles.ticketList}>
             {filtered.map(t => (
@@ -242,6 +249,7 @@ function SuporteTab() {
                       <span className={styles.ticketAluno}>{t.nome ?? t.email}</span>
                       <span className={styles.ticketTipo}>{t.tipo}</span>
                     </div>
+                    {t.protocolo && <span className={styles.protocolo}>{t.protocolo}</span>}
                     <span className={styles.ticketDate}>{formatDate(t.criadaEm ?? t.createdAt)}</span>
                   </div>
                   <div className={styles.ticketRight}>
@@ -261,6 +269,12 @@ function SuporteTab() {
                       <span className={styles.ticketSectionLabel}>E-mail</span>
                       <p className={styles.ticketText}>{t.email}</p>
                     </div>
+                    {t.protocolo && (
+                      <div className={styles.ticketSection}>
+                        <span className={styles.ticketSectionLabel}>Protocolo</span>
+                        <p className={`${styles.ticketText} ${styles.protocoloText}`}>{t.protocolo}</p>
+                      </div>
+                    )}
                     <div className={styles.ticketSection}>
                       <span className={styles.ticketSectionLabel}>Mensagem</span>
                       <p className={styles.ticketText}>{t.mensagem}</p>
@@ -269,8 +283,12 @@ function SuporteTab() {
                       <div className={`${styles.ticketSection} ${styles.respostaSection}`}>
                         <span className={styles.ticketSectionLabel}>Resposta enviada</span>
                         <p className={styles.ticketText}>{t.resposta}</p>
+                        {t.emailEnviado === true  && <span className={styles.emailOk}>✓ E-mail entregue</span>}
+                        {t.emailEnviado === false && <span className={styles.emailFail}>⚠ Falha no envio do e-mail</span>}
                       </div>
                     )}
+                    {emailFeedback[t.id] === 'ok'   && <p className={styles.emailOk}>✓ Resposta enviada e e-mail entregue.</p>}
+                    {emailFeedback[t.id] === 'fail' && <p className={styles.emailFail}>⚠ Resposta salva, mas o e-mail não foi entregue.</p>}
                     {t.status !== 'FECHADO' && (
                       <div className={styles.ticketSection}>
                         <span className={styles.ticketSectionLabel}>Responder</span>
@@ -286,14 +304,14 @@ function SuporteTab() {
                             disabled={!resposta[t.id]?.trim() || submitting === t.id}
                             onClick={() => handleResponder(t.id)}
                           >
-                            {submitting === t.id ? 'Enviando...' : 'Responder'}
+                            {submitting === t.id ? 'Enviando...' : 'Responder e enviar e-mail'}
                           </button>
                           <button
                             className={styles.closeBtn}
                             disabled={submitting === `close_${t.id}`}
                             onClick={() => handleFechar(t.id)}
                           >
-                            {submitting === `close_${t.id}` ? '...' : 'Fechar ticket'}
+                            {submitting === `close_${t.id}` ? '...' : 'Fechar chamado'}
                           </button>
                         </div>
                       </div>

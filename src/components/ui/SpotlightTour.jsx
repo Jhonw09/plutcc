@@ -23,14 +23,18 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey, onS
   }, [active])
 
   // ── rAF loop: re-mede o elemento a cada frame ───────────────────────────
-  const startTracking = useCallback((target) => {
+  const startTracking = useCallback((target, onFirstMeasure) => {
     cancelAnimationFrame(rafRef.current)
+    let measured = false
 
     function tick() {
       const el = document.querySelector(`[data-tour="${target}"]`)
       if (!el) { rafRef.current = requestAnimationFrame(tick); return }
 
       const r = el.getBoundingClientRect()
+      // elemento ainda não tem dimensões (ainda renderizando)
+      if (r.width === 0 && r.height === 0) { rafRef.current = requestAnimationFrame(tick); return }
+
       const next = { top: r.top - 8, left: r.left - 8, width: r.width + 16, height: r.height + 16 }
 
       // só atualiza state se mudou (evita re-renders desnecessários)
@@ -39,6 +43,7 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey, onS
           prev.width !== next.width || prev.height !== next.height) {
         hlRef.current = next
         setHl(next)
+        if (!measured) { measured = true; onFirstMeasure?.() }
       }
 
       rafRef.current = requestAnimationFrame(tick)
@@ -58,9 +63,8 @@ export default function SpotlightTour({ steps, active, onFinish, storageKey, onS
     const delay = step === 0 ? 500 : 250
     const t = setTimeout(() => {
       if (current?.target) {
-        startTracking(current.target)
-        // mostra tooltip após primeiro frame medido
-        setTimeout(() => setVisible(true), 120)
+        // mostra tooltip somente após o primeiro frame medido com dimensões reais
+        startTracking(current.target, () => setVisible(true))
       } else {
         setVisible(true)
       }

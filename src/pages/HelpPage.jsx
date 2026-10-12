@@ -121,7 +121,7 @@ function SupportForm() {
   const [form, setForm]     = useState({ tipo: TIPOS_PROBLEMA[0], mensagem: '' })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
-  const [sent, setSent]     = useState(false)
+  const [ticket, setTicket] = useState(null)
   const [apiErr, setApiErr] = useState('')
   const [cooldown, setCooldown] = useState(() => getRemainingCooldown(user?.id))
 
@@ -163,16 +163,10 @@ function SupportForm() {
 
     setLoading(true)
     try {
-      await criarTicket({
-        usuarioId: user?.id,
-        nome:      user?.name,
-        email:     user?.email,
-        tipo:      form.tipo,
-        mensagem:  form.mensagem,
-      })
+      const result = await criarTicket({ tipo: form.tipo, mensagem: form.mensagem })
       localStorage.setItem(getRateLimitKey(user?.id), String(Date.now()))
       setCooldown(RATE_LIMIT_MS)
-      setSent(true)
+      setTicket(result)
     } catch (err) {
       setApiErr(err.message)
     } finally {
@@ -180,12 +174,23 @@ function SupportForm() {
     }
   }
 
-  if (sent) {
+  if (ticket) {
     return (
       <div className={styles.formSuccess}>
         <span className={styles.successIcon}>✅</span>
-        <h3>Mensagem enviada!</h3>
+        <h3>Chamado aberto com sucesso!</h3>
+        {ticket.protocolo && (
+          <p style={{ fontFamily: 'monospace', fontSize: 15, color: 'var(--accent)', fontWeight: 700 }}>
+            {ticket.protocolo}
+          </p>
+        )}
         <p>Nossa equipe responderá no e-mail <strong>{user?.email}</strong> em até 2 dias úteis.</p>
+        <button
+          className={styles.newBtn}
+          onClick={() => { setTicket(null); setForm({ tipo: TIPOS_PROBLEMA[0], mensagem: '' }) }}
+        >
+          Abrir outro chamado
+        </button>
       </div>
     )
   }

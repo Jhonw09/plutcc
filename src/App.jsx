@@ -10,11 +10,7 @@ import AdminDashboardPage        from './pages/AdminDashboardPage'
 import TrilhaPage                from './pages/TrilhaPage'
 import StudentTrilhaPage         from './pages/StudentTrilhaPage'
 import ProtectedRoute            from './components/ProtectedRoute'
-import {
-  SubjectsPage, ExercisesPage, ExamsPage, GoalsPage,
-  UsersPage, SchoolsPage, FinancePage, TicketsPage, AdminReportsPage,
-  SettingsPage,
-} from './pages/placeholders'
+import { SubjectsPage } from './pages/placeholders'
 import HelpPage from './pages/HelpPage'
 import PublicHelpPage from './pages/PublicHelpPage'
 import ContatoPage    from './pages/ContatoPage'
@@ -71,9 +67,9 @@ export default function App() {
       <Route path="/dashboard/desempenho"        element={<S><DesempenhoPage /></S>} />
       <Route path="/dashboard/duvidas"            element={<S><MinhasDuvidasPage /></S>} />
       <Route path="/dashboard/disciplinas"       element={<S><SubjectsPage /></S>} />
-      <Route path="/dashboard/exercicios"        element={<S><ExercisesPage /></S>} />
-      <Route path="/dashboard/simulados"         element={<S><ExamsPage /></S>} />
-      <Route path="/dashboard/metas"             element={<S><GoalsPage /></S>} />
+      <Route path="/dashboard/exercicios"        element={<S><Navigate to="/dashboard" replace /></S>} />
+      <Route path="/dashboard/simulados"         element={<S><Navigate to="/dashboard" replace /></S>} />
+      <Route path="/dashboard/metas"             element={<S><Navigate to="/dashboard" replace /></S>} />
       <Route path="/dashboard/configuracoes"     element={<S><StudentConfiguracoesPage /></S>} />
       <Route path="/dashboard/editar-perfil"      element={<S><EditarPerfilPage /></S>} />
       <Route path="/dashboard/ajuda"             element={<S><HelpPage /></S>} />
@@ -93,9 +89,9 @@ export default function App() {
       <Route path="/admin/usuarios"         element={<A><AdminUsuariosPage /></A>} />
       <Route path="/admin/trilhas"          element={<A><AdminTrilhasPage /></A>} />
       <Route path="/admin/trilha/:id"       element={<A><AdminTrilhaDetalhePage /></A>} />
-      <Route path="/admin/escolas"          element={<A><SchoolsPage /></A>} />
-      <Route path="/admin/financeiro"       element={<A><FinancePage /></A>} />
-      <Route path="/admin/relatorios"       element={<A><AdminReportsPage /></A>} />
+      <Route path="/admin/escolas"          element={<A><Navigate to="/admin" replace /></A>} />
+      <Route path="/admin/financeiro"       element={<A><Navigate to="/admin" replace /></A>} />
+      <Route path="/admin/relatorios"       element={<A><Navigate to="/admin" replace /></A>} />
       <Route path="/admin/tickets"          element={<A><AdminTicketsPage /></A>} />
       <Route path="/admin/solicitacoes-professores" element={<A><AdminSolicitacoesPage /></A>} />
       <Route path="/admin/configuracoes"    element={<A><AdminConfiguracoesPage /></A>} />

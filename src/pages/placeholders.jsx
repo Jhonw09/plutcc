@@ -19,10 +19,7 @@ function ComingSoon({ title, emoji = '🚧' }) {
 
 // ── Student ──────────────────────────────────────────────────────────────────
 export function SubjectsPage()  { return <ComingSoon title="Disciplinas"  emoji="📚" /> }
-export function ExercisesPage() { return <ComingSoon title="Exercícios"   emoji="📝" /> }
-export function ExamsPage()     { return <ComingSoon title="Simulados"    emoji="📋" /> }
 export function ProgressPage()  { return <ComingSoon title="Desempenho"   emoji="📊" /> }
-export function GoalsPage()     { return <ComingSoon title="Metas"        emoji="🎯" /> }
 
 // ── Teacher ──────────────────────────────────────────────────────────────────
 export function TrilhasPage()   { return <ComingSoon title="Trilhas"      emoji="🏫" /> }
@@ -33,11 +30,7 @@ export function CalendarPage()   { return <ComingSoon title="Calendário"  emoji
 
 // ── Admin ────────────────────────────────────────────────────────────────────
 export function UsersPage()   { return <ComingSoon title="Usuários"   emoji="👥" /> }
-export function SchoolsPage() { return <ComingSoon title="Escolas"    emoji="🏫" /> }
-export function FinancePage() { return <ComingSoon title="Financeiro" emoji="💰" /> }
 export function TicketsPage() { return <ComingSoon title="Tickets"    emoji="🚨" /> }
 
 // ── Shared ───────────────────────────────────────────────────────────────────
 export function SettingsPage() { return <ComingSoon title="Configurações" emoji="⚙️" /> }
-// Admin reuses the same Reports component as teacher for now
-export { ReportsPage as AdminReportsPage }

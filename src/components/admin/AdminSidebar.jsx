@@ -10,9 +10,6 @@ const navItems = [
   { icon: 'bookOpen',  label: 'Trilhas',                   path: ADMIN_ROUTES.trilhas       },
   { icon: 'alertCircle', label: 'Tickets',                 path: ADMIN_ROUTES.tickets       },
   { icon: 'userCheck', label: 'Solicitações de professores', path: ADMIN_ROUTES.solicitacoes },
-  { icon: 'school',    label: 'Escolas',                   path: ADMIN_ROUTES.schools       },
-  { icon: 'dollar',    label: 'Financeiro',                path: ADMIN_ROUTES.finance       },
-  { icon: 'barChart',  label: 'Relatórios',                path: ADMIN_ROUTES.reports       },
 ]
 
 const bottomItems = [

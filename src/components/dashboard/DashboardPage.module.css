@@ -191,11 +191,11 @@
 }
 
 /* ════════════════════════════════════════
-   3 + 4. BOTTOM ROW (meta + atividade)
+   RECENT ANSWERS
 ════════════════════════════════════════ */
 .bottomRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   align-items: stretch;
 }
@@ -223,43 +223,6 @@
   letter-spacing: .6px;
   color: var(--text-muted);
 }
-
-/* ── Goal ── */
-.goalNums {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.goalBig {
-  font-size: 48px;
-  font-weight: 900;
-  color: var(--text);
-  line-height: 1;
-}
-.goalOf {
-  font-size: 15px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-.goalPct {
-  margin-left: auto;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--accent);
-}
-.goalTrack {
-  height: 8px;
-  background: rgba(255,255,255,.06);
-  border-radius: 6px;
-  overflow: hidden;
-}
-.goalFill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), #a78bfa);
-  border-radius: 6px;
-  transition: width .6s ease;
-}
-.goalHint { font-size: 13px; color: var(--text-muted); }
 
 /* ── Activity ── */
 .actList { display: flex; flex-direction: column; }

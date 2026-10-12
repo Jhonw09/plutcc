@@ -11,9 +11,6 @@ const navItems = [
   { icon: 'bookOpen',      label: 'Trilhas',     path: STUDENT_ROUTES.trilhas    },
   { icon: 'barChart',      label: 'Desempenho',  path: STUDENT_ROUTES.desempenho },
   { icon: 'alertCircle',   label: 'Dúvidas',     path: STUDENT_ROUTES.duvidas    },
-  { icon: 'pencil',        label: 'Exercícios',  path: STUDENT_ROUTES.exercises  },
-  { icon: 'clipboard',     label: 'Simulados',   path: STUDENT_ROUTES.exams      },
-  { icon: 'target',        label: 'Metas',       path: STUDENT_ROUTES.goals      },
 ]
 
 const bottomItems = [

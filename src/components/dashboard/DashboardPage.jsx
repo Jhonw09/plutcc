@@ -148,8 +148,8 @@ const TOUR_STEPS = [
   },
   {
     target: 'dash-bottom',
-    title: 'Meta e atividade',
-    description: 'Acompanhe sua meta semanal de estudos e veja suas atividades recentes na plataforma.',
+    title: 'Dúvidas respondidas',
+    description: 'Acompanhe as respostas recentes dos professores às suas dúvidas.',
   },
 ]
 
@@ -158,7 +158,7 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { minhasTrilhas, todasTrilhas, loading, getProgresso, reload } = useMinhasTrilhas()
-  const { perfil, loading: loadingPerfil, savePerfil, metaSemanal } = usePerfilAprendizado()
+  const { perfil, loading: loadingPerfil, savePerfil } = usePerfilAprendizado()
 
   const concluidas  = minhasTrilhas.filter(t => getProgresso(t.id) === 100)
   const destaque    = minhasTrilhas.find(t => getProgresso(t.id) < 100) ?? minhasTrilhas[0]
@@ -423,50 +423,8 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* ── 3 + 4. Meta semanal + Dúvidas respondidas ── */}
+        {/* ── Dúvidas respondidas ── */}
         <div className={styles.bottomRow} data-tour="dash-bottom">
-
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              <span className={styles.cardLabel}>Meta semanal</span>
-              <button className={styles.linkBtn} onClick={() => navigate(STUDENT_ROUTES.desempenho)}>
-                Ver desempenho →
-              </button>
-            </div>
-            {loading ? (
-              <div className={styles.emptyCard}><Sk h={14} /></div>
-            ) : minhasTrilhas.length === 0 ? (
-              <div className={styles.emptyCard}>
-                <Icon name="target" size={24} style={{ opacity: .18 }} />
-                <p>Matricule-se em uma trilha para ver seu progresso.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {minhasTrilhas.slice(0, 3).map(t => {
-                  const pct = getProgresso(t.id)
-                  const barColor = pct >= 100
-                    ? 'rgba(34,197,94,.7)'
-                    : pct >= 70
-                    ? 'rgba(74,222,128,.6)'
-                    : pct >= 40
-                    ? 'rgba(250,204,21,.55)'
-                    : 'rgba(251,146,60,.5)'
-                  return (
-                    <div key={t.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                        <span style={{ color: 'var(--text)', fontWeight: 500 }}>{t.nome}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>{pct}%</span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 4, background: 'var(--border)', overflow: 'hidden' }}>
-                        <div className={styles.progressBar} style={{ width: `${pct}%`, background: barColor }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
           <div className={styles.card}>
             <div className={styles.cardHead}>
               <span className={styles.cardLabel}>Dúvidas respondidas</span>

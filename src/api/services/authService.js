@@ -148,6 +148,9 @@ async function googleLogin(idToken) {
     if (err.status === 401) throw new Error('Autenticação com Google falhou.')
     throw new Error('Não foi possível entrar com Google. Tente novamente.')
   })
+
+  if (data?.mfaPendente === true) return data
+
   if (!data?.id || !data?.nome || !data?.role || !data?.accessToken || !data?.expiresIn) {
     throw new Error('Resposta do servidor inválida.')
   }

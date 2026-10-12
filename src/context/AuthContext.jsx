@@ -37,6 +37,9 @@ export function AuthProvider({ children }) {
   const [mfaPending, setMfaPending] = useState(
     () => !!sessionStorage.getItem(STORAGE_KEYS.mfaPendingEmail)
   )
+  const [mfaIsGoogle, setMfaIsGoogle] = useState(
+    () => sessionStorage.getItem('sc_mfa_is_google') === '1'
+  )
 
   useEffect(() => {
     function handleExpiredSession() {
@@ -65,6 +68,8 @@ export function AuthProvider({ children }) {
     // Resposta de MFA pendente — não há accessToken ainda
     if (data?.mfaPendente === true) {
       sessionStorage.setItem(STORAGE_KEYS.mfaPendingEmail, data.email ?? '')
+      sessionStorage.setItem('sc_mfa_is_google', isGoogle ? '1' : '0')
+      setMfaIsGoogle(isGoogle)
       setMfaPending(true)
       // user permanece null — não autenticado
       return { mfaPendente: true, email: data.email }
@@ -100,13 +105,16 @@ export function AuthProvider({ children }) {
     const email = sessionStorage.getItem(STORAGE_KEYS.mfaPendingEmail)
     if (!email) throw new Error('Sessão MFA expirada. Faça login novamente.')
 
+    const isGoogle = sessionStorage.getItem('sc_mfa_is_google') === '1'
     const data = await authService.verifyMfa(email, code)
 
     // Limpa estado intermediário antes de finalizar o login
     sessionStorage.removeItem(STORAGE_KEYS.mfaPendingEmail)
+    sessionStorage.removeItem('sc_mfa_is_google')
     setMfaPending(false)
+    setMfaIsGoogle(false)
 
-    return loginWithData({ data, isGoogle: false })
+    return loginWithData({ data, isGoogle })
   }
 
   async function updateUser({ nome, email, senha, fotoUrl }) {
@@ -167,7 +175,9 @@ export function AuthProvider({ children }) {
     clearAccessToken()
     sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
     sessionStorage.removeItem(STORAGE_KEYS.mfaPendingEmail)
+    sessionStorage.removeItem('sc_mfa_is_google')
     setMfaPending(false)
+    setMfaIsGoogle(false)
     setUser(null)
   }
 
