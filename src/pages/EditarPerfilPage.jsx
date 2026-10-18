@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { isValidEmail } from '../utils/validation'
@@ -29,7 +29,7 @@ function resizeImage(file, maxSize = 256) {
 }
 
 export default function EditarPerfilPage() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, updateUserEmail } = useAuth()
   const navigate = useNavigate()
 
   const isTeacher = user?.role === 'teacher'
@@ -55,6 +55,20 @@ export default function EditarPerfilPage() {
 
   const fileInputRef = useRef(null)
   const initials = nome.trim().charAt(0).toUpperCase() || '?'
+
+  useEffect(() => {
+    let active = true
+    authService.getEmailChangeStatus()
+      .then(status => {
+        if (!active || !status?.emailNovo) return
+        setEmailNovo(status.emailNovo)
+        setEmailStep(status.etapa === 'STEP2' ? 'otp' : 'sent')
+      })
+      .catch(err => {
+        if (active) setEmailError(err.message || 'Não foi possível recuperar a solicitação de troca.')
+      })
+    return () => { active = false }
+  }, [])
 
   // ── Upload de foto ──
   async function handleFileChange(e) {
@@ -99,10 +113,11 @@ export default function EditarPerfilPage() {
     if (emailNovo.trim().toLowerCase() === user.email?.toLowerCase()) { setEmailError('O novo e-mail deve ser diferente do atual.'); return }
     setEmailLoading(true)
     try {
-      await authService.requestEmailChange(user.id, emailNovo.trim())
+      await authService.requestEmailChange(emailNovo.trim())
       setEmailStep('sent')
       setEmailSuccess('')
       setEmailError('')
+      setOtp('')
     } catch (err) {
       setEmailError(err.message || 'Erro ao solicitar troca.')
     } finally {
@@ -117,11 +132,13 @@ export default function EditarPerfilPage() {
     if (!otp || otp.length !== 6) { setEmailError('Insira o código de 6 dígitos.'); return }
     setEmailLoading(true)
     try {
-      await authService.verifyEmailChange(user.id, otp)
+      await authService.verifyEmailChange(otp)
+      const emailAtualizado = emailNovo.trim().toLowerCase()
+      updateUserEmail(emailAtualizado)
       setEmailStep('idle')
       setEmailNovo('')
       setOtp('')
-      setEmailSuccess('E-mail alterado com sucesso! Faça login novamente para atualizar sua sessão.')
+      setEmailSuccess('E-mail alterado com sucesso. Enviamos um aviso para seu endereço anterior.')
     } catch (err) {
       setEmailError(err.message || 'Código inválido.')
     } finally {
@@ -200,11 +217,9 @@ export default function EditarPerfilPage() {
                 value={user?.email ?? ''} disabled
                 placeholder="—"
               />
-              {user?.isGoogleUser && (
-                <p className={styles.fieldHint}>
-                  <Icon name="lock" size={12} /> E-mail não pode ser alterado em contas Google.
-                </p>
-              )}
+              <p className={styles.fieldHint}>
+                <Icon name="lock" size={12} /> Para alterar, confirme a solicitação no e-mail atual e valide o novo endereço.
+              </p>
             </div>
 
             {!user.isGoogleUser && (
@@ -228,9 +243,8 @@ export default function EditarPerfilPage() {
             </div>
           </form>
 
-          {/* ── Troca de e-mail (apenas usuários não-Google) ── */}
-          {!user.isGoogleUser && (
-            <div className={styles.emailChangeSection}>
+          {/* ── Troca de e-mail ── */}
+          <div className={styles.emailChangeSection}>
               <h3 className={styles.sectionTitle}>Alterar e-mail</h3>
               <p className={styles.sectionSub}>
                 A troca de e-mail exige confirmação em 2 etapas por segurança.
@@ -300,8 +314,7 @@ export default function EditarPerfilPage() {
                   </div>
                 </form>
               )}
-            </div>
-          )}
+          </div>
 
         </div>
       </div>

@@ -37,9 +37,16 @@ export function AuthProvider({ children }) {
   const [mfaPending, setMfaPending] = useState(
     () => !!sessionStorage.getItem(STORAGE_KEYS.mfaPendingEmail)
   )
-  const [mfaIsGoogle, setMfaIsGoogle] = useState(
-    () => sessionStorage.getItem('sc_mfa_is_google') === '1'
-  )
+
+  function clearSession() {
+    localStorage.removeItem(STORAGE_KEYS.user)
+    clearAccessToken()
+    sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
+    sessionStorage.removeItem(STORAGE_KEYS.mfaPendingEmail)
+    sessionStorage.removeItem('sc_mfa_is_google')
+    setMfaPending(false)
+    setUser(null)
+  }
 
   useEffect(() => {
     function handleExpiredSession() {
@@ -69,7 +76,6 @@ export function AuthProvider({ children }) {
     if (data?.mfaPendente === true) {
       sessionStorage.setItem(STORAGE_KEYS.mfaPendingEmail, data.email ?? '')
       sessionStorage.setItem('sc_mfa_is_google', isGoogle ? '1' : '0')
-      setMfaIsGoogle(isGoogle)
       setMfaPending(true)
       // user permanece null — não autenticado
       return { mfaPendente: true, email: data.email }
@@ -112,7 +118,6 @@ export function AuthProvider({ children }) {
     sessionStorage.removeItem(STORAGE_KEYS.mfaPendingEmail)
     sessionStorage.removeItem('sc_mfa_is_google')
     setMfaPending(false)
-    setMfaIsGoogle(false)
 
     return loginWithData({ data, isGoogle })
   }
@@ -136,6 +141,13 @@ export function AuthProvider({ children }) {
     })
 
     const updated = { ...user, name: nome, avatar: nome.charAt(0).toUpperCase(), email, fotoUrl: fotoUrl ?? user.fotoUrl }
+    persist(updated)
+    setUser(updated)
+  }
+
+  function updateUserEmail(email) {
+    validateId(user?.id)
+    const updated = { ...user, email }
     persist(updated)
     setUser(updated)
   }
@@ -170,17 +182,6 @@ export function AuthProvider({ children }) {
     setUser(updated)
   }
 
-  function clearSession() {
-    localStorage.removeItem(STORAGE_KEYS.user)
-    clearAccessToken()
-    sessionStorage.removeItem(STORAGE_KEYS.dashboardEntered)
-    sessionStorage.removeItem(STORAGE_KEYS.mfaPendingEmail)
-    sessionStorage.removeItem('sc_mfa_is_google')
-    setMfaPending(false)
-    setMfaIsGoogle(false)
-    setUser(null)
-  }
-
   async function requestDeleteChallenge(senha) {
     validateId(user?.id)
     await authService.requestDeleteChallenge(user.id, senha)
@@ -200,7 +201,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, mfaPending,
       login, loginWithGoogle, verifyMfa,
-      signup, updateUser, changePassword, deleteUserWithAuth, requestDeleteChallenge, logout, toggleMfa,
+      signup, updateUser, updateUserEmail, changePassword, deleteUserWithAuth, requestDeleteChallenge, logout, toggleMfa,
     }}>
       {children}
     </AuthContext.Provider>

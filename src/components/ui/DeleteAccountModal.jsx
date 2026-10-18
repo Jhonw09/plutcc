@@ -10,7 +10,7 @@ import pageStyles from '../../pages/TeacherConfiguracoesPage.module.css'
  * Props:
  *  - mfaHabilitado: boolean
  *  - isGoogleUser:  boolean
- *  - onRequestChallenge: (senha) => Promise<void>   — envia código MFA
+ *  - onRequestChallenge: (senha?) => Promise<void>  — envia código de confirmação
  *  - onConfirm:  (senha, codigoMfa?) => Promise<void>
  *  - onCancel:   () => void
  *  - roleLabel:  string  — ex: "conta", "trilhas e aulas"
@@ -36,15 +36,16 @@ export default function DeleteAccountModal({
   const [loading,    setLoading]    = useState(false)
 
   const needsMfa = mfaHabilitado && !isGoogleUser
+  const needsCode = needsMfa || isGoogleUser
 
   async function handleSenhaSubmit(e) {
     e.preventDefault()
-    if (!senha) { setError('Informe sua senha atual.'); return }
+    if (!isGoogleUser && !senha) { setError('Informe sua senha atual.'); return }
     setError('')
     setLoading(true)
     try {
-      if (needsMfa) {
-        await onRequestChallenge(senha)
+      if (needsCode) {
+        await onRequestChallenge(isGoogleUser ? null : senha)
         setStep('codigo')
       } else {
         await onConfirm(senha, null)
@@ -58,11 +59,11 @@ export default function DeleteAccountModal({
 
   async function handleCodigoSubmit(e) {
     e.preventDefault()
-    if (!codigo) { setError('Informe o código recebido por e-mail.'); return }
+    if (codigo.length !== 6) { setError('Informe o código de 6 dígitos recebido por e-mail.'); return }
     setError('')
     setLoading(true)
     try {
-      await onConfirm(senha, codigo)
+      await onConfirm(isGoogleUser ? null : senha, codigo)
     } catch (err) {
       setError(err.message || 'Código inválido ou expirado.')
     } finally {
@@ -74,7 +75,7 @@ export default function DeleteAccountModal({
     setError('')
     setLoading(true)
     try {
-      await onRequestChallenge(senha)
+      await onRequestChallenge(isGoogleUser ? null : senha)
     } catch (err) {
       setError(err.message || 'Erro ao reenviar código.')
     } finally {
@@ -104,26 +105,35 @@ export default function DeleteAccountModal({
             <p className={styles.modalDesc}>
               {needsMfa
                 ? passwordDescription || 'Para excluir sua conta, confirme sua senha. Em seguida, enviaremos um código de verificação para o seu e-mail.'
+                : isGoogleUser
+                  ? passwordDescription || 'Para confirmar a exclusão da sua conta Google, enviaremos um código de verificação para o seu e-mail.'
                 : passwordDescription || `Esta ação é permanente. Todos os dados da sua ${roleLabel} serão removidos. Confirme sua senha para continuar.`}
             </p>
             <form onSubmit={handleSenhaSubmit} noValidate className={styles.modalForm}>
-              <InputField
-                id="delete-senha"
-                label={passwordLabel}
-                type="password"
-                placeholder="••••••••"
-                value={senha}
-                onChange={e => { setSenha(e.target.value); setError('') }}
-                error={error}
-                disabled={loading}
-                autoFocus
-              />
+              {!isGoogleUser && (
+                <InputField
+                  id="delete-senha"
+                  label={passwordLabel}
+                  type="password"
+                  placeholder="••••••••"
+                  value={senha}
+                  onChange={e => { setSenha(e.target.value); setError('') }}
+                  error={error}
+                  disabled={loading}
+                  autoFocus
+                />
+              )}
+              {isGoogleUser && error && (
+                <p className={pageStyles.errorMsg}>
+                  <Icon name="alertCircle" size={13} /> {error}
+                </p>
+              )}
               <div className={styles.modalActions}>
                 <button type="button" className={styles.cancelBtn} onClick={onCancel} disabled={loading}>
                   Cancelar
                 </button>
                 <button type="submit" className={styles.confirmBtnDisable} disabled={loading}>
-                  {loading ? 'Aguarde…' : needsMfa ? 'Enviar código' : 'Excluir conta'}
+                  {loading ? 'Aguarde…' : needsCode ? 'Enviar código' : 'Excluir conta'}
                 </button>
               </div>
             </form>

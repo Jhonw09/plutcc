@@ -18,8 +18,6 @@ const PUBLIC_ENDPOINTS = {
     '/api/v1/auth/forgot-password',
     '/api/v1/auth/reset-password',
     '/api/v1/auth/mfa/verify',
-    '/api/v1/auth/email-change/request',
-    '/api/v1/auth/email-change/verify',
   ]),
 }
 
@@ -127,6 +125,7 @@ export const ENDPOINTS = {
   // Troca de e-mail (2 etapas)
   emailChangeRequest:   `${API_BASE}/auth/email-change/request`,
   emailChangeConfirm:   (token) => `${API_BASE}/auth/email-change/confirm?token=${token}`,
+  emailChangeStatus:    `${API_BASE}/auth/email-change/status`,
   emailChangeVerify:    `${API_BASE}/auth/email-change/verify`,
 
   // MFA

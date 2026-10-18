@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { authService } from '../api/services/authService'
 import styles from './AuthPage.module.css'
 
 export default function ConfirmarTrocaEmailPage() {
   const [params]   = useSearchParams()
   const navigate   = useNavigate()
-  const [status, setStatus] = useState('loading') // loading | ok | error
-  const [msg,    setMsg]    = useState('')
+  const { user } = useAuth()
+  const token = params.get('token')
+  const [status, setStatus] = useState(token ? 'loading' : 'error') // loading | ok | error
+  const [msg,    setMsg]    = useState(token ? '' : 'Link inválido.')
 
   useEffect(() => {
-    const token = params.get('token')
-    if (!token) { setStatus('error'); setMsg('Link inválido.'); return }
+    if (!token) return
 
     authService.confirmEmailChange(token)
       .then(data => {
@@ -22,7 +24,7 @@ export default function ConfirmarTrocaEmailPage() {
         setMsg(err.message || 'Link inválido ou expirado.')
         setStatus('error')
       })
-  }, [params])
+  }, [token])
 
   return (
     <div className={styles.page}>
@@ -40,10 +42,19 @@ export default function ConfirmarTrocaEmailPage() {
             <h2 className={styles.title}>Quase lá!</h2>
             <p className={styles.sub}>
               Enviamos um código de verificação para <strong>{msg}</strong>.<br />
-              Acesse sua conta e insira o código para concluir a troca.
+              Informe o código nas configurações para concluir a troca. A solicitação fica disponível por 15 minutos.
             </p>
-            <button className={styles.submitBtn} onClick={() => navigate(-1)}>
-              Voltar
+            <button
+              className={styles.submitBtn}
+              onClick={() => navigate(user?.role === 'teacher'
+                ? '/teacher-dashboard/editar-perfil'
+                : user?.role === 'admin'
+                  ? '/admin/configuracoes'
+                  : user
+                    ? '/dashboard/editar-perfil'
+                    : '/login')}
+            >
+              {user ? 'Continuar para configurações' : 'Entrar para concluir'}
             </button>
           </>
         )}

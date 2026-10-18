@@ -63,7 +63,7 @@ async function changePassword(userId, { nome, email, tipoUsuario, senha }) {
 async function requestDeleteChallenge(userId, senha) {
   await api(ENDPOINTS.deleteChallenge(userId), {
     method: 'POST',
-    body: JSON.stringify({ senha }),
+    body: JSON.stringify(senha ? { senha } : {}),
   }).catch(err => {
     if (err.status === 401) throw new Error('Senha incorreta.')
     if (err.status === 400) throw new Error(err.message)
@@ -73,7 +73,8 @@ async function requestDeleteChallenge(userId, senha) {
 
 async function deleteUserWithAuth(userId, senha, codigoMfa) {
   if (!userId) throw new Error('Sessao invalida. Faca login novamente.')
-  const body = { senha }
+  const body = {}
+  if (senha) body.senha = senha
   if (codigoMfa) body.codigoMfa = codigoMfa
   await api(ENDPOINTS.userById(userId), {
     method: 'DELETE',
@@ -142,14 +143,20 @@ async function googleLogin(idToken) {
   return data
 }
 
-async function requestEmailChange(usuarioId, emailNovo) {
+async function requestEmailChange(emailNovo) {
   await api(ENDPOINTS.emailChangeRequest, {
     method: 'POST',
-    body: JSON.stringify({ usuarioId, emailNovo }),
+    body: JSON.stringify({ emailNovo }),
   }).catch(err => {
     if (err.status === 400) throw new Error(err.message)
     if (err.status === 409) throw new Error(err.message)
     throw new Error('Não foi possível solicitar a troca. Tente novamente.')
+  })
+}
+
+async function getEmailChangeStatus() {
+  return api(ENDPOINTS.emailChangeStatus).catch(err => {
+    throw new Error(err.message || 'Não foi possível recuperar a solicitação de troca.')
   })
 }
 
@@ -159,10 +166,10 @@ async function confirmEmailChange(token) {
   })
 }
 
-async function verifyEmailChange(usuarioId, otp) {
+async function verifyEmailChange(otp) {
   await api(ENDPOINTS.emailChangeVerify, {
     method: 'POST',
-    body: JSON.stringify({ usuarioId, otp }),
+    body: JSON.stringify({ otp }),
   }).catch(err => {
     if (err.status === 400) throw new Error(err.message)
     throw new Error('Não foi possível verificar o código. Tente novamente.')
@@ -206,4 +213,4 @@ async function disableMfa(senha) {
   })
 }
 
-export const authService = { login, signup, updateUser, changePassword, requestDeleteChallenge, deleteUserWithAuth, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, confirmEmailChange, verifyEmailChange, verifyMfa, enableMfa, disableMfa }
+export const authService = { login, signup, updateUser, changePassword, requestDeleteChallenge, deleteUserWithAuth, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, getEmailChangeStatus, confirmEmailChange, verifyEmailChange, verifyMfa, enableMfa, disableMfa }
