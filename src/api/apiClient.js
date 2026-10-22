@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from '../constants/storageKeys'
+import { isCredentialConfirmationFailure } from './authContracts'
 
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 export const API_BASE = `${BASE}/api/v1`
@@ -35,17 +36,6 @@ function isProtectedApiRequest(url, method) {
   const path = pathFromUrl(url)
   if (!path || !path.startsWith('/api/')) return false
   return !PUBLIC_ENDPOINTS[method]?.has(path)
-}
-
-function isCredentialConfirmationRequest(url, method) {
-  const path = pathFromUrl(url)
-  return (method === 'POST' && /\/api\/v1\/usuarios\/\d+\/delete-challenge$/.test(path))
-    || (method === 'DELETE' && /\/api\/v1\/usuarios\/\d+$/.test(path))
-}
-
-function isCredentialConfirmationFailure(url, method, message) {
-  return isCredentialConfirmationRequest(url, method)
-    && ['Senha incorreta.', 'Código inválido ou expirado.'].includes(message)
 }
 
 export function storeAccessToken(accessToken, expiresIn) {
@@ -133,6 +123,9 @@ export const ENDPOINTS = {
   mfaEnable:  `${API_BASE}/auth/mfa/enable`,
   mfaDisable: `${API_BASE}/auth/mfa/disable`,
   deleteChallenge: (id) => `${API_BASE}/usuarios/${id}/delete-challenge`,
+  accountSecurity: `${API_BASE}/auth/account-security`,
+  accountDeletionChallenge: `${API_BASE}/auth/account-deletion/challenge`,
+  accountDeletion: `${API_BASE}/auth/account-deletion`,
 
   // Trilhas privadas
   trilhaCodigo:          (id) => `${API_BASE}/trilhas/${id}/codigo`,
@@ -200,7 +193,7 @@ export async function api(url, options = {}) {
     if (
       res.status === 401
       && protectedRequest
-      && !isCredentialConfirmationFailure(url, method, message)
+      && !isCredentialConfirmationFailure(method, pathFromUrl(url), message)
     ) {
       notifyUnauthorizedSession()
     }

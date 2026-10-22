@@ -15,6 +15,7 @@ export default function ProfileDropdown() {
     updateUser,
     changePassword,
     deleteUserWithAuth,
+    loadAccountSecurity,
     requestDeleteChallenge,
     logout,
   } = useAuth()
@@ -78,8 +79,8 @@ export default function ProfileDropdown() {
     } finally { setSaving(false) }
   }
 
-  async function handleDelete(senha, codigoMfa) {
-    await deleteUserWithAuth(senha, codigoMfa)
+  async function handleDelete(proof, codigoMfa) {
+    await deleteUserWithAuth(proof, codigoMfa)
     navigate('/', { replace: true })
   }
 
@@ -213,6 +214,7 @@ export default function ProfileDropdown() {
       <DeleteAccountModal
         mfaHabilitado={user.mfaHabilitado || user.role === 'admin'}
         isGoogleUser={user.isGoogleUser}
+        onLoadMethods={loadAccountSecurity}
         onRequestChallenge={requestDeleteChallenge}
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}

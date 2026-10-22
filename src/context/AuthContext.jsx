@@ -182,14 +182,19 @@ export function AuthProvider({ children }) {
     setUser(updated)
   }
 
-  async function requestDeleteChallenge(senha) {
+  async function loadAccountSecurity() {
     validateId(user?.id)
-    await authService.requestDeleteChallenge(user.id, senha)
+    return authService.loadAccountSecurity()
   }
 
-  async function deleteUserWithAuth(senha, codigoMfa) {
+  async function requestDeleteChallenge(proof) {
     validateId(user?.id)
-    await authService.deleteUserWithAuth(user.id, senha, codigoMfa ?? null)
+    return authService.requestDeleteChallenge(proof)
+  }
+
+  async function deleteUserWithAuth(proof, codigoMfa) {
+    validateId(user?.id)
+    await authService.deleteUserWithAuth(proof, codigoMfa ?? null)
     clearSession()
   }
 
@@ -201,7 +206,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, mfaPending,
       login, loginWithGoogle, verifyMfa,
-      signup, updateUser, updateUserEmail, changePassword, deleteUserWithAuth, requestDeleteChallenge, logout, toggleMfa,
+      signup, updateUser, updateUserEmail, changePassword, deleteUserWithAuth, loadAccountSecurity, requestDeleteChallenge, logout, toggleMfa,
     }}>
       {children}
     </AuthContext.Provider>

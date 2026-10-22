@@ -9,11 +9,11 @@ import styles from './TeacherConfiguracoesPage.module.css'
 
 export default function AdminConfiguracoesPage() {
   const navigate = useNavigate()
-  const { user, deleteUserWithAuth, requestDeleteChallenge } = useAuth()
+  const { user, deleteUserWithAuth, loadAccountSecurity, requestDeleteChallenge } = useAuth()
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  async function handleDeleteConfirm(senha, codigoMfa) {
-    await deleteUserWithAuth(senha, codigoMfa)
+  async function handleDeleteConfirm(proof, codigoMfa) {
+    await deleteUserWithAuth(proof, codigoMfa)
     navigate('/')
   }
 
@@ -23,6 +23,7 @@ export default function AdminConfiguracoesPage() {
         <DeleteAccountModal
           mfaHabilitado={user.mfaHabilitado || user.role === 'admin'}
           isGoogleUser={user.isGoogleUser}
+          onLoadMethods={loadAccountSecurity}
           onRequestChallenge={requestDeleteChallenge}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setConfirmDelete(false)}

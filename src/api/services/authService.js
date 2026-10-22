@@ -1,4 +1,5 @@
 import { ENDPOINTS, api } from '../apiClient'
+import { buildDeletionProofBody, validateLoginResponse } from '../authContracts'
 
 async function login({ email, senha }) {
   const data = await api(ENDPOINTS.login, {
@@ -13,11 +14,7 @@ async function login({ email, senha }) {
 
   if (data?.mfaPendente === true) return data
 
-  if (!data?.id || !data?.nome || !data?.role || !data?.accessToken || !data?.expiresIn) {
-    throw new Error('Resposta do servidor invalida. Contate o suporte.')
-  }
-
-  return data
+  return validateLoginResponse(data, 'Resposta do servidor invalida. Contate o suporte.')
 }
 
 async function signup({ nome, email, senha, tipoUsuario = 'ALUNO' }) {
@@ -60,27 +57,27 @@ async function changePassword(userId, { nome, email, tipoUsuario, senha }) {
   })
 }
 
-async function requestDeleteChallenge(userId, senha) {
-  await api(ENDPOINTS.deleteChallenge(userId), {
+async function loadAccountSecurity() {
+  return api(ENDPOINTS.accountSecurity)
+}
+
+async function requestDeleteChallenge(proof) {
+  return api(ENDPOINTS.accountDeletionChallenge, {
     method: 'POST',
-    body: JSON.stringify(senha ? { senha } : {}),
+    body: JSON.stringify(buildDeletionProofBody(proof)),
   }).catch(err => {
-    if (err.status === 401) throw new Error('Senha incorreta.')
+    if (err.status === 401) throw new Error(err.message || 'Não foi possível confirmar sua identidade.')
     if (err.status === 400) throw new Error(err.message)
     throw new Error('Nao foi possivel enviar o codigo. Tente novamente.')
   })
 }
 
-async function deleteUserWithAuth(userId, senha, codigoMfa) {
-  if (!userId) throw new Error('Sessao invalida. Faca login novamente.')
-  const body = {}
-  if (senha) body.senha = senha
-  if (codigoMfa) body.codigoMfa = codigoMfa
-  await api(ENDPOINTS.userById(userId), {
+async function deleteUserWithAuth(proof, codigoMfa) {
+  await api(ENDPOINTS.accountDeletion, {
     method: 'DELETE',
-    body: JSON.stringify(body),
+    body: JSON.stringify(buildDeletionProofBody(proof, codigoMfa)),
   }).catch(err => {
-    if (err.status === 401) throw new Error(err.message || 'Senha ou codigo incorretos.')
+    if (err.status === 401) throw new Error(err.message || 'Não foi possível confirmar sua identidade.')
     if (err.status === 400) throw new Error(err.message)
     throw new Error('Nao foi possivel excluir a conta. Tente novamente.')
   })
@@ -137,10 +134,7 @@ async function googleLogin(idToken) {
 
   if (data?.mfaPendente === true) return data
 
-  if (!data?.id || !data?.nome || !data?.role || !data?.accessToken || !data?.expiresIn) {
-    throw new Error('Resposta do servidor inválida.')
-  }
-  return data
+  return validateLoginResponse(data, 'Resposta do servidor inválida.')
 }
 
 async function requestEmailChange(emailNovo) {
@@ -213,4 +207,4 @@ async function disableMfa(senha) {
   })
 }
 
-export const authService = { login, signup, updateUser, changePassword, requestDeleteChallenge, deleteUserWithAuth, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, getEmailChangeStatus, confirmEmailChange, verifyEmailChange, verifyMfa, enableMfa, disableMfa }
+export const authService = { login, signup, updateUser, changePassword, loadAccountSecurity, requestDeleteChallenge, deleteUserWithAuth, forgotPassword, resetPassword, verifyEmail, resendVerification, googleLogin, requestEmailChange, getEmailChangeStatus, confirmEmailChange, verifyEmailChange, verifyMfa, enableMfa, disableMfa }

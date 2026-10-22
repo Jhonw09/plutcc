@@ -13,8 +13,8 @@ import styles from './TeacherConfiguracoesPage.module.css'
 
 export default function StudentConfiguracoesPage() {
   const navigate = useNavigate()
-  const { user, changePassword, deleteUserWithAuth, requestDeleteChallenge, toggleMfa } = useAuth()
-  const { toasts, toast, dismiss } = useToast()
+  const { user, changePassword, deleteUserWithAuth, loadAccountSecurity, requestDeleteChallenge, toggleMfa } = useAuth()
+  const { toasts, dismiss } = useToast()
 
   const [senhaAtual,  setSenhaAtual]  = useState('')
   const [senhaNova,   setSenhaNova]   = useState('')
@@ -45,13 +45,9 @@ export default function StudentConfiguracoesPage() {
     }
   }
 
-  async function handleDeleteConfirm(senha, codigoMfa) {
-    try {
-      await deleteUserWithAuth(senha, codigoMfa)
-      navigate('/')
-    } catch (err) {
-      throw err // repassado ao modal para exibir o erro
-    }
+  async function handleDeleteConfirm(proof, codigoMfa) {
+    await deleteUserWithAuth(proof, codigoMfa)
+    navigate('/')
   }
 
   return (
@@ -60,6 +56,7 @@ export default function StudentConfiguracoesPage() {
         <DeleteAccountModal
           mfaHabilitado={user.mfaHabilitado}
           isGoogleUser={user.isGoogleUser}
+          onLoadMethods={loadAccountSecurity}
           onRequestChallenge={requestDeleteChallenge}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setConfirmDelete(false)}
